@@ -21,9 +21,7 @@ const accentVar = (id: string) => `var(--accent-${id}, var(--color-border))`;
 
 const dateLabel = computed(() => {
   const d = new Date(props.replay.date);
-  return Number.isNaN(d.getTime())
-    ? props.replay.date
-    : d.toISOString().slice(0, 10);
+  return Number.isNaN(d.getTime()) ? props.replay.date : d.toISOString().slice(0, 10);
 });
 </script>
 

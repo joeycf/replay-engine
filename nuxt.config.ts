@@ -32,6 +32,11 @@ export default defineNuxtConfig({
   },
 
   modules: [
+    // Canonical shared lint tooling (STACK.md): generates the project-aware
+    // flat config into .nuxt/eslint.config.mjs on `nuxt prepare`. Consuming
+    // game apps inherit this module, so every repo lints under the same rules.
+    '@nuxt/eslint',
+
     // Seed prerender routes under the FINAL resolved base path. A static
     // `routes: ['/']` list would 404 when a game builds at '/2xko' (explicit
     // prerender entries are not auto-prefixed); resolving from

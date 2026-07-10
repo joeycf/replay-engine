@@ -4,9 +4,7 @@ const route = useRoute();
 const game = useGame();
 const { data: players } = usePlayers();
 
-const player = computed(() =>
-  (players.value ?? []).find((p) => p.id === route.params.id),
-);
+const player = computed(() => (players.value ?? []).find((p) => p.id === route.params.id));
 const extra = computed(() => Object.entries(player.value?.extra ?? {}));
 
 useHead({ title: () => `${player.value?.handle ?? 'Player'} · ${game.name}` });

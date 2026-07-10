@@ -1,6 +1,6 @@
 <script setup lang="ts">
 /**
- * The app shell: pinned header (Wordmark + primary nav), the themed dark
+ * The app shell: pinned header (BrandWordmark + primary nav), the themed dark
  * surface, and the templated SiteFooter. Nav uses <NuxtLink> exclusively so it
  * is base-path-aware. All colors/fonts are semantic tokens.
  */
@@ -14,19 +14,14 @@ const nav = [
 ];
 
 // Home ('/') matches exactly; section links match their subtree.
-const isActive = (to: string) =>
-  to === '/' ? route.path === '/' : route.path.startsWith(to);
+const isActive = (to: string) => (to === '/' ? route.path === '/' : route.path.startsWith(to));
 </script>
 
 <template>
   <div class="flex min-h-dvh flex-col bg-bg font-ui text-text">
-    <header
-      class="sticky top-0 z-40 border-b border-border-subtle bg-bg/80 backdrop-blur"
-    >
-      <div
-        class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4"
-      >
-        <Wordmark />
+    <header class="sticky top-0 z-40 border-b border-border-subtle bg-bg/80 backdrop-blur">
+      <div class="mx-auto flex h-14 max-w-6xl items-center justify-between gap-4 px-4">
+        <BrandWordmark />
         <nav class="flex items-center gap-0.5 text-sm">
           <NuxtLink
             v-for="link in nav"

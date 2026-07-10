@@ -6,12 +6,8 @@ const route = useRoute();
 const game = useGame();
 const { data: characters } = useCharacters();
 
-const character = computed(() =>
-  (characters.value ?? []).find((c) => c.id === route.params.id),
-);
-const accent = computed(
-  () => `var(--accent-${route.params.id as string}, var(--color-primary))`,
-);
+const character = computed(() => (characters.value ?? []).find((c) => c.id === route.params.id));
+const accent = computed(() => `var(--accent-${route.params.id as string}, var(--color-primary))`);
 const extra = computed(() => Object.entries(character.value?.extra ?? {}));
 
 useHead({ title: () => `${character.value?.name ?? 'Character'} · ${game.name}` });
@@ -19,9 +15,7 @@ useHead({ title: () => `${character.value?.name ?? 'Character'} · ${game.name}`
 
 <template>
   <div v-if="character" class="space-y-5">
-    <NuxtLink
-      to="/characters"
-      class="font-mono text-2xs text-text-muted hover:text-text"
+    <NuxtLink to="/characters" class="font-mono text-2xs text-text-muted hover:text-text"
       >← Characters</NuxtLink
     >
     <div class="flex items-center gap-3">

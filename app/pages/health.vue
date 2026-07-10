@@ -13,7 +13,11 @@ const { data: players } = usePlayers();
 const { data: stats } = useStats();
 
 const counts = computed(() => [
-  { label: 'replays.json', value: replays.value?.length ?? 0, note: 'client-fetched (server:false)' },
+  {
+    label: 'replays.json',
+    value: replays.value?.length ?? 0,
+    note: 'client-fetched (server:false)',
+  },
   { label: 'characters.json', value: characters.value?.length ?? 0 },
   { label: 'players.json', value: players.value?.length ?? 0 },
   { label: 'stats.totals.replays', value: stats.value?.totals?.replays ?? 0 },
@@ -68,9 +72,7 @@ useHead({ title: () => `Health · ${game.name}` });
       <h2 class="mb-3 text-2xs font-semibold uppercase tracking-widest text-text-muted">
         Active GameConfig
       </h2>
-      <dl
-        class="corner-cut divide-y divide-border-subtle border border-border bg-surface text-sm"
-      >
+      <dl class="corner-cut divide-y divide-border-subtle border border-border bg-surface text-sm">
         <div
           v-for="row in configRows"
           :key="row.key"

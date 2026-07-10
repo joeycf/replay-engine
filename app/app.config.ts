@@ -15,7 +15,7 @@ export default defineAppConfig({
     id: 'replay-engine',
     slug: '',
     name: 'Replay Database',
-    shortName: '', // empty ⇒ Wordmark renders the umbrella "REPLAY DATABASE"
+    shortName: '', // empty ⇒ BrandWordmark renders the umbrella "REPLAY DATABASE"
     rightsHolder: 'the respective rights holders',
     baseURL: '/',
     siteUrl: 'https://replaydatabase.com',

@@ -1,0 +1,18 @@
+# Generated / build output
+node_modules
+.nuxt
+.output
+.vercel
+dist
+fixtures/.nuxt
+fixtures/.vercel
+fixtures/node_modules
+package-lock.json
+
+# Binary assets
+tailwind/fonts
+public
+design
+
+# Hand-authored source-of-truth document — never machine-reflowed
+PLAN.md

@@ -11,9 +11,7 @@
  */
 const game = useGame();
 
-const brand = computed(() =>
-  game.slug ? `${game.name} Replay Database` : game.name,
-);
+const brand = computed(() => (game.slug ? `${game.name} Replay Database` : game.name));
 const disclaimer = computed(
   () =>
     `${brand.value} is an unofficial fan project, not endorsed by or affiliated with ${game.rightsHolder}.`,
@@ -23,9 +21,7 @@ const year = new Date().getFullYear();
 
 <template>
   <footer class="mt-16 border-t border-border-subtle bg-surface/40">
-    <div
-      class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-text-muted"
-    >
+    <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-text-muted">
       <p class="max-w-2xl text-xs font-ui leading-relaxed">{{ disclaimer }}</p>
       <p class="text-2xs font-mono">© {{ year }} {{ brand }}</p>
     </div>

@@ -36,9 +36,7 @@ export interface FilterController {
 }
 
 function parseList(value: unknown): string[] {
-  return typeof value === 'string' && value.length
-    ? value.split(',').filter(Boolean)
-    : [];
+  return typeof value === 'string' && value.length ? value.split(',').filter(Boolean) : [];
 }
 
 function parseMatchup(value: unknown): [string, string] | null {
@@ -82,9 +80,7 @@ export function useFilters(replays: Ref<Replay[]>): FilterController {
   function toggle(facet: ListFacet, value: string) {
     if (facet === 'ranks' && !enabled.rank) return;
     const current = state.value[facet];
-    const list = current.includes(value)
-      ? current.filter((v) => v !== value)
-      : [...current, value];
+    const list = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
     setQuery({ [facet]: list.join(',') || undefined });
   }
 

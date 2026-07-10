@@ -21,25 +21,25 @@
    runtime code (the CSS analogue of withBase(); an absolute /fonts/* would
    silently 404 under a subpath). ------------------------------------------- */
 @font-face {
-  font-family: "Space Grotesk";
+  font-family: 'Space Grotesk';
   font-style: normal;
   font-weight: 300 700;
   font-display: swap;
-  src: url("./fonts/space-grotesk.woff2") format("woff2");
+  src: url('./fonts/space-grotesk.woff2') format('woff2');
 }
 @font-face {
-  font-family: "Inter";
+  font-family: 'Inter';
   font-style: normal;
   font-weight: 100 900;
   font-display: swap;
-  src: url("./fonts/inter.woff2") format("woff2");
+  src: url('./fonts/inter.woff2') format('woff2');
 }
 @font-face {
-  font-family: "JetBrains Mono";
+  font-family: 'JetBrains Mono';
   font-style: normal;
   font-weight: 100 800;
   font-display: swap;
-  src: url("./fonts/jetbrains-mono.woff2") format("woff2");
+  src: url('./fonts/jetbrains-mono.woff2') format('woff2');
 }
 
 @theme {
@@ -56,9 +56,9 @@
   --color-focus: #93bbff;
 
   /* ---- Font families (family assignment only; the scale stays structural) - */
-  --font-display: "Space Grotesk", "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-ui: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono: "JetBrains Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-display: 'Space Grotesk', 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-ui: 'Inter', ui-sans-serif, system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, SFMono-Regular, monospace;
 }
 
 /* Themeable depth tints consumed by the structural shadow system. They are

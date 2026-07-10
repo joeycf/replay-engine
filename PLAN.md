@@ -16,8 +16,11 @@ build.
 The current live site (`replaydatabase.com`) is one Nuxt 4 app, `2xko-replay-database`:
 
 - **Stack:** Nuxt 4 (SSG via `nuxt generate`, Vercel `vercel-static` preset → `.vercel/output`)
-  · Vite · TypeScript · Tailwind via `@nuxtjs/tailwindcss` (v4, CSS-first `@theme`) ·
-  anime.js (viz) · no Pinia.
+  · Vite · TypeScript · Tailwind **v3** via `@nuxtjs/tailwindcss@6` (JS `tailwind.config.js`
+  mirroring `design/handoff` tokens) · `@nuxtjs/google-fonts` (download mode, self-hosted) ·
+  `@vercel/analytics` module + speed-insights client plugin · anime.js (viz) · no Pinia.
+  Phase 3 modernizes this to the canonical stack in the engine's STACK.md (Tailwind v4 via
+  the layer, fontsource fonts, shared lint/format tooling).
 - **Layout:** repo-root `/data` (`videos.json`, `champions.json`, `players.json`,
   `stats.json`), `/types` (shared TS interfaces), `/scripts` (`fetch.ts`, `parse.ts`,
   `channels.ts`, `champions.ts` — the pipeline), `/design` (Claude Design `handoff/`
@@ -107,19 +110,25 @@ Four repositories:
    `app.baseURL`. This means 2XKO stays live at root through the whole build; routing only
    gets decided when the shell is built (§8).
 
-4. **Data provisioning: config is pushed, collections are fetched.** To keep the engine
-   game-agnostic and dodge Nuxt's cross-layer alias resolution (aliases like `~~/` behave
-   subtly when the file lives in the app but the code lives in the layer), each game:
-   - puts truly-small, static settings in `app.config.ts` (name, slug, accents, filter
+4. **Data provisioning: config is pushed, registries are provided (bundled), replays are
+   fetched.** To keep the engine game-agnostic and dodge Nuxt's cross-layer alias
+   resolution, each game:
+   - puts truly-small, static settings in `app/app.config.ts` (name, slug, accents, filter
      toggles, disclaimer) — merged over the engine's defaults;
-   - writes its data collections (`characters`, `players`, `replays`, `stats`) to
-     `public/data/` in its pipeline, and the engine fetches them under the base path.
-   The engine never reaches into an app's filesystem; the app hands data up. Trade-off vs.
-   the original build: the small registries become cached static fetches instead of being
-   bundled (~a couple of extra tiny cached requests, negligible for SSG). If you'd rather
-   keep them bundled, each app can import its own registries in-app and provide them to the
-   engine via a plugin — noted in prompt-3. Default is fetch-all-under-baseURL for
-   robustness.
+   - **statically imports its small registries** (`characters`, `players`, `stats`) and
+     hands them to the engine through a provisioning API (an app plugin calling an
+     engine-exported provide function; exact API defined in Phase 2). Bundled data is
+     available at prerender time, so character/player/stats pages generate as **real HTML
+     with data-derived titles** — this preserves the original build's SEO and is
+     **required**, not optional: Phase 1 proved prerender-time `$fetch` cannot read the
+     app's own `public/`, so fetch-only registries would prerender every registry page as a
+     hollow client-hydrated shell;
+   - writes the whale file (`replays.json`) to `public/data/` in its pipeline; the engine
+     client-fetches it under the base path (`server: false`), exactly like the original
+     `videos.json` flow.
+   The engine never reaches into an app's filesystem; the app hands data down. Engine
+   composables fall back to client fetch for registries only when nothing is provided
+   (fixture/standalone robustness).
 
 5. **Naming: keep the current repo as the 2XKO game app; the engine is a NEW repo.**
    Details and the answer to "should I rename it?" are in §6.
@@ -298,11 +307,15 @@ Two tiers of tokens, per decision §2.6:
   `app/assets/theme.css`. Three groups:
   - **Palette** (semantic, not raw): `--color-bg`, `--color-surface`,
     `--color-surface-raised`, `--color-border`, `--color-border-subtle`, `--color-text`,
-    `--color-text-muted`, `--color-primary`, `--color-primary-contrast`, `--color-focus`.
+    `--color-text-muted`, `--color-primary`, `--color-primary-contrast`, `--color-focus` —
+    plus, added in Phase 2 while porting the real UI: `--color-secondary` (the second brand
+    color; umbrella gold) and the status colors `--color-danger` / `--color-warning` /
+    `--color-success`, with any further additive tiers (e.g. an extra text tier) documented
+    in STACK.md as they prove necessary.
   - **Font families**: `--font-display`, `--font-ui`, `--font-mono` (family assignment only;
     the scale stays structural).
   - **Accents**: `--accent-<characterId>`, injected from `GameConfig.accents` by
-    `app/plugins/accents.ts` (already in the plan). Accents live in `app.config.ts`; the
+    `app/plugins/accents.ts` (already in the plan). Accents live in `app/app.config.ts`; the
     palette + fonts live in the theme CSS.
 
 **The hard rule:** engine components must reference only these semantic variables — never a
@@ -313,16 +326,20 @@ drop-in-CSS operation. Prompt-2's audit greps for violations, exactly like the
 **Override mechanics (Tailwind v4 + Nuxt layers):** the engine defines neutral defaults in
 its `@theme`; each game's `app/assets/theme.css` defines its own `@theme` (or `:root`)
 block that **shadows** them, and because the app's CSS loads after the layer's, the app's
-values win. **Self-host fonts** per game the same way the 2XKO build did (no gstatic
-leakage): a game using a non-default display face drops its `woff2` in `public/fonts/`, adds
-an `@font-face` in its `theme.css`, and reassigns `--font-display`.
+values win. **Fonts are self-hosted as npm `@fontsource` packages imported from the theme
+CSS** and processed by Vite (hashed, base-path-safe) — as-built in Phase 1. Never reference
+fonts via `public/` CSS `url()`s: CSS cannot `withBase()`, so absolute `/fonts/*` URLs are a
+silent 404 under a subpath. A game using a non-default face installs its `@fontsource-*`
+package (or commits the `woff2` as a Vite-processed asset), imports it in `theme.css`, and
+reassigns `--font-display`.
 
-**The neutral engine default is the umbrella/selector look** — a deliberate, presentable
-neutral dark "Replay Database" theme (neutral palette + a clean neutral display font,
-self-hosted in the engine). The **selector** uses it as-is (favoring no single game); each
-**game** fully replaces it. 2XKO's neon palette + Chakra Petch / Barlow / JetBrains Mono
-become **2XKO's own theme override**, not an engine default — so 2XKO and Tekken are
-symmetric skins.
+**The neutral engine default is the umbrella/selector look — and the umbrella IS the
+ReplayDB brand:** teal `#17CFC8` primary, gold `#FBC318` secondary, Space Grotesk display
+(set in Phase 2 from the Claude Design logo system). The **selector** uses it as-is
+(favoring no single game); each **game** fully replaces it. 2XKO's neon pink/cyan palette
+(`#FF2E88` / `#38CFFF`) + Chakra Petch / Barlow / JetBrains Mono become **2XKO's own theme
+override**, not an engine default — so 2XKO and Tekken are symmetric skins, each visually
+distinct from the umbrella.
 
 **Deeper per-game flourishes** (a background texture, a bespoke hero, a custom wordmark
 treatment) are done by overriding a *single component* at the same path in the game app —
@@ -337,70 +354,72 @@ font, consistent with the disclaimer each site already runs.
 
 ## 5. Repo-by-repo layout
 
+*(Architectural trees — the as-built canonical layout, exact file names, and locked
+versions live in the engine's `STACK.md`, which wins where they differ.)*
+
 **`replay-engine`** (the layer)
 ```
 replay-engine/
 ├─ PLAN.md                      ← this document (source of truth)
-├─ nuxt.config.ts               ← base config: tailwind, SSG/Vercel defaults, anime.js
-├─ app.config.ts                ← DEFAULT GameConfig (generic, safe fallbacks)
+├─ STACK.md                     ← locked stack/versions/conventions (canonical as-built)
+├─ nuxt.config.ts               ← layer base: Tailwind v4 via @tailwindcss/vite
+│                                 (vite:extendConfig hook), SSG/Vercel defaults, anime.js
 ├─ tailwind/
-│  ├─ preset.ts                 ← shared Tailwind preset
 │  ├─ structural.css            ← FIXED tokens: spacing, radii, corner-cuts, shadows, motion, type scale
-│  └─ theme-default.css         ← NEUTRAL default theme (semantic palette + fonts) = umbrella/selector look
-├─ public/fonts/                ← self-hosted NEUTRAL default fonts (no gstatic)
+│  ├─ theme-default.css         ← NEUTRAL default theme = the ReplayDB umbrella brand (teal/gold, Space Grotesk)
+│  └─ fonts/                    ← committed neutral-default woff2, Vite-processed (NOT public/)
+├─ design/brand/                ← brand sources: rd-mark.svg, spinner.svg, replaydb-primary.svg, rd-icon.svg
+├─ public/                      ← favicon(.ico/.svg) + icons/ (16→512 + maskable) — inherited by all games
 ├─ types/                       ← game.ts, replay.ts  (THE contract)
 ├─ app/
-│  ├─ layouts/default.vue       ← the shell: header/wordmark, nav, footer/disclaimer
-│  ├─ pages/
-│  │  ├─ index.vue              ← Browse (grid + filters + modal)
-│  │  ├─ stats.vue
-│  │  ├─ characters/index.vue
-│  │  ├─ characters/[id].vue
-│  │  ├─ players/index.vue
-│  │  ├─ players/[id].vue
-│  │  └─ health.vue             ← dev: renders counts from config + fetched data
-│  ├─ components/               ← BrowseGrid, FilterPanel, ReplayModal, StatCharts,
-│  │                              CharacterCard, PlayerCard, Wordmark, SiteFooter, …
-│  ├─ composables/              ← useGame, useReplays, useFilters, useStats, useCharacters,
-│  │                              usePlayers  (all fetch from public/data under base)
-│  └─ plugins/                  ← seo.ts (titles/meta/OG/JSON-LD from config), accents.ts
-├─ fixtures/                    ← tiny synthetic data so the engine runs standalone
-│  └─ public/data/*.json
-└─ README.md                    ← how to consume: extends + required public/data files
+│  ├─ app.config.ts             ← DEFAULT GameConfig (Nuxt 4 srcDir — root placement is ignored)
+│  ├─ layouts/default.vue       ← header/wordmark, nav, footer/disclaimer, analytics
+│  ├─ pages/                    ← index (Browse), stats, characters/*, players/*, not-found, health
+│  ├─ components/               ← grid/filters/modal/charts/cards + BrandMark, BrandSpinner, BrandLogo
+│  ├─ composables/              ← useGame, useReplays (client fetch), useCharacters/usePlayers/useStats
+│  │                              (provided-first, fetch fallback), useFilters, …
+│  └─ plugins/                  ← seo.ts (titles/meta/OG/JSON-LD/icons head), accents.ts
+├─ fixtures/                    ← thin consuming app (extends '..'): own app/app.config.ts,
+│                                 provided fixture registries + fetched fixture replays
+└─ README.md                    ← consumer contract: extends, provisioning API, theme override contract
 ```
 
 **`2xko-replay-database`** (existing, refactored to thin app)
 ```
 2xko-replay-database/
-├─ nuxt.config.ts               ← extends engine (pinned); app.baseURL from config
-├─ app.config.ts               ← the 2XKO GameConfig (accents, filters, channels, …)
-├─ app/assets/theme.css         ← 2XKO THEME override: neon palette + @font-face, shadows engine defaults
-├─ data/                        ← source JSON (pipeline output, generic schema)
-├─ scripts/                     ← 2XKO pipeline: YouTube + Riot CMS art (UNCHANGED intake,
-│                                 new: emits generic schema + writes to public/data)
-├─ public/
-│  ├─ fonts/                    ← self-hosted Chakra Petch / Barlow / JetBrains Mono (moved from engine)
-│  ├─ img/champions/            ← champion art (webp) — now under base at runtime
-│  └─ data/                     ← generated: characters/players/replays/stats.json (gitignored)
-├─ types/                       ← (optional) 2XKO-only extension types
+├─ nuxt.config.ts               ← extends engine (pinned); prerender route seeding from registries
+├─ app/
+│  ├─ app.config.ts             ← the 2XKO GameConfig (accents, filters, channels, …)
+│  ├─ assets/theme.css          ← 2XKO THEME: pink/cyan palette + @fontsource imports (Chakra
+│  │                              Petch / Barlow / JetBrains Mono, Vite-processed)
+│  ├─ plugins/data.ts           ← statically imports registries → engine provisioning API
+│  ├─ pages/dev/*, server/api/dev  ← 2XKO curation tooling (manual entry, fuse gaps) — stays
+│  └─ components/Fuse*, composables/useFuses  ← 2XKO-only fuse system, plugged into engine slots
+├─ data/                        ← source JSON (pipeline output, generic schema + fuse extras)
+├─ scripts/                     ← 2XKO pipeline (UNCHANGED intake; emits generic schema;
+│                                 copies replays.json → public/data)
+├─ assets/                      ← pipeline parsing templates (fuse/name) — stays
+├─ public/img/champions/        ← champion art (webp)
+├─ public/data/                 ← generated: replays.json (gitignored)
+├─ types/                       ← 2XKO-only extension types (fuses)
 └─ design/                      ← 2XKO Claude Design exports (theme + accent source of truth)
-   (app/ is otherwise nearly empty — only genuine 2XKO-only component overrides, ideally none)
 ```
 
 **`tekken-replay-database`** (new) — same shape as the 2XKO app, with a Tekken pipeline in
 `/scripts` (YouTube + character art/data from Bandai Namco or a fan wiki), Tekken art in
-`public/img/`, the Tekken `app.config.ts`, and its **own** `app/assets/theme.css` +
-`public/fonts/` carrying Tekken's darker/metallic palette and display font.
+`public/img/`, the Tekken `app/app.config.ts`, and its **own** `app/assets/theme.css`
+carrying Tekken's darker/metallic palette and an `@fontsource` display font.
 
 **`replaydatabase-shell`** (new)
 ```
 replaydatabase-shell/
 ├─ nuxt.config.ts               ← extends engine (for chrome/tokens); app.baseURL '/'
-├─ app.config.ts               ← umbrella config (brand, list of games + their slugs/urls)
-├─ app/pages/index.vue         ← the selector landing page (game cards + aggregate counts)
-├─ public/data/summary.json    ← per-game counts (fetched/committed at build) for the cards
-└─ vercel.json                 ← SUBPATH MODE ONLY: external rewrites to the game deploys
-   (no theme.css → the selector uses the engine's NEUTRAL umbrella theme, favoring no game)
+├─ app/
+│  ├─ app.config.ts             ← umbrella config (brand, list of games + their slugs/urls)
+│  └─ pages/index.vue           ← the selector landing page (BrandLogo, game cards, counts)
+├─ public/data/summary.json     ← per-game counts (fetched/committed at build) for the cards
+└─ vercel.json                  ← SUBPATH MODE ONLY: external rewrites to the game deploys
+   (no theme.css → the selector wears the engine's ReplayDB umbrella theme, favoring no game)
 ```
 
 ---
@@ -429,35 +448,43 @@ Concrete prep changes to the original repo (executed in prompt-3, after the engi
    kept at `'/'` for now, `charactersPerSide: 2`, `filters.coOccurrence: true`, the 15
    champion accents, tracked channels, Riot disclaimer). The accents come from the existing
    `design/handoff` tokens — single source of truth preserved.
-3. **Delete the now-duplicated code** that moved to the engine: shared components, the
-   `useVideos`/`useFilters`/`useStats` composables (superseded by engine versions), the
-   layouts, the shared pages, the shared types, and the **structural** tokens/Tailwind
-   preset. What remains in `app/` should be nearly nothing.
-3a. **Relocate 2XKO's look into its own theme override.** The engine default is neutral, so
-   2XKO's identity must move into `app/assets/theme.css`: the neon **semantic palette**
-   values (shadowing the engine defaults) plus `@font-face` for **Chakra Petch / Barlow /
-   JetBrains Mono**, with the font `woff2` moved from the engine into `public/fonts/` and the
-   `--font-*` variables reassigned. Accents stay in `app.config.ts`. Net effect: the 2XKO
-   site looks **identical to today**, but its palette/fonts now live in 2XKO's repo, not the
-   engine — making it a symmetric skin with Tekken.
-4. **Reshape the pipeline output to the generic schema** (`Replay.sides[2]` etc.) and write
-   the collections to `public/data/`. The *intake* (YouTube fetch, Riot art scrape) is
-   unchanged; only the *shape it emits* changes, plus a copy step into `public/data/`.
-   Verify with the `/health` route that counts are **identical pre- and post-reshape**
-   (2,809 / 15 / 714 / 24 — assert against independently computed numbers, same discipline
-   as the original build). This is the one step that touches working data, so it gets the
-   strongest verification.
+3. **Delete the now-duplicated code** that moved to the engine: the shared components,
+   composables, layouts, pages, types, and the v3 Tailwind config/tokens. What remains in
+   `app/` is 2XKO's real surface: the GameConfig, the theme, the data-provider plugin, and
+   the **2XKO-only fuse system** (`useFuses`, `Fuse*` components, the fuse/manual-entry dev
+   pages + `server/api/dev`, `assets/*-templates`) — which stays app-side and plugs into the
+   engine's game-panel extension slots rather than being genericized.
+3a. **Relocate 2XKO's look into its own theme override.** The engine default is the ReplayDB
+   umbrella, so 2XKO's identity must move into `app/assets/theme.css`: the pink/cyan
+   **semantic palette** values from `tailwind.config.js` / `design/handoff` (shadowing the
+   engine defaults) plus **Chakra Petch / Barlow / JetBrains Mono** as `@fontsource`
+   packages imported in `theme.css` (Vite-processed; exact weights matched to the current
+   `googleFonts` config). Accents stay in `app/app.config.ts`. Net effect: the 2XKO site
+   looks **identical to today**, but its skin now lives in 2XKO's repo, not the engine —
+   a symmetric skin with Tekken. This step rides the broader **stack modernization**
+   (Tailwind v3 module + google-fonts module removed, canonical lint/format/tsconfig
+   adopted, versions aligned per STACK.md).
+4. **Reshape the pipeline output to the generic schema** (`Replay.sides[2]` etc.). The
+   *intake* (YouTube fetch, Riot art scrape) is unchanged; only the *shape it emits*
+   changes. Registries (`characters`/`players`/`stats`) are **statically imported and
+   provided** to the engine (preserving both the original bundling optimization and
+   prerendered SEO); `replays.json` keeps the copy step into `public/data/` for client
+   fetch; fuse data rides as 2XKO extension collections/`extra`. Verify with `/health` that
+   counts are **identical pre- and post-reshape** (2,809 / 15 / 714 / 24 — assert against
+   independently computed numbers, same discipline as the original build). This is the one
+   step that touches working data, so it gets the strongest verification.
 5. **Base-path-awareness inherited from the engine.** No 2XKO-specific work here beyond
    confirming champion-art paths and the replays fetch resolve under base (they will,
    because the engine uses `withBase()`); `app.baseURL` stays `'/'` until the shell phase.
 6. **Keep it deployed at root.** No migration yet. 2XKO continues serving
    `replaydatabase.com/*` unchanged for users while all this happens.
 
-What **stays** in / newly **lives in** the 2XKO repo: `data/`, `scripts/`,
-`public/img/champions/`, `app.config.ts`, its **own** `app/assets/theme.css` +
-`public/fonts/` (the 2XKO skin), `design/`, and its own Vercel project + cron. What **moves**
-to the engine: everything shared (UI, composables, pages, layouts, types, and only the
-*structural* tokens — the neutral default theme stays in the engine, the 2XKO theme does
+What **stays** in / newly **lives in** the 2XKO repo: `data/`, `scripts/`, pipeline
+`assets/` templates, `public/img/champions/`, `app/app.config.ts`, `app/assets/theme.css`
+(the 2XKO skin, fontsource-provisioned), the data-provider plugin, the fuse system + dev
+curation tooling, `design/`, and its own Vercel project + cron. What **moves** to the
+engine: everything shared (UI, composables, pages, layouts, types, and only the
+*structural* tokens — the umbrella default theme stays in the engine, the 2XKO theme does
 not).
 
 ---
@@ -575,6 +602,18 @@ polish. This is deliberately the reverse of "build the selector first."
   Engine styles reference only semantic variables (`--color-*`, `--font-*`, `--accent-*`);
   prompt-2 greps for violations. Structural tokens (radii, corner-cuts, motion) are
   deliberately shared and are *not* leaks.
+- **Prerender-SEO hollow shells** — prerender-time `$fetch` cannot read the app's own
+  `public/` (proven in Phase 1), so fetch-only data prerenders every page as an empty
+  client-hydrated frame, silently discarding the live site's indexed, content-ful HTML.
+  Resolved by required registry provisioning (§2.4); guarded by the view-source checks in
+  prompts 2–3 (generated character/player HTML must contain the entity's name and title).
+- **CSS `url()` cannot base-prefix** — fonts or images referenced from CSS as absolute
+  `public/` paths 404 silently under a subpath. Resolved by fontsource/Vite-processed
+  assets (Phase 1 as-built); any future CSS-referenced asset must follow the same rule.
+- **Game-specific stat systems** — some UI is legitimately per-game (2XKO's fuse panels,
+  synergy/pairing views beyond generic co-occurrence). The engine's stats page exposes
+  extension slots for game panels; the failure mode to avoid is genericizing a mechanic
+  only one game has, or worse, hard-coding it into the engine.
 - **Layer version drift** — pin tags, bump deliberately, keep a CHANGELOG (§7).
 - **External-rewrite caching** — for Vercel projects created on/after Apr 6 2026, external
   rewrites honor upstream cache-control by default; fine here, just be deliberate about

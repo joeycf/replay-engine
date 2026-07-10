@@ -41,9 +41,7 @@ const baseGroups: { key: ListFacet; label: string }[] = [
 <template>
   <div class="corner-cut space-y-5 border border-border bg-surface p-4">
     <div class="flex items-center justify-between">
-      <h2 class="font-display text-sm font-bold uppercase tracking-wider text-text">
-        Filters
-      </h2>
+      <h2 class="font-display text-sm font-bold uppercase tracking-wider text-text">Filters</h2>
       <button
         v-if="activeCount > 0"
         type="button"
@@ -56,9 +54,7 @@ const baseGroups: { key: ListFacet; label: string }[] = [
 
     <!-- Co-occurrence: gated on GameConfig.filters.coOccurrence (tag fighters) -->
     <div v-if="enabled.coOccurrence" class="space-y-1.5">
-      <p class="text-2xs font-semibold uppercase tracking-widest text-text-muted">
-        Same side
-      </p>
+      <p class="text-2xs font-semibold uppercase tracking-widest text-text-muted">Same side</p>
       <button
         type="button"
         role="switch"

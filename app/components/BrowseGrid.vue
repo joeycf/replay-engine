@@ -10,10 +10,7 @@ defineProps<{
 </script>
 
 <template>
-  <div
-    v-if="replays.length"
-    class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3"
-  >
+  <div v-if="replays.length" class="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
     <ReplayCard
       v-for="replay in replays"
       :key="replay.id"

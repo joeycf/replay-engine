@@ -71,8 +71,7 @@ export function matchesReplay(replay: Replay, state: FilterState): boolean {
   if (state.sources.length && !state.sources.includes(replay.source)) return false;
 
   // patch — OR
-  if (state.patches.length && !(replay.patch && state.patches.includes(replay.patch)))
-    return false;
+  if (state.patches.length && !(replay.patch && state.patches.includes(replay.patch))) return false;
 
   // rank — OR (any side at a selected rank)
   if (state.ranks.length) {

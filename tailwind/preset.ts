@@ -37,12 +37,14 @@ export type FontFamilyToken = (typeof fontFamilyTokens)[number];
 
 /** Semantic name ↔ the CSS variable a Tailwind theme key resolves to. */
 export const tailwindThemeMap = {
-  colors: Object.fromEntries(
-    semanticColorTokens.map((t) => [t, `var(--color-${t})`]),
-  ) as Record<SemanticColorToken, string>,
-  fontFamily: Object.fromEntries(
-    fontFamilyTokens.map((t) => [t, `var(--font-${t})`]),
-  ) as Record<FontFamilyToken, string>,
+  colors: Object.fromEntries(semanticColorTokens.map((t) => [t, `var(--color-${t})`])) as Record<
+    SemanticColorToken,
+    string
+  >,
+  fontFamily: Object.fromEntries(fontFamilyTokens.map((t) => [t, `var(--font-${t})`])) as Record<
+    FontFamilyToken,
+    string
+  >,
 };
 
 /**

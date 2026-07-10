@@ -1,0 +1,14 @@
+{
+  // Canonical shared TypeScript baseline (see STACK.md). The engine's root and
+  // fixtures tsconfigs extend this; game repos (tekken, shell, the 2XKO
+  // modernization) replicate/extend it so every repo compiles under the same
+  // strictness. Kept deliberately small: Nuxt's generated per-context tsconfigs
+  // (.nuxt/tsconfig.*.json) carry the framework-required module/paths settings
+  // and are already strict — this file pins the project-wide invariants.
+  "compilerOptions": {
+    "strict": true,
+    "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
+    "noEmit": true
+  }
+}

@@ -1,5 +1,9 @@
 # replay-engine
 
+> Stack details (locked versions, delivery mechanisms, conventions, constraints)
+> live in [`STACK.md`](./STACK.md) — the canonical reference for every consuming
+> repo. Architecture and phases live in [`PLAN.md`](./PLAN.md).
+
 A **base-path-aware Nuxt 4 layer** that holds all shared UI, composables, page
 scaffolding, layouts, design tokens, and the **data contract** for the Replay
 Database multi-game platform. It is a **library, not a deployed site** — each
@@ -48,12 +52,12 @@ alias, so import them from there:
 import type { Character, Player, Replay, Stats } from '@engine/types';
 ```
 
-| File               | Type          | Notes                                              |
-| ------------------ | ------------- | -------------------------------------------------- |
-| `characters.json`  | `Character[]` | roster registry                                    |
-| `players.json`     | `Player[]`    | player registry                                    |
-| `replays.json`     | `Replay[]`    | the "whale" file                                   |
-| `stats.json`       | `Stats`       | `{ totals: {...}, …usage/matchup tables }`         |
+| File              | Type          | Notes                                      |
+| ----------------- | ------------- | ------------------------------------------ |
+| `characters.json` | `Character[]` | roster registry                            |
+| `players.json`    | `Player[]`    | player registry                            |
+| `replays.json`    | `Replay[]`    | the "whale" file                           |
+| `stats.json`      | `Stats`       | `{ totals: {...}, …usage/matchup tables }` |
 
 Contract essentials (full definitions in `types/`):
 
@@ -109,9 +113,9 @@ strings. Nothing game-specific is hard-coded in the engine.
 
 Tokens are **two tiers** (`PLAN.md` §2.6 / §4b):
 
-- **Structural tokens** — `tailwind/structural.css`. The fixed *shape* of the
-  product: spacing scale, radii, corner-cut geometry, shadow *geometry*, motion,
-  and the type *scale* (sizes/weights/line-heights/letter-spacing). **Shared by
+- **Structural tokens** — `tailwind/structural.css`. The fixed _shape_ of the
+  product: spacing scale, radii, corner-cut geometry, shadow _geometry_, motion,
+  and the type _scale_ (sizes/weights/line-heights/letter-spacing). **Shared by
   every game — do not override these.**
 - **Theme tokens** — `tailwind/theme-default.css`. A neutral dark default you
   **fully replace** in your app's **`app/assets/theme.css`**.
@@ -123,18 +127,18 @@ is a drop-in CSS operation.
 
 **Variables you MAY shadow:**
 
-| Palette (`--color-*`)     | Fonts (`--font-*`) | Depth tints (optional)  |
-| ------------------------- | ------------------ | ----------------------- |
-| `--color-bg`              | `--font-display`   | `--shadow-color`        |
-| `--color-surface`         | `--font-ui`        | `--shadow-highlight`    |
-| `--color-surface-raised`  | `--font-mono`      |                         |
-| `--color-border`          |                    |                         |
-| `--color-border-subtle`   |                    |                         |
-| `--color-text`            |                    |                         |
-| `--color-text-muted`      |                    |                         |
-| `--color-primary`         |                    |                         |
-| `--color-primary-contrast`|                    |                         |
-| `--color-focus`           |                    |                         |
+| Palette (`--color-*`)      | Fonts (`--font-*`) | Depth tints (optional) |
+| -------------------------- | ------------------ | ---------------------- |
+| `--color-bg`               | `--font-display`   | `--shadow-color`       |
+| `--color-surface`          | `--font-ui`        | `--shadow-highlight`   |
+| `--color-surface-raised`   | `--font-mono`      |                        |
+| `--color-border`           |                    |                        |
+| `--color-border-subtle`    |                    |                        |
+| `--color-text`             |                    |                        |
+| `--color-text-muted`       |                    |                        |
+| `--color-primary`          |                    |                        |
+| `--color-primary-contrast` |                    |                        |
+| `--color-focus`            |                    |                        |
 
 Per-character **accents** are separate: they come from `GameConfig.accents` and
 are injected as `--accent-<characterId>` by `app/plugins/accents.ts`. Put accents
@@ -178,7 +182,7 @@ the shared product shape.
 ```
 
 Register it in your app's `nuxt.config.ts` `css: ['~/assets/theme.css']`.
-Deeper per-game flourishes are done by overriding a *single component* at the
+Deeper per-game flourishes are done by overriding a _single component_ at the
 same path (Nuxt layer precedence), not by adding token knobs — keep these rare.
 
 ---
@@ -189,7 +193,7 @@ same path (Nuxt layer precedence), not by adding token knobs — keep these rare
 consuming app, which `extends` the engine exactly as a real game does. It ships
 `fixtures/app/app.config.ts` (`charactersPerSide: 2`, `coOccurrence: true`) and
 `fixtures/public/data/*.json`, so standalone dev exercises multi-character sides
-and the gated co-occurrence filter through the *same* layer-merge a game uses.
+and the gated co-occurrence filter through the _same_ layer-merge a game uses.
 
 ```bash
 npm install          # installs deps (no lifecycle scripts needed)
@@ -215,7 +219,7 @@ every consuming app reuses.
 
 `app.baseURL` defaults to `/` and reads **`NUXT_APP_BASE_URL` at build time**
 (the engine wires this explicitly — on its own the env var only overrides
-*runtime* config, which desyncs the router from build-time asset paths and
+_runtime_ config, which desyncs the router from build-time asset paths and
 prerender seeds under SSG). `NUXT_APP_BASE_URL=/sub/ npm run generate` emits the
 whole site — pages, `_nuxt` assets, `public/` files — nested under `sub/`, with
 every data fetch, font, and nav link resolving under the base. Prerender seeds
@@ -233,7 +237,7 @@ subpath-vs-subdomain decision a config flip.
    built on. We use Tailwind v4 + its official first-party Vite plugin.
 2. **`app.config.ts` lives in `app/`,** not the repo root (Nuxt 4 srcDir change).
 3. **All collections are client-fetched (`server: false`).** Nuxt's internal
-   SSR/prerender `$fetch` does not serve the app's *own* `public/` assets, so a
+   SSR/prerender `$fetch` does not serve the app's _own_ `public/` assets, so a
    server-side `$fetch('/data/*.json')` resolves to null. Client-fetching under
    the base path is `PLAN.md` §2.4's stated default ("fetch-all-under-baseURL for
    robustness"). A game needing prerendered registry content can instead provide

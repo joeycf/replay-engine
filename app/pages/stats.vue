@@ -10,14 +10,11 @@ const charName = computed(() =>
   Object.fromEntries((characters.value ?? []).map((c) => [c.id, c.name])),
 );
 
-const totals = computed(() =>
-  Object.entries(stats.value?.totals ?? {}) as [string, number][],
-);
+const totals = computed(() => Object.entries(stats.value?.totals ?? {}) as [string, number][]);
 
 // Optional, game-declared usage table — engine renders it generically.
 const usage = computed(
-  () =>
-    (stats.value?.characterUsage as { id: string; count: number }[] | undefined) ?? [],
+  () => (stats.value?.characterUsage as { id: string; count: number }[] | undefined) ?? [],
 );
 const maxUsage = computed(() => Math.max(1, ...usage.value.map((u) => u.count)));
 
@@ -29,9 +26,7 @@ useHead({ title: () => `Stats · ${game.name}` });
     <h1 class="font-display text-2xl font-bold text-text">Stats</h1>
 
     <section>
-      <h2 class="mb-3 text-2xs font-semibold uppercase tracking-widest text-text-muted">
-        Totals
-      </h2>
+      <h2 class="mb-3 text-2xs font-semibold uppercase tracking-widest text-text-muted">Totals</h2>
       <div class="grid grid-cols-3 gap-3">
         <div
           v-for="[key, value] in totals"
@@ -50,9 +45,7 @@ useHead({ title: () => `Stats · ${game.name}` });
       </h2>
       <ul class="space-y-2">
         <li v-for="u in usage" :key="u.id" class="flex items-center gap-3">
-          <span class="w-24 shrink-0 truncate text-sm text-text">{{
-            charName[u.id] ?? u.id
-          }}</span>
+          <span class="w-24 shrink-0 truncate text-sm text-text">{{ charName[u.id] ?? u.id }}</span>
           <span class="h-2 flex-1 overflow-hidden rounded-full bg-surface-raised">
             <span
               class="block h-full rounded-full bg-primary"

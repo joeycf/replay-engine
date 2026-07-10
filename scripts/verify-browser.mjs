@@ -52,7 +52,11 @@ check('stats.totals.replays', tiles[3], '8');
 const health = await page.evaluate(() => document.body.innerText);
 check('config name echoed', health.includes('Fixture Arena'), true);
 check('charactersPerSide echoed', /charactersPerSide\s*2/.test(health.replace(/\n/g, ' ')), true);
-check('coOccurrence echoed true', /filters\.coOccurrence\s*true/.test(health.replace(/\n/g, ' ')), true);
+check(
+  'coOccurrence echoed true',
+  /filters\.coOccurrence\s*true/.test(health.replace(/\n/g, ' ')),
+  true,
+);
 
 // -- 2..4. browse + REAL co-occurrence toggle click -----------------------------
 console.log('\n[2] browse with ?characters=aegis,bolt (AND across sides)');
@@ -91,7 +95,11 @@ const theme = await page.evaluate(() => {
   };
 });
 check('--color-primary (neutral blue)', theme.primary, '#6fa8ff');
-check('--font-display starts with Space Grotesk', theme.display.startsWith('"Space Grotesk"'), true);
+check(
+  '--font-display starts with Space Grotesk',
+  theme.display.startsWith('"Space Grotesk"'),
+  true,
+);
 check('--accent-aegis injected from GameConfig.accents', theme.accentAegis, '#e0563b');
 
 // -- console health ---------------------------------------------------------------

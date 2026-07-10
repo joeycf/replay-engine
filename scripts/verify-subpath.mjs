@@ -59,14 +59,18 @@ check(
 check(
   'no app request escaped the base path',
   escaped.length === 0,
-  escaped.map((u) => u.pathname).slice(0, 5).join(', ') || 'none',
+  escaped
+    .map((u) => u.pathname)
+    .slice(0, 5)
+    .join(', ') || 'none',
 );
 
 // Nav links must be base-prefixed (NuxtLink + router base).
 const hrefs = await page.$$eval('header nav a', (as) => as.map((a) => a.getAttribute('href')));
 check(
   `nav links prefixed with ${BASE}`,
-  hrefs.length > 0 && hrefs.every((h) => h.startsWith(`${BASE}/`) || h === BASE || h === `${BASE}/`),
+  hrefs.length > 0 &&
+    hrefs.every((h) => h.startsWith(`${BASE}/`) || h === BASE || h === `${BASE}/`),
   hrefs.join(' '),
 );
 

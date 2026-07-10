@@ -16,9 +16,7 @@ export default defineNuxtPlugin(() => {
   // SSR-safe: character ids are slugs; keep only CSS-identifier-safe chars
   // (CSS.escape is a browser-only global and would crash the server render).
   const safeId = (id: string) => id.replace(/[^a-zA-Z0-9_-]/g, '-');
-  const declarations = entries
-    .map(([id, hex]) => `--accent-${safeId(id)}:${hex};`)
-    .join('');
+  const declarations = entries.map(([id, hex]) => `--accent-${safeId(id)}:${hex};`).join('');
 
   useHead({
     style: [{ id: 'engine-accents', innerHTML: `:root{${declarations}}` }],
