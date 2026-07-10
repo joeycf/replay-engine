@@ -1,0 +1,35 @@
+{
+  "name": "replay-engine",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Shared, base-path-aware Nuxt 4 layer (design system + data contract) for the Replay Database multi-game platform. Consumed via `extends`; never deployed on its own.",
+  "scripts": {
+    "dev": "nuxt dev fixtures",
+    "build": "nuxt build fixtures",
+    "generate": "nuxt generate fixtures",
+    "preview": "nuxt preview fixtures",
+    "prepare:types": "nuxt prepare",
+    "fonts:update": "node scripts/setup-fonts.mjs",
+    "test:filters": "node --experimental-strip-types scripts/test-filters.mjs",
+    "typecheck": "nuxt prepare && nuxt typecheck && nuxt typecheck fixtures"
+  },
+  "dependencies": {
+    "@tailwindcss/vite": "^4.3.2",
+    "tailwindcss": "^4.3.2",
+    "ufo": "^1.5.4"
+  },
+  "devDependencies": {
+    "@fontsource-variable/inter": "^5.2.8",
+    "@fontsource-variable/jetbrains-mono": "^5.2.8",
+    "@fontsource-variable/space-grotesk": "^5.2.10",
+    "@types/node": "^26.1.1",
+    "nuxt": "^4.4.8",
+    "puppeteer-core": "^25.3.0",
+    "typescript": "^5.6.3",
+    "vue-tsc": "^2.2.0"
+  },
+  "peerDependencies": {
+    "nuxt": "^4.0.0"
+  }
+}

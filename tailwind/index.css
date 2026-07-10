@@ -1,0 +1,16 @@
+/* Engine CSS entry (wired via nuxt.config `css`). Tailwind v4, CSS-first.
+
+   Order matters: Tailwind first, then the two token tiers. Games load their
+   own theme.css *after* this (app CSS follows layer CSS), so their @theme /
+   :root overrides win over theme-default.css. */
+@import 'tailwindcss';
+
+/* Scan the engine layer's own templates explicitly, so utility detection works
+   no matter which rootDir Nuxt builds from (engine standalone, the fixtures
+   dev-app, or a consuming game where the engine lives in node_modules).
+   Paths are engine-relative; node_modules is auto-excluded. */
+@source '../app';
+
+/* Two-tier tokens: fixed structure, then the overridable neutral theme. */
+@import './structural.css';
+@import './theme-default.css';

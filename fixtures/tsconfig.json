@@ -1,0 +1,11 @@
+{
+  // Generated contexts for the fixtures dev-app (created by `nuxt prepare
+  // fixtures`). Typechecking THIS root checks the engine's code as consumed
+  // through the layer — the same shape every game app gets.
+  "files": [],
+  "references": [
+    { "path": "./.nuxt/tsconfig.app.json" },
+    { "path": "./.nuxt/tsconfig.node.json" },
+    { "path": "./.nuxt/tsconfig.shared.json" }
+  ]
+}

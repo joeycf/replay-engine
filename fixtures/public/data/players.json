@@ -1,0 +1,6 @@
+[
+  { "id": "nomad", "handle": "Nomad", "featured": true },
+  { "id": "echo", "handle": "Echo", "featured": true },
+  { "id": "pilot", "handle": "Pilot" },
+  { "id": "sage", "handle": "Sage", "extra": { "region": "EU" } }
+]

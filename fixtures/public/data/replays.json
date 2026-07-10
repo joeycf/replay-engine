@@ -1,0 +1,98 @@
+[
+  {
+    "id": "rpl_0001",
+    "sides": [
+      { "player": "nomad", "characters": ["aegis", "bolt"] },
+      { "player": "echo", "characters": ["aegis", "cinder"] }
+    ],
+    "date": "2025-01-12",
+    "patch": "S1",
+    "source": "ch-neon",
+    "title": "Aegis/Bolt vs Aegis/Cinder — grand final set",
+    "views": 18400
+  },
+  {
+    "id": "rpl_0002",
+    "sides": [
+      { "player": "nomad", "characters": ["aegis", "cinder"] },
+      { "player": "pilot", "characters": ["bolt", "cinder"] }
+    ],
+    "date": "2025-02-03",
+    "patch": "S1",
+    "source": "ch-vault",
+    "title": "Aegis/Cinder vs Bolt/Cinder — winners' bracket",
+    "views": 9200
+  },
+  {
+    "id": "rpl_0003",
+    "sides": [
+      { "player": "echo", "characters": ["aegis", "bolt"] },
+      { "player": "sage", "characters": ["bolt", "cinder"] }
+    ],
+    "date": "2025-03-15",
+    "patch": "S2",
+    "source": "ch-neon",
+    "title": "Aegis/Bolt vs Bolt/Cinder — money match",
+    "views": 25100
+  },
+  {
+    "id": "rpl_0004",
+    "sides": [
+      { "player": "pilot", "characters": ["aegis", "cinder"] },
+      { "player": "nomad", "characters": ["bolt", "cinder"] }
+    ],
+    "date": "2025-03-28",
+    "patch": "S2",
+    "source": "ch-vault",
+    "title": "Aegis/Cinder vs Bolt/Cinder — losers' final",
+    "views": 12750
+  },
+  {
+    "id": "rpl_0005",
+    "sides": [
+      { "player": "sage", "characters": ["bolt", "cinder"] },
+      { "player": "echo", "characters": ["aegis", "cinder"] }
+    ],
+    "date": "2025-04-09",
+    "patch": "S1",
+    "source": "ch-neon",
+    "title": "Bolt/Cinder vs Aegis/Cinder — exhibition",
+    "views": 6800
+  },
+  {
+    "id": "rpl_0006",
+    "sides": [
+      { "player": "nomad", "characters": ["aegis", "bolt"] },
+      { "player": "pilot", "characters": ["aegis", "cinder"] }
+    ],
+    "date": "2025-05-20",
+    "patch": "S2",
+    "source": "ch-vault",
+    "title": "Aegis/Bolt vs Aegis/Cinder — regional top 8",
+    "views": 30400
+  },
+  {
+    "id": "rpl_0007",
+    "sides": [
+      { "player": "echo", "characters": ["aegis", "cinder"] },
+      { "player": "sage", "characters": ["aegis", "cinder"] }
+    ],
+    "date": "2025-06-01",
+    "patch": "S1",
+    "source": "ch-neon",
+    "title": "Aegis/Cinder mirror — first to ten",
+    "views": 4300
+  },
+  {
+    "id": "rpl_0008",
+    "sides": [
+      { "player": "pilot", "characters": ["bolt", "cinder"] },
+      { "player": "nomad", "characters": ["bolt", "cinder"] }
+    ],
+    "date": "2025-06-30",
+    "patch": "S2",
+    "source": "ch-vault",
+    "title": "Bolt/Cinder mirror — ranked ladder",
+    "views": 5100
+  }
+]

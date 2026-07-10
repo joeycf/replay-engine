@@ -1,0 +1,25 @@
+# Dependencies
+node_modules
+
+# Nuxt build artifacts (engine root + fixtures dev app)
+.nuxt
+.output
+.data
+dist
+fixtures/.nuxt
+fixtures/.output
+
+# Vercel SSG output (nitro `vercel-static` preset)
+.vercel
+
+# Logs / env / OS
+*.log
+.env
+.env.*
+!.env.example
+.DS_Store
+
+# The engine root's public/data is a copy target for the alternative
+# "copy fixtures -> public/data" dev flow (see README). The canonical
+# fixture data lives (committed) under fixtures/public/data.
+/public/data

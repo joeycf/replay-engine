@@ -1,0 +1,136 @@
+/* =============================================================================
+   STRUCTURAL TOKENS — the fixed *shape* of the product.
+
+   Shared by every game and NOT meant to be overridden. Defines the spacing
+   scale, border radii, the corner-cut geometry, the shadow system (geometry
+   only), motion (easing/durations), and the typographic *scale* (sizes,
+   weights, line-heights, letter-spacing).
+
+   Deliberately contains NO palette color *values* and NO font *families* — only
+   the type scale. The single tokens named "*-color" here (`--shadow-color`,
+   `--shadow-highlight`) are `var()` *references* into the theme layer, not color
+   values; their values live in theme-default.css so a game can retint depth
+   without touching structure. See PLAN.md §2.6 / §4b.
+   ========================================================================== */
+
+@theme {
+  /* ---- Spacing scale --------------------------------------------------- */
+  /* v4 derives numeric spacing (p-1, gap-2, size-4, …) as multiples of this. */
+  --spacing: 0.25rem;
+
+  /* ---- Border radii ---------------------------------------------------- */
+  --radius-none: 0px;
+  --radius-xs: 0.125rem;
+  --radius-sm: 0.25rem;
+  --radius-md: 0.375rem;
+  --radius-lg: 0.5rem;
+  --radius-xl: 0.75rem;
+  --radius-2xl: 1rem;
+  --radius-full: 9999px;
+
+  /* ---- Corner-cut geometry -------------------------------------------- */
+  /* The angular clipped corners that give the product its silhouette. Sizes
+     only; the clip utilities that consume them are defined below. */
+  --cut-sm: 0.5rem;
+  --cut-md: 0.875rem;
+  --cut-lg: 1.25rem;
+
+  /* ---- Shadow system (geometry only) ---------------------------------- */
+  /* Offsets/blur/spread are structural; the tint (--shadow-color /
+     --shadow-highlight) is a theme concern resolved from theme-default.css. */
+  --shadow-xs: 0 1px 2px var(--shadow-color);
+  --shadow-sm: 0 2px 6px var(--shadow-color);
+  --shadow-md: 0 6px 16px var(--shadow-color);
+  --shadow-lg: 0 14px 34px var(--shadow-color);
+  --shadow-xl: 0 28px 60px var(--shadow-color);
+  --inset-shadow-sm: inset 0 1px 0 0 var(--shadow-highlight);
+
+  /* ---- Motion ---------------------------------------------------------- */
+  /* NB: Tailwind v4's duration-* utility themes from the --transition-duration-*
+     namespace (NOT --duration-*, which v4 drops as unknown). Classes stay
+     duration-instant/fast/normal/slow. */
+  --ease-standard: cubic-bezier(0.2, 0, 0, 1);
+  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1.2);
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1);
+  --transition-duration-instant: 80ms;
+  --transition-duration-fast: 140ms;
+  --transition-duration-normal: 220ms;
+  --transition-duration-slow: 360ms;
+
+  /* ---- Typographic scale: sizes + paired line-heights ----------------- */
+  --text-2xs: 0.6875rem;
+  --text-2xs--line-height: 1rem;
+  --text-xs: 0.75rem;
+  --text-xs--line-height: 1.1rem;
+  --text-sm: 0.8125rem;
+  --text-sm--line-height: 1.25rem;
+  --text-base: 0.9375rem;
+  --text-base--line-height: 1.5rem;
+  --text-lg: 1.0625rem;
+  --text-lg--line-height: 1.6rem;
+  --text-xl: 1.25rem;
+  --text-xl--line-height: 1.7rem;
+  --text-2xl: 1.5rem;
+  --text-2xl--line-height: 1.9rem;
+  --text-3xl: 1.9375rem;
+  --text-3xl--line-height: 2.25rem;
+  --text-4xl: 2.5rem;
+  --text-4xl--line-height: 2.6rem;
+  --text-5xl: 3.25rem;
+  --text-5xl--line-height: 1.05;
+
+  /* ---- Font weights (scale, not family) ------------------------------- */
+  --font-weight-normal: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+  --font-weight-black: 800;
+
+  /* ---- Letter spacing -------------------------------------------------- */
+  --tracking-tighter: -0.03em;
+  --tracking-tight: -0.015em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.02em;
+  --tracking-wider: 0.06em;
+  --tracking-widest: 0.14em;
+
+  /* ---- Standalone line-heights ---------------------------------------- */
+  --leading-none: 1;
+  --leading-tight: 1.15;
+  --leading-snug: 1.3;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.7;
+}
+
+/* Corner-cut utilities — structural, shared by every game. They read the
+   geometry vars above; a component opts in with `class="corner-cut"`. */
+@utility corner-cut {
+  clip-path: polygon(
+    var(--cut-md) 0,
+    100% 0,
+    100% calc(100% - var(--cut-md)),
+    calc(100% - var(--cut-md)) 100%,
+    0 100%,
+    0 var(--cut-md)
+  );
+}
+@utility corner-cut-sm {
+  clip-path: polygon(
+    var(--cut-sm) 0,
+    100% 0,
+    100% calc(100% - var(--cut-sm)),
+    calc(100% - var(--cut-sm)) 100%,
+    0 100%,
+    0 var(--cut-sm)
+  );
+}
+@utility corner-cut-lg {
+  clip-path: polygon(
+    var(--cut-lg) 0,
+    100% 0,
+    100% calc(100% - var(--cut-lg)),
+    calc(100% - var(--cut-lg)) 100%,
+    0 100%,
+    0 var(--cut-lg)
+  );
+}
