@@ -40,34 +40,63 @@ The line above then uses the local path locally and the pinned tag on Vercel
 (where `ENGINE_PATH` is unset). No link juggling. Bump the pin deliberately, one
 game at a time (`PLAN.md` §7).
 
-### 2. Provide your data → `public/data/*.json`
+### 2. Provide your data — registries PROVIDED, replays FETCHED
 
-Your pipeline writes four JSON files to your app's **`public/data/`** (git-ignore
-them; they're generated). The engine fetches them **client-side under the base
-path** via `withBase()` (see the data-provisioning note below). Shapes come from
-[`types/`](./types). Consuming apps inherit the engine's layer-safe `@engine`
-alias, so import them from there:
+Two provisioning paths (PLAN §2.4 as amended):
+
+**Small registries (characters / players / stats) — statically imported and
+PROVIDED.** Your app plugin hands them to the engine, bundled once at build and
+synchronously available during prerender — this is what makes character/player
+pages emit real HTML with data-derived titles (the SEO requirement):
 
 ```ts
-import type { Character, Player, Replay, Stats } from '@engine/types';
+// app/plugins/registries.ts (in the GAME app)
+import characters from '../../data/characters.json';
+import players from '../../data/players.json';
+import stats from '../../data/stats.json';
+import type { Character, KnownStats, Player } from '@engine/types';
+
+export default defineNuxtPlugin(() => {
+  provideRegistries({
+    characters: characters as Character[], // arrays or id-keyed records both work
+    players: players as Player[],
+    stats: stats as KnownStats,
+  });
+});
 ```
 
-| File              | Type          | Notes                                      |
-| ----------------- | ------------- | ------------------------------------------ |
-| `characters.json` | `Character[]` | roster registry                            |
-| `players.json`    | `Player[]`    | player registry                            |
-| `replays.json`    | `Replay[]`    | the "whale" file                           |
-| `stats.json`      | `Stats`       | `{ totals: {...}, …usage/matchup tables }` |
+Engine composables consume provided-first and fall back to a client fetch of
+`/data/<file>.json` only when nothing was provided (`/health` shows each
+collection's path). Don't publish registry copies to `public/data/` when you
+provide them.
+
+**The whale file — `replays.json` — always client-fetched.** Your pipeline
+writes it to **`public/data/replays.json`** (git-ignored; generated); the engine
+fetches it under the base path via `withBase()`, exactly like the original
+`videos.json` flow.
+
+Shapes come from [`types/`](./types) via the `@engine` alias:
+
+```ts
+import type { Character, Player, Replay, Stats, KnownStats } from '@engine/types';
+```
 
 Contract essentials (full definitions in `types/`):
 
 - A `Replay` has exactly **two `sides`**; each `Side` is one `player` plus a
   `characters: string[]` whose **length === `charactersPerSide`**.
-- `Side.rank` is present **iff** the game has ranks.
+- `Side.rank` is present **iff** the game has ranks. `Replay.durationSec?`
+  (optional, additive v0.1.0) drives the duration chip + "Longest" sort — both
+  hide when absent.
 - `Character.imgPortrait` is a path **under base** (e.g. `/img/char/asuka.webp`);
   the engine resolves it through `withBase()`.
 - `Character.extra` / `Player.extra` are free-form bags the engine renders as a
-  generic key/value strip but does not reason about.
+  generic key/value strip but does not reason about — with ONE well-known key:
+  `aliases: string[]` feeds search matching and the two-letter badge initials.
+- `stats.json` follows `KnownStats` (types/stats.ts): well-known optional keys
+  (`characterUsage`, `byPatchUsage`, `pairingUsage`, `playerCharacters`,
+  `playerPairings`, `totals.byPatch`) — every panel hides when its key is
+  absent. `byPatchUsage` key ORDER is the timeline order.
 
 ### 3. Provide your config → `app/app.config.ts`
 
@@ -125,20 +154,35 @@ values **shadow** the defaults. The engine's components reference **only** these
 semantic variables — never a raw hex or a literal font family — so a full re-skin
 is a drop-in CSS operation.
 
-**Variables you MAY shadow:**
+**Variables you MAY shadow** (the v0.1.0 additions are marked ▸):
 
 | Palette (`--color-*`)      | Fonts (`--font-*`) | Depth tints (optional) |
 | -------------------------- | ------------------ | ---------------------- |
 | `--color-bg`               | `--font-display`   | `--shadow-color`       |
 | `--color-surface`          | `--font-ui`        | `--shadow-highlight`   |
 | `--color-surface-raised`   | `--font-mono`      |                        |
+| ▸ `--color-surface-sunken` |                    |                        |
 | `--color-border`           |                    |                        |
 | `--color-border-subtle`    |                    |                        |
 | `--color-text`             |                    |                        |
+| ▸ `--color-text-secondary` |                    |                        |
 | `--color-text-muted`       |                    |                        |
+| ▸ `--color-text-faint`     |                    |                        |
 | `--color-primary`          |                    |                        |
+| ▸ `--color-primary-hover`  |                    |                        |
 | `--color-primary-contrast` |                    |                        |
+| ▸ `--color-secondary`      |                    |                        |
 | `--color-focus`            |                    |                        |
+| ▸ `--color-danger`         |                    |                        |
+| ▸ `--color-warning`        |                    |                        |
+| ▸ `--color-success`        |                    |                        |
+
+Each ▸ addition is load-bearing in the ported UI: `surface-sunken` = inset
+tracks/inputs/wells; `text-secondary`/`text-faint` complete the shipped
+four-tier text ramp; `primary-hover` = link/button hover; `secondary` = the
+second brand color (source badges, drawer result count, typeahead affordance);
+danger/warning/success = status accents (third+ source-channel styling, future
+status UI).
 
 Per-character **accents** are separate: they come from `GameConfig.accents` and
 are injected as `--accent-<characterId>` by `app/plugins/accents.ts`. Put accents
@@ -187,6 +231,33 @@ same path (Nuxt layer precedence), not by adding token knobs — keep these rare
 
 ---
 
+## Game-panel extension slots
+
+The stats and character pages expose slots for a game's OWN analytics panels
+(PLAN §11 — the fuse rule: never genericize a mechanic one game has). The engine
+ships empty placeholder components; a game overrides them **at the same path**:
+
+- `app/components/GameStatsPanels.vue` — rendered at the bottom of `/stats`,
+  receives `patch: string | null` (the dashboard's active patch selection).
+- `app/components/GameCharacterPanels.vue` — rendered on `/characters/[id]`,
+  receives `characterId: string`.
+
+Compose engine primitives inside them (`StatPanel`, `CharacterUsageBars`, …).
+The fixtures app demonstrates the mechanism with a dummy panel; 2XKO's fuse
+panels are the first real consumers (Phase 3).
+
+## Inherited build artifacts
+
+Every `nuxt generate` of a consuming app automatically emits (zero per-app
+scripting — see `modules/static-artifacts.ts`): `sitemap.xml` from the real
+prerendered route list, `robots.txt`, `manifest.webmanifest` from `GameConfig`
+(name, `shortName`, `manifest.themeColor`/`backgroundColor`), and the designed
+404 (`404.html` ← the prerendered `/not-found` page, content-checked). The SEO
+plugin injects the icon set + manifest link + theme-color head tags, all through
+`withBase()`.
+
+---
+
 ## Running the engine standalone (fixtures)
 
 `npm run dev` / `npm run generate` target **`fixtures/`** — the thinnest possible
@@ -196,20 +267,24 @@ consuming app, which `extends` the engine exactly as a real game does. It ships
 and the gated co-occurrence filter through the _same_ layer-merge a game uses.
 
 ```bash
-npm install          # installs deps (no lifecycle scripts needed)
-npm run dev          # → http://localhost:3000  (fixtures app, neutral theme)
-npm run generate     # SSG build → fixtures/.vercel/output/static
-npm run typecheck    # nuxt prepare + typecheck engine root AND fixtures root
-npm run test:filters # filter-semantics unit test (pure core, 8 → 6 → 3)
-npm run fonts:update # refresh committed neutral fonts from @fontsource (rare)
+npm install            # installs deps (no lifecycle scripts needed)
+npm run dev            # → http://localhost:3000  (fixtures app, umbrella theme)
+npm run generate       # SSG build → fixtures/.vercel/output/static (+ artifacts)
+npm run typecheck      # nuxt prepare + typecheck engine root AND fixtures root
+npm run test:filters   # pure filter semantics (facets/search/sort) vs fixtures
+npm run test:registry  # provisioning-store semantics incl. fetch fallback
+npm run fonts:update   # refresh committed neutral fonts from @fontsource (rare)
+node scripts/fixtures-data.mjs         # re-derive fixture stats from replays
+node scripts/fixtures-data.mjs --1v1   # 1v1+rank fixture variant (genericity test)
 ```
 
 Browser-level verification (needs a local Chrome at
 `/usr/bin/google-chrome-stable` and a served build or dev server):
 
 ```bash
-node scripts/verify-browser.mjs http://localhost:3000        # counts, toggle clicks, theme
-node scripts/verify-subpath.mjs  http://localhost:4174 /sub  # base-path resilience probe
+node scripts/verify-phase2.mjs  http://localhost:4180        # full ported-UI click-through (47 checks)
+node scripts/verify-browser.mjs http://localhost:3000        # Phase-1 suite (counts, toggles, theme)
+node scripts/verify-subpath.mjs http://localhost:4174 /sub   # base-path resilience probe
 ```
 
 `/health` renders collection counts + the active `GameConfig` — the wiring check

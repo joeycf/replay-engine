@@ -1,0 +1,6 @@
+[
+  { "id": "nomad", "handle": "Nomad", "featured": true, "extra": { "aliases": ["the nomad"] } },
+  { "id": "echo", "handle": "Echo", "featured": true, "extra": { "region": "NA" } },
+  { "id": "pilot", "handle": "Pilot" },
+  { "id": "sage", "handle": "Sage", "extra": { "region": "EU", "aliases": ["sage-sama"] } }
+]

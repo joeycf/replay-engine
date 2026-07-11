@@ -7,10 +7,9 @@
    weights, line-heights, letter-spacing).
 
    Deliberately contains NO palette color *values* and NO font *families* — only
-   the type scale. The single tokens named "*-color" here (`--shadow-color`,
-   `--shadow-highlight`) are `var()` *references* into the theme layer, not color
-   values; their values live in theme-default.css so a game can retint depth
-   without touching structure. See PLAN.md §2.6 / §4b.
+   the type scale. Tokens named "*-color" here are `var()` *references* into the
+   theme layer, not color values; their values live in theme-default.css so a
+   game can retint depth without touching structure. See PLAN.md §2.6 / §4b.
    ========================================================================== */
 
 @theme {
@@ -20,44 +19,54 @@
 
   /* ---- Border radii ---------------------------------------------------- */
   --radius-none: 0px;
-  --radius-xs: 0.125rem;
-  --radius-sm: 0.25rem;
-  --radius-md: 0.375rem;
-  --radius-lg: 0.5rem;
+  --radius-xs: 2px;
+  --radius-sm: 3px;
+  --radius-md: 5px;
+  --radius-lg: 8px;
   --radius-xl: 0.75rem;
   --radius-2xl: 1rem;
   --radius-full: 9999px;
 
-  /* ---- Corner-cut geometry -------------------------------------------- */
-  /* The angular clipped corners that give the product its silhouette. Sizes
-     only; the clip utilities that consume them are defined below. */
-  --cut-sm: 0.5rem;
-  --cut-md: 0.875rem;
-  --cut-lg: 1.25rem;
+  /* ---- Corner-cut geometry (the product's angular signature) ----------- */
+  /* Two-corner cut (top-right + bottom-left) at three sizes, plus the
+     bottom-left-only cut used on badges/buttons. Ported from the shipped
+     design system (cut-7/8/14/20 + cut-bl-6/7/10). */
+  --cut-xs: 7px;
+  --cut-sm: 8px;
+  --cut-md: 14px;
+  --cut-lg: 20px;
+  --cut-bl-sm: 6px;
+  --cut-bl-md: 7px;
+  --cut-bl-lg: 10px;
 
-  /* ---- Shadow system (geometry only) ---------------------------------- */
-  /* Offsets/blur/spread are structural; the tint (--shadow-color /
-     --shadow-highlight) is a theme concern resolved from theme-default.css. */
+  /* ---- Shadow system (geometry only; tints from the theme layer) ------- */
   --shadow-xs: 0 1px 2px var(--shadow-color);
   --shadow-sm: 0 2px 6px var(--shadow-color);
   --shadow-md: 0 6px 16px var(--shadow-color);
-  --shadow-lg: 0 14px 34px var(--shadow-color);
+  --shadow-card: 0 4px 16px var(--shadow-color);
+  --shadow-lg: 0 16px 48px var(--shadow-color);
   --shadow-xl: 0 28px 60px var(--shadow-color);
+  --shadow-modal: 0 24px 80px var(--shadow-color);
+  /* accent glow: geometry structural, tint resolved from the semantic primary */
+  --shadow-glow:
+    0 0 0 1px color-mix(in srgb, var(--color-primary) 50%, transparent),
+    0 8px 32px color-mix(in srgb, var(--color-primary) 28%, transparent);
   --inset-shadow-sm: inset 0 1px 0 0 var(--shadow-highlight);
 
   /* ---- Motion ---------------------------------------------------------- */
-  /* NB: Tailwind v4's duration-* utility themes from the --transition-duration-*
-     namespace (NOT --duration-*, which v4 drops as unknown). Classes stay
-     duration-instant/fast/normal/slow. */
+  /* NB: Tailwind v4's duration-* utility themes from --transition-duration-*
+     (NOT --duration-*, which v4 drops as unknown). Classes stay duration-fast
+     etc. --ease-snap is the product's signature curve (cards, drawer, modal,
+     chart reveals — anime.js uses the same numbers via SNAP_EASE). */
+  --ease-snap: cubic-bezier(0.16, 1, 0.3, 1);
   --ease-standard: cubic-bezier(0.2, 0, 0, 1);
-  --ease-emphasized: cubic-bezier(0.3, 0, 0, 1.2);
   --ease-exit: cubic-bezier(0.4, 0, 1, 1);
   --transition-duration-instant: 80ms;
   --transition-duration-fast: 140ms;
   --transition-duration-normal: 220ms;
   --transition-duration-slow: 360ms;
 
-  /* ---- Typographic scale: sizes + paired line-heights ----------------- */
+  /* ---- Typographic scale: sizes + paired line-heights ------------------ */
   --text-2xs: 0.6875rem;
   --text-2xs--line-height: 1rem;
   --text-xs: 0.75rem;
@@ -79,22 +88,44 @@
   --text-5xl: 3.25rem;
   --text-5xl--line-height: 1.05;
 
-  /* ---- Font weights (scale, not family) ------------------------------- */
+  /* Display scale from the shipped design system (hero/d1/d2/title/sub/body/
+     data-xl/label) — sizes only; families stay in the theme layer. */
+  --text-hero: clamp(44px, 6vw, 72px);
+  --text-hero--line-height: 0.92;
+  --text-hero--letter-spacing: -0.02em;
+  --text-d1: 40px;
+  --text-d1--line-height: 1.05;
+  --text-d2: 30px;
+  --text-d2--line-height: 1.1;
+  --text-title: 22px;
+  --text-title--line-height: 1.2;
+  --text-sub: 18px;
+  --text-sub--line-height: 1.3;
+  --text-body: 14px;
+  --text-body--line-height: 1.5;
+  --text-data-xl: 32px;
+  --text-data-xl--line-height: 1;
+  --text-label: 11px;
+  --text-label--line-height: 1;
+  --text-label--letter-spacing: 0.18em;
+
+  /* ---- Font weights (scale, not family) -------------------------------- */
   --font-weight-normal: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   --font-weight-black: 800;
 
-  /* ---- Letter spacing -------------------------------------------------- */
+  /* ---- Letter spacing --------------------------------------------------- */
   --tracking-tighter: -0.03em;
   --tracking-tight: -0.015em;
   --tracking-normal: 0em;
   --tracking-wide: 0.02em;
   --tracking-wider: 0.06em;
   --tracking-widest: 0.14em;
+  --tracking-label: 0.16em;
 
-  /* ---- Standalone line-heights ---------------------------------------- */
+  /* ---- Standalone line-heights ------------------------------------------ */
   --leading-none: 1;
   --leading-tight: 1.15;
   --leading-snug: 1.3;
@@ -102,35 +133,56 @@
   --leading-relaxed: 1.7;
 }
 
-/* Corner-cut utilities — structural, shared by every game. They read the
-   geometry vars above; a component opts in with `class="corner-cut"`. */
-@utility corner-cut {
+/* Corner-cut utilities — structural, shared by every game. The signature
+   top-right + bottom-left notch at the design's three sizes. */
+@utility cut-xs {
   clip-path: polygon(
-    var(--cut-md) 0,
-    100% 0,
-    100% calc(100% - var(--cut-md)),
-    calc(100% - var(--cut-md)) 100%,
-    0 100%,
-    0 var(--cut-md)
+    0 0,
+    calc(100% - var(--cut-xs)) 0,
+    100% var(--cut-xs),
+    100% 100%,
+    var(--cut-xs) 100%,
+    0 calc(100% - var(--cut-xs))
   );
 }
-@utility corner-cut-sm {
+@utility cut-sm {
   clip-path: polygon(
-    var(--cut-sm) 0,
-    100% 0,
-    100% calc(100% - var(--cut-sm)),
-    calc(100% - var(--cut-sm)) 100%,
-    0 100%,
-    0 var(--cut-sm)
+    0 0,
+    calc(100% - var(--cut-sm)) 0,
+    100% var(--cut-sm),
+    100% 100%,
+    var(--cut-sm) 100%,
+    0 calc(100% - var(--cut-sm))
   );
 }
-@utility corner-cut-lg {
+@utility cut-md {
   clip-path: polygon(
-    var(--cut-lg) 0,
-    100% 0,
-    100% calc(100% - var(--cut-lg)),
-    calc(100% - var(--cut-lg)) 100%,
-    0 100%,
-    0 var(--cut-lg)
+    0 0,
+    calc(100% - var(--cut-md)) 0,
+    100% var(--cut-md),
+    100% 100%,
+    var(--cut-md) 100%,
+    0 calc(100% - var(--cut-md))
   );
+}
+@utility cut-lg {
+  clip-path: polygon(
+    0 0,
+    calc(100% - var(--cut-lg)) 0,
+    100% var(--cut-lg),
+    100% 100%,
+    var(--cut-lg) 100%,
+    0 calc(100% - var(--cut-lg))
+  );
+}
+
+/* Bottom-left angled cut used on badges/buttons. */
+@utility cut-bl-sm {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--cut-bl-sm) 100%);
+}
+@utility cut-bl-md {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--cut-bl-md) 100%);
+}
+@utility cut-bl-lg {
+  clip-path: polygon(0 0, 100% 0, 100% 100%, var(--cut-bl-lg) 100%);
 }

@@ -1,8 +1,0 @@
-{
-  "totals": { "replays": 8, "characters": 3, "players": 4 },
-  "characterUsage": [
-    { "id": "cinder", "count": 13 },
-    { "id": "aegis", "count": 10 },
-    { "id": "bolt", "count": 9 }
-  ]
-}

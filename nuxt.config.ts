@@ -23,6 +23,15 @@ export default defineNuxtConfig({
     baseURL: process.env.NUXT_APP_BASE_URL || '/',
   },
 
+  // Canonical origin for SEO/OG/sitemap URLs. NUXT_PUBLIC_SITE_URL (set per
+  // Vercel project) wins at build/runtime; empty ⇒ engine composables fall
+  // back to GameConfig.siteUrl.
+  runtimeConfig: {
+    public: {
+      siteUrl: process.env.NUXT_PUBLIC_SITE_URL || '',
+    },
+  },
+
   // ---- SSG + Vercel static output (PLAN.md §0 / §9), inherited by apps -----
   nitro: {
     preset: 'vercel-static',
@@ -37,20 +46,32 @@ export default defineNuxtConfig({
     // game apps inherit this module, so every repo lints under the same rules.
     '@nuxt/eslint',
 
+    // Vercel Web Analytics — no-ops off-Vercel/in dev. Hoisted engine-wide so
+    // games drop their local copies in Phase 3 (paired with the
+    // speed-insights.client.ts plugin).
+    '@vercel/analytics',
+
     // Seed prerender routes under the FINAL resolved base path. A static
     // `routes: ['/']` list would 404 when a game builds at '/2xko' (explicit
     // prerender entries are not auto-prefixed); resolving from
     // nuxt.options.app.baseURL keeps the engine base-path-safe (PLAN.md §2.3).
     // Same mechanism Nuxt core uses for its own seeds (nitro:init →
-    // nitro.options.prerender.routes). '/' is the crawl seed; '/health' isn't
-    // nav-linked, so it's listed explicitly.
+    // nitro.options.prerender.routes). '/' is the crawl seed; '/health' and
+    // '/not-found' aren't nav-linked, so they're listed explicitly
+    // (/not-found also feeds the static-artifacts 404.html copy).
     function enginePrerenderSeeds(_options, nuxt) {
       nuxt.hook('nitro:init', (nitro) => {
-        for (const route of ['/', '/health']) {
+        for (const route of ['/', '/health', '/not-found']) {
           nitro.options.prerender.routes.push(joinURL(nuxt.options.app.baseURL, route));
         }
       });
     },
+
+    // Build artifacts every game inherits: sitemap.xml from the real prerender
+    // list, robots.txt, manifest.webmanifest from GameConfig, and the designed
+    // 404.html (prerendered /not-found copied over nitro's SPA fallback).
+    // Absolute path so the module resolves when this config runs as a layer.
+    fileURLToPath(new URL('./modules/static-artifacts.ts', import.meta.url)),
   ],
 
   // ---- Tailwind v4 (CSS-first) via the official first-party Vite plugin ----

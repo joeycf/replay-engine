@@ -35,6 +35,9 @@ export interface Replay {
   title: string;
   views?: number;
   thumb?: string;
+  /** Video length in seconds (additive, v0.1.0): drives the duration chip and
+   *  the "Longest" sort — both hidden when a game's data omits it. */
+  durationSec?: number;
 }
 
 export interface Stats {

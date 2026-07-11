@@ -5,3 +5,4 @@
  */
 export type { GameConfig } from './game';
 export type { Character, Player, Side, Replay, Stats } from './replay';
+export type { KnownStats } from './stats';

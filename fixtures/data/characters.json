@@ -4,20 +4,20 @@
     "name": "Aegis",
     "imgPortrait": "/img/char/aegis.webp",
     "accent": "#e0563b",
-    "extra": { "archetype": "Grappler", "origin": "Ironhold" }
+    "extra": { "archetype": "Grappler", "origin": "Ironhold", "aliases": ["ae", "wall"] }
   },
   {
     "id": "bolt",
     "name": "Bolt",
     "imgPortrait": "/img/char/bolt.webp",
     "accent": "#3ba7e9",
-    "extra": { "archetype": "Rushdown", "origin": "Currentville" }
+    "extra": { "archetype": "Rushdown", "origin": "Currentville", "aliases": ["bo", "zap"] }
   },
   {
     "id": "cinder",
     "name": "Cinder",
     "imgPortrait": "/img/char/cinder.webp",
     "accent": "#c74bd8",
-    "extra": { "archetype": "Zoner", "origin": "Emberfall" }
+    "extra": { "archetype": "Zoner", "origin": "Emberfall", "aliases": ["ci", "ash"] }
   }
 ]

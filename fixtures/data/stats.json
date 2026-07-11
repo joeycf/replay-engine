@@ -1,0 +1,77 @@
+{
+  "totals": {
+    "replays": 10,
+    "characters": 3,
+    "players": 4,
+    "byPatch": {
+      "S1": 4,
+      "S2": 6
+    }
+  },
+  "characterUsage": {
+    "aegis": 13,
+    "bolt": 12,
+    "cinder": 15
+  },
+  "byPatchUsage": {
+    "S1": {
+      "aegis": 6,
+      "bolt": 3,
+      "cinder": 7
+    },
+    "S2": {
+      "aegis": 7,
+      "bolt": 9,
+      "cinder": 8
+    }
+  },
+  "pairingUsage": {
+    "aegis|bolt": 5,
+    "aegis|cinder": 8,
+    "bolt|cinder": 7
+  },
+  "playerPairings": {
+    "nomad": {
+      "aegis|bolt": 2,
+      "aegis|cinder": 2,
+      "bolt|cinder": 2
+    },
+    "echo": {
+      "aegis|cinder": 3,
+      "aegis|bolt": 1,
+      "bolt|cinder": 1
+    },
+    "pilot": {
+      "bolt|cinder": 2,
+      "aegis|cinder": 2,
+      "aegis|bolt": 1
+    },
+    "sage": {
+      "bolt|cinder": 2,
+      "aegis|cinder": 1,
+      "aegis|bolt": 1
+    }
+  },
+  "playerCharacters": {
+    "nomad": {
+      "aegis": 4,
+      "bolt": 4,
+      "cinder": 4
+    },
+    "echo": {
+      "aegis": 4,
+      "cinder": 4,
+      "bolt": 2
+    },
+    "pilot": {
+      "bolt": 3,
+      "cinder": 4,
+      "aegis": 3
+    },
+    "sage": {
+      "bolt": 3,
+      "cinder": 3,
+      "aegis": 2
+    }
+  }
+}

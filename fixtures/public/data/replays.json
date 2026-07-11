@@ -9,7 +9,8 @@
     "patch": "S1",
     "source": "ch-neon",
     "title": "Aegis/Bolt vs Aegis/Cinder — grand final set",
-    "views": 18400
+    "views": 18400,
+    "durationSec": 754
   },
   {
     "id": "rpl_0002",
@@ -21,7 +22,8 @@
     "patch": "S1",
     "source": "ch-vault",
     "title": "Aegis/Cinder vs Bolt/Cinder — winners' bracket",
-    "views": 9200
+    "views": 9200,
+    "durationSec": 1322
   },
   {
     "id": "rpl_0003",
@@ -33,7 +35,8 @@
     "patch": "S2",
     "source": "ch-neon",
     "title": "Aegis/Bolt vs Bolt/Cinder — money match",
-    "views": 25100
+    "views": 25100,
+    "durationSec": 611
   },
   {
     "id": "rpl_0004",
@@ -45,7 +48,8 @@
     "patch": "S2",
     "source": "ch-vault",
     "title": "Aegis/Cinder vs Bolt/Cinder — losers' final",
-    "views": 12750
+    "views": 12750,
+    "durationSec": 980
   },
   {
     "id": "rpl_0005",
@@ -57,7 +61,8 @@
     "patch": "S1",
     "source": "ch-neon",
     "title": "Bolt/Cinder vs Aegis/Cinder — exhibition",
-    "views": 6800
+    "views": 6800,
+    "durationSec": 1510
   },
   {
     "id": "rpl_0006",
@@ -69,7 +74,8 @@
     "patch": "S2",
     "source": "ch-vault",
     "title": "Aegis/Bolt vs Aegis/Cinder — regional top 8",
-    "views": 30400
+    "views": 30400,
+    "durationSec": 845
   },
   {
     "id": "rpl_0007",
@@ -81,7 +87,8 @@
     "patch": "S1",
     "source": "ch-neon",
     "title": "Aegis/Cinder mirror — first to ten",
-    "views": 4300
+    "views": 4300,
+    "durationSec": 2043
   },
   {
     "id": "rpl_0008",
@@ -93,6 +100,33 @@
     "patch": "S2",
     "source": "ch-vault",
     "title": "Bolt/Cinder mirror — ranked ladder",
-    "views": 5100
+    "views": 5100,
+    "durationSec": 497
+  },
+  {
+    "id": "rpl_0009",
+    "sides": [
+      { "player": "sage", "characters": ["aegis", "bolt"] },
+      { "player": "nomad", "characters": ["aegis", "cinder"] }
+    ],
+    "date": "2025-07-14",
+    "patch": "S2",
+    "source": "ch-neon",
+    "title": "Sage's wall masterclass — Aegis/Bolt vs Nomad in the winners final",
+    "views": 15600,
+    "durationSec": 1200
+  },
+  {
+    "id": "rpl_0010",
+    "sides": [
+      { "player": "echo", "characters": ["bolt", "cinder"] },
+      { "player": "pilot", "characters": ["aegis", "bolt"] }
+    ],
+    "date": "2025-08-02",
+    "patch": "S2",
+    "source": "ch-vault",
+    "title": "Echo rushdown clinic — Bolt/Cinder against Aegis/Bolt, the long set",
+    "views": 2900,
+    "durationSec": 3661
   }
 ]

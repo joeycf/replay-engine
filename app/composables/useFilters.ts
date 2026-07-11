@@ -1,138 +1,249 @@
-import type { ComputedRef, Ref } from 'vue';
+import type { LocationQuery } from 'vue-router';
+import type { ComputedRef } from 'vue';
 import type { Replay } from '@engine/types';
-import { deriveOptions, filterReplays } from '../utils/filterReplays';
-import type { FilterOptions, FilterState, ListFacet } from '../utils/filterReplays';
+import { buildSearchIndex, deriveOptions, filterReplays } from '../utils/filterReplays';
+import type { FilterOptions, FilterState, ListFacet, ReplaySort } from '../utils/filterReplays';
 
 /**
- * Reactive, URL-synced facade over the pure filter core (utils/filterReplays).
+ * URL-synced facade over the pure filter core (utils/filterReplays — the full
+ * semantics writeup lives there). Ported from the shipped build:
  *
- * Facets always available: character, matchup, player, date, patch, source.
- * Gated facets (rendered only when GameConfig enables them): co-occurrence
- * (tag fighters) and rank (games with a ladder). See PLAN.md §3.
+ * Query scheme (ALL filter state lives in the route — shareable, back/forward
+ * safe; `v=<replayId>` belongs to useVideoModal and is always preserved):
+ *   c=aegis,bolt      side=1        mu=aegis:bolt     p=nomad,echo
+ *   src=ch-neon       patch=S1,S2   rank=Gold         from=…  to=…
+ *   q=free+text       sort=oldest|views|longest
  *
- * SEMANTICS — AND across facets (the original build's "AND across chips"): a
- * replay must satisfy EVERY active facet. Within a facet the combination
- * depends on how many values one replay can hold: characters/players (multiple
- * per replay) → AND; source/patch (one per replay) → OR; rank (per side) → OR.
- * Co-occurrence tightens the character facet to "one side holds ALL selected".
- *
- * State lives entirely in the URL query (the single source of truth): shareable,
- * reload-safe, and reactive to back/forward. Mutations router.replace the query.
+ * Discrete toggles PUSH (Back undoes a step); typing/sort/date REPLACE,
+ * debounced where typed. Gated facets never apply unless the game declares
+ * them: co-occurrence needs charactersPerSide > 1 && filters.coOccurrence;
+ * rank needs filters.rank (options from useGame().ranks).
  */
+
+export interface ActiveChip {
+  key: string;
+  label: string;
+  remove: () => void;
+}
+
+type QueryValue = LocationQuery[string] | undefined;
+const one = (v: QueryValue): string | null =>
+  typeof v === 'string' ? v : Array.isArray(v) ? ((v[0] as string | null) ?? null) : null;
+const csv = (v: QueryValue): string[] => one(v)?.split(',').filter(Boolean) ?? [];
 
 export interface FilterController {
   state: ComputedRef<FilterState>;
   filtered: ComputedRef<Replay[]>;
   options: ComputedRef<FilterOptions>;
+  chips: ComputedRef<ActiveChip[]>;
   activeCount: ComputedRef<number>;
-  /** Which gated facets this game enables — drives the FilterPanel UI. */
+  /** Changes exactly when a filter/search/sort changes (not ?v=) — resets paging. */
+  filterKey: ComputedRef<string>;
+  /** Gated facets this game enables — drives the FilterBar/Drawer UI. */
   enabled: { coOccurrence: boolean; rank: boolean };
-  toggle: (facet: ListFacet, value: string) => void;
-  setCoOccurrence: (on: boolean) => void;
-  setDateRange: (from: string | null, to: string | null) => void;
+  /** Whether any replay carries durationSec (shows/hides the Longest sort). */
+  hasDurations: ComputedRef<boolean>;
+  toggleCharacter: (id: string) => void;
+  toggleCoOccurrence: () => void;
   setMatchup: (a: string | null, b: string | null) => void;
+  togglePlayer: (id: string) => void;
+  toggleSource: (id: string) => void;
+  togglePatch: (id: string) => void;
+  toggleRank: (id: string) => void;
+  setDateRange: (from: string | null, to: string | null) => void;
+  setSearch: (v: string) => void;
+  setSort: (v: ReplaySort) => void;
   isActive: (facet: ListFacet, value: string) => boolean;
-  clear: () => void;
+  clearAll: () => void;
 }
 
-function parseList(value: unknown): string[] {
-  return typeof value === 'string' && value.length ? value.split(',').filter(Boolean) : [];
-}
-
-function parseMatchup(value: unknown): [string, string] | null {
-  if (typeof value !== 'string') return null;
-  const [a, b] = value.split(':');
-  return a && b ? [a, b] : null;
-}
-
-export function useFilters(replays: Ref<Replay[]>): FilterController {
+export function useFilters(): FilterController {
   const route = useRoute();
   const router = useRouter();
   const game = useGame();
+  const { replays } = useReplays();
+  const { list: characters, byId: charById } = useCharacters();
+  const { list: players, byId: playerById } = usePlayers();
 
   const enabled = {
-    coOccurrence: !!game.filters.coOccurrence,
+    coOccurrence: game.charactersPerSide > 1 && !!game.filters.coOccurrence,
     rank: !!game.filters.rank,
   };
 
+  const parseMatchup = (v: QueryValue): [string, string] | null => {
+    const s = one(v);
+    if (!s) return null;
+    const [a, b] = s.split(':');
+    return a && b ? [a, b] : null;
+  };
+
   const state = computed<FilterState>(() => ({
-    characters: parseList(route.query.characters),
-    players: parseList(route.query.players),
-    sources: parseList(route.query.sources),
-    patches: parseList(route.query.patches),
-    // Gated facets are ignored unless the game enables them, even if present in
-    // the URL — the engine never applies a filter the game didn't declare.
-    ranks: enabled.rank ? parseList(route.query.ranks) : [],
-    dateFrom: (route.query.from as string) || null,
-    dateTo: (route.query.to as string) || null,
-    coOccurrence: enabled.coOccurrence && route.query.co === '1',
+    characters: csv(route.query.c),
+    // gated facets are ignored unless the game declares them, even if present
+    // in the URL — the engine never applies a filter the game didn't enable
+    coOccurrence: enabled.coOccurrence && one(route.query.side) === '1',
     matchup: parseMatchup(route.query.mu),
+    players: csv(route.query.p),
+    sources: csv(route.query.src),
+    patches: csv(route.query.patch),
+    ranks: enabled.rank ? csv(route.query.rank) : [],
+    dateFrom: one(route.query.from),
+    dateTo: one(route.query.to),
+    search: one(route.query.q) ?? '',
+    sort: ((): ReplaySort => {
+      const v = one(route.query.sort);
+      return v === 'oldest' || v === 'views' || v === 'longest' ? v : 'newest';
+    })(),
   }));
 
-  function setQuery(patch: Record<string, string | undefined>) {
-    const next: Record<string, string> = {};
-    for (const [k, v] of Object.entries({ ...route.query, ...patch })) {
-      if (typeof v === 'string' && v.length) next[k] = v;
+  // ── URL writes (push = Back undoes; replace = typing/sort/date) ──────────
+  function write(patch: Record<string, string | null>, mode: 'push' | 'replace' = 'push') {
+    const q = new Map<string, string>();
+    for (const [k, v] of Object.entries(route.query)) {
+      const s = one(v);
+      if (s !== null && s !== '') q.set(k, s);
     }
-    router.replace({ query: next });
+    for (const [k, v] of Object.entries(patch)) {
+      if (v === null || v === '') q.delete(k);
+      else q.set(k, v);
+    }
+    router[mode]({ query: Object.fromEntries(q) });
   }
 
-  function toggle(facet: ListFacet, value: string) {
-    if (facet === 'ranks' && !enabled.rank) return;
-    const current = state.value[facet];
-    const list = current.includes(value) ? current.filter((v) => v !== value) : [...current, value];
-    setQuery({ [facet]: list.join(',') || undefined });
-  }
+  const toggled = (list: string[], id: string) =>
+    list.includes(id) ? list.filter((x) => x !== id) : [...list, id];
 
-  function setCoOccurrence(on: boolean) {
+  const toggleCharacter = (id: string) =>
+    write({ c: toggled(state.value.characters, id).join(',') || null });
+  const toggleCoOccurrence = () => {
     if (!enabled.coOccurrence) return;
-    setQuery({ co: on ? '1' : undefined });
+    write({ side: state.value.coOccurrence ? null : '1' });
+  };
+  const setMatchup = (a: string | null, b: string | null) =>
+    write({ mu: a && b ? `${a}:${b}` : null });
+  const togglePlayer = (id: string) =>
+    write({ p: toggled(state.value.players, id).join(',') || null });
+  const toggleSource = (id: string) =>
+    write({ src: toggled(state.value.sources, id).join(',') || null });
+  const togglePatch = (id: string) =>
+    write({ patch: toggled(state.value.patches, id).join(',') || null });
+  const toggleRank = (id: string) => {
+    if (!enabled.rank) return;
+    write({ rank: toggled(state.value.ranks, id).join(',') || null });
+  };
+  const setDateRange = (from: string | null, to: string | null) =>
+    write({ from: from || null, to: to || null }, 'replace');
+  const setSort = (v: ReplaySort) => write({ sort: v === 'newest' ? null : v }, 'replace');
+
+  let searchTimer: ReturnType<typeof setTimeout> | undefined;
+  function setSearch(v: string) {
+    if (searchTimer) clearTimeout(searchTimer);
+    searchTimer = setTimeout(() => write({ q: v.trim() || null }, 'replace'), SEARCH_DEBOUNCE_MS);
   }
 
-  function setDateRange(from: string | null, to: string | null) {
-    setQuery({ from: from || undefined, to: to || undefined });
-  }
+  const clearAll = () =>
+    write({
+      c: null,
+      side: null,
+      mu: null,
+      p: null,
+      src: null,
+      patch: null,
+      rank: null,
+      from: null,
+      to: null,
+      q: null,
+      sort: null,
+    });
 
-  function setMatchup(a: string | null, b: string | null) {
-    setQuery({ mu: a && b ? `${a}:${b}` : undefined });
-  }
+  const isActive = (facet: ListFacet, value: string) => state.value[facet].includes(value);
 
-  function isActive(facet: ListFacet, value: string) {
-    return state.value[facet].includes(value);
-  }
+  // ── labels ────────────────────────────────────────────────────────────────
+  const charName = (id: string) => charById(id)?.name ?? id;
+  const sourceName = (id: string) => game.sourceChannels.find((s) => s.id === id)?.name ?? id;
 
-  function clear() {
-    router.replace({ query: {} });
-  }
-
-  const filtered = computed(() => filterReplays(replays.value, state.value));
-  const options = computed(() => deriveOptions(replays.value, game.ranks));
-
-  const activeCount = computed(() => {
+  // ── active chips (design order) ──────────────────────────────────────────
+  const chips = computed<ActiveChip[]>(() => {
     const s = state.value;
-    return (
-      s.characters.length +
-      s.players.length +
-      s.sources.length +
-      s.patches.length +
-      s.ranks.length +
-      (s.dateFrom || s.dateTo ? 1 : 0) +
-      (s.coOccurrence ? 1 : 0) +
-      (s.matchup ? 1 : 0)
-    );
+    const out: ActiveChip[] = [];
+    for (const c of s.characters)
+      out.push({ key: `c:${c}`, label: charName(c), remove: () => toggleCharacter(c) });
+    if (s.coOccurrence) out.push({ key: 'side', label: 'Same side', remove: toggleCoOccurrence });
+    if (s.matchup)
+      out.push({
+        key: 'mu',
+        label: `${charName(s.matchup[0])} vs ${charName(s.matchup[1])}`,
+        remove: () => setMatchup(null, null),
+      });
+    for (const p of s.players)
+      out.push({
+        key: `p:${p}`,
+        label: playerById(p)?.handle ?? p,
+        remove: () => togglePlayer(p),
+      });
+    for (const src of s.sources)
+      out.push({ key: `src:${src}`, label: sourceName(src), remove: () => toggleSource(src) });
+    for (const pt of s.patches)
+      out.push({ key: `patch:${pt}`, label: pt, remove: () => togglePatch(pt) });
+    for (const rk of s.ranks)
+      out.push({ key: `rank:${rk}`, label: rk, remove: () => toggleRank(rk) });
+    if (s.dateFrom || s.dateTo)
+      out.push({
+        key: 'date',
+        label: `${s.dateFrom ?? '…'} → ${s.dateTo ?? '…'}`,
+        remove: () => setDateRange(null, null),
+      });
+    if (s.search)
+      out.push({ key: 'q', label: `“${s.search}”`, remove: () => write({ q: null }, 'replace') });
+    return out;
+  });
+  const activeCount = computed(() => chips.value.length);
+
+  // ── the filtered + sorted list ────────────────────────────────────────────
+  const searchIndex = computed(() =>
+    buildSearchIndex(replays.value, characters.value, players.value),
+  );
+  const filtered = computed(() => filterReplays(replays.value, state.value, searchIndex.value));
+  const options = computed(() => deriveOptions(replays.value, game.ranks));
+  const hasDurations = computed(() => replays.value.some((r) => (r.durationSec ?? 0) > 0));
+
+  const filterKey = computed(() => {
+    const s = state.value;
+    return JSON.stringify([
+      s.characters,
+      s.coOccurrence,
+      s.matchup,
+      s.players,
+      s.sources,
+      s.patches,
+      s.ranks,
+      s.dateFrom,
+      s.dateTo,
+      s.search,
+      s.sort,
+    ]);
   });
 
   return {
     state,
     filtered,
     options,
+    chips,
     activeCount,
+    filterKey,
     enabled,
-    toggle,
-    setCoOccurrence,
-    setDateRange,
+    hasDurations,
+    toggleCharacter,
+    toggleCoOccurrence,
     setMatchup,
+    togglePlayer,
+    toggleSource,
+    togglePatch,
+    toggleRank,
+    setDateRange,
+    setSearch,
+    setSort,
     isActive,
-    clear,
+    clearAll,
   };
 }

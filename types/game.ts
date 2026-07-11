@@ -22,4 +22,10 @@ export interface GameConfig {
   ranks?: string[]; // ordered ladder, required iff filters.rank
   sourceChannels: { id: string; name: string }[];
   fonts?: { display: string; ui: string; mono: string }; // defaults from engine
+  /** Web-manifest colors (additive, v0.1.0). Engine defaults to the umbrella
+   *  brand; a game sets its own to match its theme.css. */
+  manifest?: { themeColor?: string; backgroundColor?: string };
+  /** Site-wide OG/Twitter card image path (under base) or absolute URL
+   *  (additive, v0.1.0). Engine falls back to the 512 brand icon. */
+  ogImage?: string;
 }

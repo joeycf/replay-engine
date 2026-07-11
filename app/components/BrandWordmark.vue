@@ -1,27 +1,25 @@
 <script setup lang="ts">
 /**
- * The product wordmark: `{shortName} / REPLAY` per PLAN.md §4b, built from
- * useGame().shortName — evoking each game through type + color, never a
- * trademarked logo. When shortName is empty (the neutral engine default /
- * selector), it renders the umbrella mark "REPLAY DATABASE".
- *
- * Styling: --font-display + semantic color tokens only. No raw hex, no literal
- * family.
+ * The header wordmark: `{shortName}/REPLAY` per PLAN §4b — each game evoked
+ * through type + color, never a trademarked logo. The umbrella default (no
+ * game slug) wears the ReplayDB lockup text instead: `Replay·DB`.
+ * --font-display + semantic tokens only.
  */
 const game = useGame();
 
 const hasGame = computed(() => !!game.shortName?.trim());
-const lead = computed(() => (hasGame.value ? game.shortName.trim() : 'REPLAY'));
-const trail = computed(() => (hasGame.value ? 'REPLAY' : 'DATABASE'));
 </script>
 
 <template>
   <NuxtLink
     to="/"
-    class="group inline-flex items-baseline gap-1.5 font-display uppercase tracking-wider select-none"
-    :aria-label="`${lead} ${trail} — home`"
+    class="flex-none select-none font-display text-[16px] font-bold tracking-tight text-text md:text-[20px]"
+    :aria-label="`${useBrandName()} — home`"
   >
-    <span class="text-xl font-black leading-none text-text">{{ lead }}</span>
-    <span class="text-xl font-medium leading-none text-primary">{{ trail }}</span>
+    <template v-if="hasGame">
+      {{ game.shortName.trim() }}<span class="text-primary">/</span
+      ><span class="hidden sm:inline">REPLAY</span>
+    </template>
+    <template v-else>Replay<span class="text-primary">DB</span></template>
   </NuxtLink>
 </template>

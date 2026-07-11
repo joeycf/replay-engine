@@ -11,6 +11,58 @@
    Paths are engine-relative; node_modules is auto-excluded. */
 @source '../app';
 
-/* Two-tier tokens: fixed structure, then the overridable neutral theme. */
+/* Two-tier tokens: fixed structure, then the overridable default theme. */
 @import './structural.css';
 @import './theme-default.css';
+
+/* ---- Base element styles (semantic tokens only) --------------------------- */
+@layer base {
+  html {
+    color-scheme: dark;
+    scrollbar-gutter: stable;
+  }
+  body {
+    background: var(--color-bg);
+    color: var(--color-text);
+    font-family: var(--font-ui);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+  ::selection {
+    background: var(--color-primary);
+    color: var(--color-primary-contrast);
+  }
+  /* On-token keyboard focus ring, app-wide. */
+  :focus-visible {
+    outline: 2px solid var(--color-focus);
+    outline-offset: 2px;
+  }
+}
+
+/* Skip-to-content: visually hidden until keyboard-focused. */
+.skip-link {
+  position: absolute;
+  left: -9999px;
+  z-index: 100;
+  padding: 10px 16px;
+  background: var(--color-primary);
+  color: var(--color-primary-contrast);
+  font-weight: 700;
+  font-size: 13px;
+}
+.skip-link:focus {
+  left: 12px;
+  top: 12px;
+}
+
+/* Honor prefers-reduced-motion for all card/drawer/modal transitions. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  ::before,
+  ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

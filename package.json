@@ -12,6 +12,7 @@
     "prepare:types": "nuxt prepare",
     "fonts:update": "node scripts/setup-fonts.mjs",
     "test:filters": "node --experimental-strip-types scripts/test-filters.mjs",
+    "test:registry": "node --experimental-strip-types scripts/test-registry.mjs",
     "typecheck": "nuxt prepare && nuxt typecheck && nuxt typecheck fixtures",
     "lint": "nuxt prepare && eslint .",
     "lint:fix": "nuxt prepare && eslint . --fix",
@@ -20,6 +21,9 @@
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",
+    "@vercel/analytics": "^2.0.1",
+    "@vercel/speed-insights": "^2.0.0",
+    "animejs": "^4.5.0",
     "tailwindcss": "^4.3.2",
     "ufo": "^1.5.4"
   },
@@ -39,5 +43,16 @@
   },
   "peerDependencies": {
     "nuxt": "^4.0.0"
+  },
+  "overrides": {
+    "@vercel/analytics": {
+      "vue-router": "^5"
+    },
+    "@vercel/speed-insights": {
+      "vue-router": "^5"
+    }
+  },
+  "engines": {
+    "node": ">=24 <25"
   }
 }

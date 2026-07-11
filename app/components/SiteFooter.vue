@@ -1,29 +1,27 @@
 <script setup lang="ts">
 /**
- * Footer with the templated fan-project disclaimer (PLAN.md §4b, Phase-1 spec):
+ * Footer with the templated fan-project disclaimer (PLAN §4b):
  *   "{name} Replay Database is an unofficial fan project, not endorsed by or
  *    affiliated with {rightsHolder}."
- *
- * For the neutral umbrella default (empty slug) we drop the "{name} Replay
- * Database" doubling and use the brand name directly, so the selector's own
- * footer reads cleanly. All values come from useGame(); colors/fonts are
- * semantic tokens only.
+ * The umbrella default (no slug) uses the brand name directly. A game may
+ * override this component at the same path for extra footer content (support
+ * links etc.) — the 2XKO app does exactly that in Phase 3.
  */
 const game = useGame();
+const brand = useBrandName();
 
-const brand = computed(() => (game.slug ? `${game.name} Replay Database` : game.name));
 const disclaimer = computed(
   () =>
-    `${brand.value} is an unofficial fan project, not endorsed by or affiliated with ${game.rightsHolder}.`,
+    `${brand} is an unofficial fan project, not endorsed by or affiliated with ${game.rightsHolder}.`,
 );
 const year = new Date().getFullYear();
 </script>
 
 <template>
-  <footer class="mt-16 border-t border-border-subtle bg-surface/40">
-    <div class="mx-auto flex max-w-6xl flex-col gap-2 px-4 py-8 text-text-muted">
-      <p class="max-w-2xl text-xs font-ui leading-relaxed">{{ disclaimer }}</p>
-      <p class="text-2xs font-mono">© {{ year }} {{ brand }}</p>
-    </div>
+  <footer
+    class="flex flex-wrap items-center justify-between gap-x-8 gap-y-1 border-t border-border-subtle bg-surface-sunken px-7 py-4 font-ui text-[11px] text-text-muted"
+  >
+    <p class="max-w-2xl">{{ disclaimer }}</p>
+    <p class="font-mono text-[10px]">© {{ year }} {{ brand }}</p>
   </footer>
 </template>

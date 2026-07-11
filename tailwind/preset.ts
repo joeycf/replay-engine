@@ -20,13 +20,21 @@ export const semanticColorTokens = [
   'bg',
   'surface',
   'surface-raised',
+  'surface-sunken',
   'border',
   'border-subtle',
   'text',
+  'text-secondary',
   'text-muted',
+  'text-faint',
   'primary',
+  'primary-hover',
   'primary-contrast',
+  'secondary',
   'focus',
+  'danger',
+  'warning',
+  'success',
 ] as const;
 
 /** Font-family tokens → CSS variables `--font-<token>`. */

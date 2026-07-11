@@ -21,11 +21,19 @@ builds; this table records the tested truth):
 Kept deliberately minimal — git-layer consumers install these, so nothing dev-shaped
 belongs here.
 
-| Package             | Version | Role                                                         |
-| ------------------- | ------- | ------------------------------------------------------------ |
-| `tailwindcss`       | 4.3.2   | Tailwind **v4**, CSS-first `@theme` (the theming foundation) |
-| `@tailwindcss/vite` | 4.3.2   | Official first-party Vite plugin — the ONLY Tailwind module  |
-| `ufo`               | 1.6.4   | `withBase` / `joinURL` — every absolute URL goes through it  |
+| Package                  | Version | Role                                                                                                                                              |
+| ------------------------ | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tailwindcss`            | 4.3.2   | Tailwind **v4**, CSS-first `@theme` (the theming foundation)                                                                                      |
+| `@tailwindcss/vite`      | 4.3.2   | Official first-party Vite plugin — the ONLY Tailwind module                                                                                       |
+| `ufo`                    | 1.6.4   | `withBase` / `joinURL` — every absolute URL goes through it                                                                                       |
+| `animejs`                | 4.5.0   | Chart reveals (v4 **named-export** API: `import { animate, stagger }` — never the v3 default import); dynamically imported so it stays out of SSR |
+| `@vercel/analytics`      | 2.0.1   | Web analytics Nuxt module, hoisted engine-wide (no-ops off-Vercel)                                                                                |
+| `@vercel/speed-insights` | 2.0.0   | CWV reporting via the engine's client plugin (sampleRate 0.5)                                                                                     |
+
+The two `@vercel/*` packages peer-declare `vue-router ^4` while Nuxt 4 ships v5 (runtime
+compatible — the live 2XKO deployment proves it). The engine's `package.json` carries an
+`overrides` block pinning their `vue-router` peer to `^5`; **overrides don't propagate**,
+so every consuming repo replicates those 6 lines (part of the §1 replication contract).
 
 ### `devDependencies`
 
@@ -54,6 +62,14 @@ beyond the node-driven scripts (revisit when Phase 2 grows real component logic)
   explicitly rides this table, PLAN §6.3a).
 - Bumps happen in the engine first and get verified by `typecheck`, `lint`,
   `test:filters`, and the browser suites, then propagate to games via the engine pin bump.
+
+### Node version policy
+
+- **Runtime = the newest major that is both Active LTS and available for Vercel builds**
+  (currently **24**; `engines.node: ">=24 <25"` in package.json).
+- `@types/node` always tracks the runtime major (types a major ahead permit phantom APIs).
+- Bumps happen engine-first with the `engines.node` field updated and the full gate
+  battery re-verified (positive controls included), then propagate via the engine pin.
 
 ---
 
@@ -92,6 +108,40 @@ apps inherit it and must **not** add any Tailwind module themselves. CSS entry:
   the CSS the same way — both are Vite-processed. What they must never do: reference
   fonts as absolute `/fonts/*` from `public/` (§5, CSS `url()` constraint).
 
+### Registry provisioning (PLAN §2.4 as amended — landed in Phase 2)
+
+- **API:** a game app statically imports its small registries and calls
+  `provideRegistries({ characters, players, stats })` (engine util, auto-imported)
+  from a normal app plugin (`app/plugins/registries.ts`). Arrays or id-keyed records
+  both accepted; the holder is module-scope (registries are constant per app).
+- Engine composables (`useCharacters` / `usePlayers` / `useStats`) consume
+  **provided-first** and fall back to a client fetch of `/data/*.json` only when nothing
+  was provided. `useReplays()` is ALWAYS `server:false` from `public/data/replays.json`.
+- Provided data is synchronously available during SSR/prerender → registry pages emit
+  real HTML with data-derived titles (the SEO requirement), with no payload
+  serialization and no hydration drift (client bundles the identical import).
+- Pure-core semantics unit-tested in `scripts/test-registry.mjs`; `/health` shows each
+  collection's provisioning path. The fixtures app provisions exactly like a real game.
+
+### Game-panel extension slots (PLAN §11 "game-specific stat systems")
+
+- The engine ships **empty** `GameStatsPanels.vue` (stats page; receives `patch`) and
+  `GameCharacterPanels.vue` (character page; receives `characterId`). A game injects its
+  own panels by shipping components at the SAME path — Nuxt layer precedence resolves the
+  app's copy over the engine's. No registry, no config: the override mechanism already
+  used for per-game flourishes (PLAN §4b). Fixtures prove it with a dummy panel; 2XKO's
+  fuse panels are the first real consumers (Phase 3).
+
+### Static build artifacts (modules/static-artifacts.ts)
+
+- Every generated site inherits: `sitemap.xml` (from the ACTUAL prerendered route list,
+  path routes only, `/health` + `/not-found` excluded, base-prefixed), `robots.txt`,
+  `manifest.webmanifest` (GameConfig name/short_name/colors + base-correct icons), and
+  the **designed 404** — the prerendered `/not-found` page copied over nitro's SPA
+  fallback `404.html`, content-checked against the NotFoundContent marker ("No data at
+  this route") so a silent regression fails the build. Zero per-app scripting (replaces
+  the shipped repo's `build:before` sitemap hook + postgenerate script).
+
 ### TypeScript — canonical base + two-root project-references typecheck
 
 - `tsconfig.base.json` — the canonical strictness baseline (`strict`,
@@ -119,17 +169,20 @@ apps inherit it and must **not** add any Tailwind module themselves. CSS entry:
 
 ### Scripts (the canonical set)
 
-| Script                                   | What it does                                                                                        |
-| ---------------------------------------- | --------------------------------------------------------------------------------------------------- |
-| `dev` / `build` / `generate` / `preview` | Run against **`fixtures/`** — the thin consuming app (`extends: ['..']`)                            |
-| `typecheck`                              | Two-root `vue-tsc` check (see above)                                                                |
-| `lint` / `lint:fix`                      | `nuxt prepare && eslint .` (prepare guarantees the generated config exists)                         |
-| `format` / `format:check`                | Prettier across the repo                                                                            |
-| `test:filters`                           | Pure-logic filter-semantics test (8 → 6 → 3) via `node --experimental-strip-types`                  |
-| `fonts:update`                           | Refresh committed neutral fonts from `@fontsource-*`                                                |
-| `scripts/verify-browser.mjs`             | Full hydrated-client suite (counts, real toggle clicks, theme/accent tokens) against any served URL |
-| `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base                                    |
-| `scripts/verify-override.mjs`            | Theme-override contract probe (app `theme.css` shadows engine tokens)                               |
+| Script                                   | What it does                                                                                                                     |
+| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| `dev` / `build` / `generate` / `preview` | Run against **`fixtures/`** — the thin consuming app (`extends: ['..']`)                                                         |
+| `typecheck`                              | Two-root `vue-tsc` check (see above)                                                                                             |
+| `lint` / `lint:fix`                      | `nuxt prepare && eslint .` (prepare guarantees the generated config exists)                                                      |
+| `format` / `format:check`                | Prettier across the repo                                                                                                         |
+| `test:filters`                           | Pure-logic filter semantics (facets, search, sort) against the fixture dataset                                                   |
+| `test:registry`                          | Registry-provisioning store semantics incl. the fetch-fallback (unprovided) state                                                |
+| `fonts:update`                           | Refresh committed neutral fonts from `@fontsource-*`                                                                             |
+| `scripts/fixtures-data.mjs`              | Derives fixture stats.json from replays (pipeline parity); `--1v1` emits the rank-ladder variant                                 |
+| `scripts/verify-phase2.mjs`              | Full ported-UI click-through (47 checks: filters/matchup/search/sort/modal/drawer/stats/404/SEO/network/reduced-motion/manifest) |
+| `scripts/verify-browser.mjs`             | Phase-1 hydrated-client suite (counts, toggle clicks, theme/accent tokens)                                                       |
+| `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base                                                                 |
+| `scripts/verify-override.mjs`            | Theme-override contract probe (app `theme.css` shadows engine tokens)                                                            |
 
 SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lands in
 `fixtures/.vercel/output/static` (games: their own `.vercel/output`).
@@ -216,20 +269,43 @@ SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lan
     a **hard build error** (module resolution fails), not a degraded lint. This is why the
     §1 devDependencies table is a **replication contract** for new repos, not just a
     reference.
+11. **Gate hygiene.** Every piped gate runs under `set -o pipefail` (or reads
+    `PIPESTATUS[0]`) — `$?` after a pipe measures the last pipe stage, not the checker.
+    Before trusting any green gate, run its **positive control** once: inject a known
+    failure (a type error for typecheck, a broken assertion for tests, an unused var for
+    lint) and confirm the gate exits non-zero, then confirm the clean run exits 0.
+    Canonical since the Phase-1 close-out, where an unpiped `$?` reported `tail`'s exit
+    as the typechecker's.
+12. **`nuxt.options.appConfig` does NOT contain `app/app.config.ts`** (verified
+    empirically) — at build time it only carries `appConfig` set inside nuxt.config
+    files. Build-time consumers of GameConfig (the static-artifacts module) must re-merge
+    the layer app configs themselves (jiti-import each layer's `app/app.config.*` with a
+    `defineAppConfig` shim, defu in layer order — `loadMergedGameConfig()` is the
+    reference implementation).
 
 ---
 
-## 6. Arriving in Phase 2 (planned, **not yet locked** — do not pre-install)
+## 6. Landed in Phase 2 (v0.1.0) — and what remains game-side
 
-Listed so consuming repos don't jump early; versions get locked here when they land:
+Everything §6 previously listed as "arriving" has landed and is locked in §1/§2:
+anime.js 4.5.0 · seo plugin + useSiteMeta/useJsonLd · registry provisioning · the
+ReplayDB umbrella theme (teal `#17CFC8` / gold `#FBC318`, Space Grotesk) · the `Brand*`
+family (BrandMark, BrandSpinner, BrandLogo, BrandWordmark) · game-panel extension slots ·
+static artifacts (sitemap/robots/manifest/designed-404).
 
-- **anime.js** (stats/viz charts, PLAN §0/§5).
-- **`app/plugins/seo.ts`** (titles/meta/OG/JSON-LD/icons head) and the registry
-  **provisioning API** (engine-exported provide function + app data plugin).
-- **ReplayDB umbrella brand as the default theme:** teal `#17CFC8` primary, gold
-  `#FBC318` secondary, Space Grotesk display (PLAN §4b) — replacing Phase 1's placeholder
-  neutral blue; plus new semantic tokens `--color-secondary`,
-  `--color-danger` / `--color-warning` / `--color-success` (additions documented here as
-  they land).
-- **`Brand*` component family:** `BrandMark`, `BrandSpinner`, `BrandLogo` joining
-  `BrandWordmark`, sourced from `design/brand/*.svg`.
+**Semantic token additions (v0.1.0), all game-overridable** — full list in the README
+theme contract: `--color-secondary`, `--color-danger/-warning/-success`,
+`--color-surface-sunken` (inset tracks/inputs), `--color-text-secondary` +
+`--color-text-faint` (the ported four-tier text ramp), `--color-primary-hover`.
+Structural additions: the real product cut geometry (`cut-xs/sm/md/lg` +
+`cut-bl-sm/md/lg`), `--ease-snap`, the display type scale
+(`hero/d1/d2/title/sub/body/data-xl/label`).
+
+**Contract additions (v0.1.0, all optional/additive):** `Replay.durationSec?`,
+`GameConfig.manifest?` (`themeColor`/`backgroundColor`), `GameConfig.ogImage?`, and the
+`KnownStats` well-known stats keys (types/stats.ts). Well-known `extra` key:
+`aliases: string[]` on Character/Player (search + badge initials).
+
+**Explicitly NOT in the engine (game-side, Phase 3):** the 2XKO fuse system (useFuses,
+Fuse* components, fuse dev pages) — plugs into the extension slots; per-game themes
+(2XKO neon pink/cyan + Chakra Petch arrive as 2XKO's own theme.css).

@@ -1,35 +1,65 @@
 <script setup lang="ts">
-/** Players directory. Full detail UI lands in Phase 2. */
-const game = useGame();
-const { data: players } = usePlayers();
+// Players index: featured players (featured flag or ≥ threshold appearances)
+// as crawlable links into the prerendered profiles; the rest sit behind a
+// client-side reveal so the prerendered HTML stays lean.
+const { list } = usePlayers();
+const { featured, rest } = useFeaturedPlayers();
+const showAll = ref(false);
 
-const sorted = computed(() =>
-  [...(players.value ?? [])].sort(
-    (a, b) => Number(!!b.featured) - Number(!!a.featured) || a.handle.localeCompare(b.handle),
-  ),
-);
-
-useHead({ title: () => `Players · ${game.name}` });
+useSiteMeta({
+  title: `Players — ${useBrandName()}`,
+  description: `${list.value.length.toLocaleString('en-US')} ${useGame().name} players on file — featured competitors, most-used characters, and full replay histories.`,
+});
 </script>
 
 <template>
-  <div class="space-y-6">
-    <h1 class="font-display text-2xl font-bold text-text">Players</h1>
-    <ul v-if="sorted.length" class="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-      <li v-for="p in sorted" :key="p.id">
-        <NuxtLink
-          :to="`/players/${p.id}`"
-          class="corner-cut-sm flex items-center justify-between gap-2 border border-border bg-surface px-3 py-2 transition-colors duration-fast ease-standard hover:border-primary/50 hover:bg-surface-raised"
-        >
-          <span class="truncate font-ui text-sm text-text">{{ p.handle }}</span>
-          <span
-            v-if="p.featured"
-            class="rounded-xs bg-primary px-1.5 py-0.5 text-2xs font-semibold text-primary-contrast"
-            >Featured</span
-          >
-        </NuxtLink>
-      </li>
-    </ul>
-    <p v-else class="text-sm text-text-muted">No players.</p>
-  </div>
+  <section class="mx-auto w-full max-w-[1440px] px-4 py-10 md:px-7">
+    <h1 class="font-display text-d1 font-bold text-text">Players</h1>
+    <p class="mt-2 font-ui text-body text-text-secondary">
+      <span class="font-mono text-text">{{ list.length.toLocaleString('en-US') }}</span>
+      players indexed —
+      <span class="text-secondary">{{ featured.filter((p) => p.featured).length }} featured</span>.
+      Every player has a profile; find anyone via
+      <NuxtLink to="/" class="text-primary hover:underline">Browse search</NuxtLink>.
+    </p>
+    <h2 class="mt-8 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
+      Featured players
+    </h2>
+    <div class="mt-3 flex flex-wrap gap-[7px]">
+      <NuxtLink
+        v-for="p in featured"
+        :key="p.id"
+        :to="`/players/${p.id}`"
+        class="inline-flex items-center gap-1.5 border border-border bg-surface-raised px-[11px] py-1.5 font-ui text-[12px] font-semibold text-text transition-colors hover:border-primary/50"
+      >
+        <VerifiedMark v-if="p.featured" :size="10" />
+        {{ p.handle }}
+        <span class="font-mono text-[10px] text-text-muted">{{ p.appearances }}</span>
+      </NuxtLink>
+    </div>
+    <h2 class="mt-8 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
+      All players
+    </h2>
+    <button
+      v-if="!showAll && rest.length"
+      type="button"
+      class="mt-3 h-9 cursor-pointer border border-border bg-surface-raised px-3.5 font-ui text-[12px] font-semibold text-text transition-colors hover:border-primary/50"
+      @click="showAll = true"
+    >
+      Show {{ rest.length.toLocaleString('en-US') }} more players
+    </button>
+    <div v-else-if="showAll" class="mt-3 flex flex-wrap gap-[7px]">
+      <NuxtLink
+        v-for="p in rest"
+        :key="p.id"
+        :to="`/players/${p.id}`"
+        :prefetch="false"
+        class="inline-flex items-center gap-1.5 border border-border bg-surface-raised px-[11px] py-1.5 font-ui text-[12px] font-semibold text-text transition-colors hover:border-primary/50"
+      >
+        {{ p.handle }}
+        <span class="font-mono text-[10px] text-text-muted">{{ p.appearances }}</span>
+      </NuxtLink>
+    </div>
+    <p v-else class="mt-3 font-mono text-[11px] text-text-muted">Everyone on file is featured.</p>
+  </section>
 </template>

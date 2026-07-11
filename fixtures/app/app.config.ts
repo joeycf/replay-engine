@@ -30,5 +30,6 @@ export default defineAppConfig({
       { id: 'ch-neon', name: 'Neon Archives' },
       { id: 'ch-vault', name: 'The Vault' },
     ],
+    manifest: { themeColor: '#e0563b', backgroundColor: '#0a0b0f' },
   } satisfies GameConfig,
 });
