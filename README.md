@@ -25,7 +25,13 @@ In your game app's `nuxt.config.ts`:
 ```ts
 export default defineNuxtConfig({
   // Pin a tag in prod; use a local checkout during co-development.
-  extends: [process.env.ENGINE_PATH || 'github:you/replay-engine#v1.0.0'],
+  // `install: true` is REQUIRED for the git-layer form: without it Nuxt/c12
+  // clones the layer with NO node_modules, and the engine's runtime deps
+  // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
+  // Phase-3 remote-layer check).
+  extends: [
+    process.env.ENGINE_PATH || ['github:you/replay-engine#v1.0.0', { install: true }],
+  ],
 });
 ```
 

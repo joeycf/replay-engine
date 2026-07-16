@@ -249,7 +249,10 @@ SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lan
 5. **Git-layer consumers prune the engine's `devDependencies` and skip its lifecycle
    scripts.** Anything a consumer's build needs must be a runtime `dependency` or a
    **committed artifact** (that's why the neutral fonts are committed and there is no
-   `postinstall`).
+   `postinstall`). **And the install is opt-in:** the extend entry MUST be
+   `['github:…#tag', { install: true }]` — a bare string clones the layer with NO
+   node_modules at all and the engine's runtime deps fail to resolve (verified in the
+   Phase-3 remote-layer check; the 2XKO app is the reference).
 6. **Internal SSR/prerender `$fetch` cannot read the app's own `public/`** — it falls
    through to the router catch-all and resolves `null` (plus a router warning). Hence:
    registries get **provided/bundled** (Phase-2 API, PLAN §2.4) for real prerendered HTML;
