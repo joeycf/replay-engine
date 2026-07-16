@@ -50,7 +50,10 @@ const configRows = computed(() => [
 ]);
 
 const brand = useBrandName();
-useHead({ title: `Health · ${brand}` });
+// internal wiring page: robots-disallowed + sitemap-excluded already; noindex
+// closes the loop for crawlers that reach it via a stray link (shipped-build
+// behavior, restored)
+useHead({ title: `Health · ${brand}`, meta: [{ name: 'robots', content: 'noindex' }] });
 </script>
 
 <template>
