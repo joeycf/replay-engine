@@ -618,3 +618,39 @@ polish. This is deliberately the reverse of "build the selector first."
 - **External-rewrite caching** — for Vercel projects created on/after Apr 6 2026, external
   rewrites honor upstream cache-control by default; fine here, just be deliberate about
   cache headers on proxied game assets in subpath mode.
+
+---
+
+## Addendum — Phase 3 as-built (engine v0.2.0 → v0.4.0, 2XKO live on the layer)
+
+Phase 3 + 3.5 completed and merged to production (replaydatabase.com now runs the thin app
+on `replay-engine#v0.4.0`). The parity gates forced four **additive** engine contract
+features this plan had not specified; STACK.md §7–8 and the engine README are canonical for
+their APIs. Recorded here so §2–§5 are read with these in mind:
+
+- **`GameConfig.terms?` + `useGameTerms()` (v0.2.0)** — per-game vocabulary
+  (character/characters/side/patch/patches/source) rendered through every engine noun
+  (nav, labels, placeholders, SEO strings, JSON-LD, 404 copy). 2XKO: champion/champions ·
+  team · season/seasons · channel. Defaults preserve generic output byte-for-byte.
+- **`GameConfig.characterRouteSegment?` (v0.2.0)** — the characters section's URL segment,
+  remapped at build (`pages:extend`); links resolve via `useGameTerms().characterPath`.
+  This is what preserved 2XKO's ~1,500 indexed `/champions/*` URLs — the §6 URL-parity
+  gate caught the gap.
+- **`Side.players?: string[]` (v0.2.0)** — a side that is a team of PEOPLE (duo queue,
+  tournament sets; 321 live 2XKO videos). `player` stays primary; `sidePlayers()` is the
+  single accessor across filter/search/options/pages/labels.
+- **Game-defined filter facets + replay badge slots (v0.3.0)** — `provideGameFacets([...])`
+  (URL param is the game's public contract — restored `fuse=` deep links with zero
+  translation machinery) and the `GameSideBadge` / `GameReplayBadges` same-path overrides
+  (per-side when attribution is known; unbound center strip when it isn't). This restored
+  the 2XKO fuse surface as pure app-side code — §6's "fuses stay app-side" held.
+- **Positioned stats anchors (v0.4.0)** — `GameStatsPanels` is invoked at
+  `after-usage` / `beside-timeline` / `bottom`; overrides must branch on `position`.
+  Restores per-game page composition without page-file duplication.
+- **Git-layer gotcha (STACK §5.5 amended):** the extend entry MUST be
+  `['github:…#tag', { install: true }]` — a bare string clones the layer with **no
+  node_modules** and the engine's runtime deps fail to resolve.
+- Pipeline pattern proven for §6/§9: the rich substrate (`videos.json`) stays the
+  pipeline's format; a shared emitter derives the generic artifacts (identical stats math
+  via one extracted module); `overrides.json` supports `exclude: true`; the refresh
+  workflow commits substrate + generic artifacts atomically.
