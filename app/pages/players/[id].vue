@@ -5,6 +5,7 @@ import { withBase } from 'ufo';
 // replays fetch. Signature pairings gate on charactersPerSide > 1.
 const route = useRoute();
 const game = useGame();
+const terms = useGameTerms();
 const { byId: playerById } = usePlayers();
 const player = playerById(String(route.params.id));
 if (!player) {
@@ -47,13 +48,13 @@ const extraRows = computed(() =>
 const { replays, pending } = useReplays();
 const involved = computed(() =>
   replays.value
-    .filter((r) => r.sides.some((s) => s.player === player.id))
+    .filter((r) => r.sides.some((s) => sidePlayers(s).includes(player.id)))
     .sort((a, b) => b.date.localeCompare(a.date)),
 );
 
 useSiteMeta({
   title: `${player.handle} — ${matches.value.toLocaleString('en-US')} ${game.name} replays · ${useBrandName()}`,
-  description: `${player.handle}${player.featured ? ' (featured player)' : ''} in competitive ${game.name}: ${matches.value.toLocaleString('en-US')} replays on file${mainChar.value ? `, main character ${mainChar.value.name}` : ''}, most-used characters and replay history.`,
+  description: `${player.handle}${player.featured ? ' (featured player)' : ''} in competitive ${game.name}: ${matches.value.toLocaleString('en-US')} replays on file${mainChar.value ? `, main ${terms.character} ${mainChar.value.name}` : ''}, most-used ${terms.characters} and replay history.`,
 });
 
 const site = useSiteOrigin();
@@ -152,13 +153,13 @@ useJsonLd([
             <div class="truncate font-display text-[28px] font-bold text-text md:text-[34px]">
               <NuxtLink
                 v-if="mainChar"
-                :to="`/characters/${mainChar.id}`"
+                :to="terms.characterPath(mainChar.id)"
                 class="hover:text-primary-hover"
                 >{{ mainChar.name }}</NuxtLink
               >
               <template v-else>—</template>
             </div>
-            <div class="font-ui text-[11px] text-text-muted">main character</div>
+            <div class="font-ui text-[11px] text-text-muted">main {{ terms.character }}</div>
           </div>
         </div>
       </div>
@@ -168,7 +169,7 @@ useJsonLd([
     <div class="grid grid-cols-1 gap-4 px-4 py-[22px] md:grid-cols-2 md:px-7">
       <section class="border border-border-subtle bg-surface p-5">
         <h2 class="mb-4 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
-          Most-used characters
+          Most-used {{ terms.characters }}
         </h2>
         <CharacterUsageBars :items="charRows" :limit="5" compact :link-player-id="player.id" />
       </section>

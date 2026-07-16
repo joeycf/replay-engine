@@ -5,13 +5,14 @@
 // gated on charactersPerSide > 1 — not any single game's mechanic. The
 // GameStatsPanels slot is where a game injects its own panels (Phase 3).
 const game = useGame();
+const terms = useGameTerms();
 const { totals, patches, usageFor, pairsRanked } = useStatsRows();
 const { byId } = useCharacters();
 const { featured } = useFeaturedPlayers();
 
 useSiteMeta({
   title: `Stats — ${useBrandName()}`,
-  description: `${game.name} character usage${game.charactersPerSide > 1 ? ', side pairings,' : ''} and meta over time — from ${totals.value.replays.toLocaleString('en-US')} competitive replays.`,
+  description: `${game.name} ${terms.character} usage${game.charactersPerSide > 1 ? `, ${terms.side} pairings,` : ''} and meta over time — from ${totals.value.replays.toLocaleString('en-US')} competitive replays.`,
 });
 
 const patch = ref<string | null>(null);
@@ -35,7 +36,7 @@ const tiles = computed(() => [
   ...(topChar.value
     ? [
         {
-          label: 'Most-used character',
+          label: `Most-used ${terms.character}`,
           value: cname(topChar.value.id),
           accent: accentVar(topChar.value.id, 'var(--color-primary)'),
         },
@@ -58,7 +59,9 @@ const tiles = computed(() => [
 ]);
 
 const usageRows = computed(() => usageFor(patch.value));
-const patchName = computed(() => (patch.value === null ? 'All patches' : patch.value));
+const patchName = computed(() =>
+  patch.value === null ? `All ${terms.patches}` : patch.value,
+);
 const contextCount = computed(() =>
   patch.value === null ? totals.value.replays : (totals.value.byPatch?.[patch.value] ?? 0),
 );
@@ -82,7 +85,7 @@ const contextCount = computed(() =>
         <span
           class="mr-0.5 hidden font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted sm:block"
         >
-          Patch
+          {{ capWord(terms.patch) }}
         </span>
         <button
           type="button"
@@ -124,14 +127,14 @@ const contextCount = computed(() =>
 
     <!-- Panel 1: character usage -->
     <div class="px-4 py-5 md:px-7">
-      <StatPanel title="Character usage" :hint="`appearances · ${patchName}`">
+      <StatPanel :title="`${capWord(terms.character)} usage`" :hint="`appearances · ${patchName}`">
         <CharacterUsageBars :items="usageRows" />
       </StatPanel>
     </div>
 
     <!-- Panel 2: duo analytics — generic tag-game panels, gated -->
     <div v-if="showDuo" class="grid grid-cols-1 gap-4 px-4 pb-5 md:grid-cols-2 md:px-7">
-      <StatPanel title="Top side pairings" hint="same-side teams · all time">
+      <StatPanel :title="`Top ${terms.side} pairings`" hint="same-side teams · all time">
         <PairingBars :limit="10" />
       </StatPanel>
       <StatPanel title="Synergy matrix" hint="click a cell → filter">

@@ -85,6 +85,10 @@ Contract essentials (full definitions in `types/`):
 
 - A `Replay` has exactly **two `sides`**; each `Side` is one `player` plus a
   `characters: string[]` whose **length === `charactersPerSide`**.
+- `Side.players?: string[]` (optional, additive v0.2.0): a side that is a team
+  of PEOPLE (2XKO duo queue, tournament sets). `player` stays the primary
+  (= `players[0]`); filtering, search, player pages, and card/modal labels
+  cover every listed player.
 - `Side.rank` is present **iff** the game has ranks. `Replay.durationSec?`
   (optional, additive v0.1.0) drives the duration chip + "Longest" sort — both
   hide when absent.
@@ -124,6 +128,13 @@ export default defineAppConfig({
     filters: { coOccurrence: false, rank: true },
     ranks: ['Beginner', '1st Dan', /* … */ 'God of Destruction'], // req. iff filters.rank
     sourceChannels: [{ id: 'ch-abc', name: 'Some Channel' }],
+    // Optional vocabulary + URL segment (additive, v0.2.0). Every user-visible
+    // engine noun resolves through these; the characters section's routes are
+    // renamed to the segment at build. 2XKO: champion/champions · team ·
+    // season/seasons · channel, segment 'champions' (its live indexed URLs).
+    // terms: { character: 'champion', characters: 'champions', side: 'team',
+    //          patch: 'season', patches: 'seasons', source: 'channel' },
+    // characterRouteSegment: 'champions',
   } satisfies GameConfig,
 });
 ```

@@ -11,6 +11,7 @@ const props = defineProps<{ filters: ReturnType<typeof useFilters> }>();
 const f = props.filters;
 
 const game = useGame();
+const terms = useGameTerms();
 const { list: characters } = useCharacters();
 const { ranked, featured } = useFeaturedPlayers();
 // clampX sized for a single character name, not the matrix's pairing line
@@ -39,7 +40,7 @@ const sourceClass = (id: string, i: number) =>
   <div class="border-b border-border-subtle bg-bg px-4 py-4 md:px-[26px]">
     <!-- character facet + gated same-side + matchup picker -->
     <div :class="labelClass" class="mb-2.5">
-      Character{{ game.charactersPerSide > 1 ? ' · side includes' : '' }}
+      {{ capWord(terms.character) }}{{ game.charactersPerSide > 1 ? ` · ${terms.side} includes` : '' }}
     </div>
     <div class="flex flex-wrap items-center gap-[7px]">
       <button
@@ -68,7 +69,11 @@ const sourceClass = (id: string, i: number) =>
         class="h-9 cursor-pointer border px-3.5 font-ui text-[12px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-40"
         :class="togClass(f.state.value.coOccurrence)"
         :disabled="!coUsable && !f.state.value.coOccurrence"
-        :title="coUsable ? 'Require selected characters on one side' : 'Select 2 characters first'"
+        :title="
+          coUsable
+            ? `Require selected ${terms.characters} on one ${terms.side}`
+            : `Select 2 ${terms.characters} first`
+        "
         :aria-pressed="f.state.value.coOccurrence"
         data-testid="co-occurrence-toggle"
         @click="f.toggleCoOccurrence()"
@@ -93,7 +98,7 @@ const sourceClass = (id: string, i: number) =>
     <!-- source · patch · rank · date · sort -->
     <div class="mt-4 flex flex-wrap items-center gap-[18px]">
       <div v-if="game.sourceChannels.length" class="flex items-center gap-1.5">
-        <span :class="labelClass" class="mr-1">Source</span>
+        <span :class="labelClass" class="mr-1">{{ capWord(terms.source) }}</span>
         <button
           v-for="(s, i) in game.sourceChannels"
           :key="s.id"
@@ -108,7 +113,7 @@ const sourceClass = (id: string, i: number) =>
       </div>
       <span v-if="game.sourceChannels.length" class="h-6 w-px bg-border" />
       <div v-if="f.options.value.patches.length" class="flex items-center gap-1.5">
-        <span :class="labelClass" class="mr-1">Patch</span>
+        <span :class="labelClass" class="mr-1">{{ capWord(terms.patch) }}</span>
         <button
           v-for="p in f.options.value.patches"
           :key="p"

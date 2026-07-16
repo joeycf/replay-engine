@@ -5,6 +5,7 @@
 // or hexes); lines draw in on reveal, circles + labels fade after.
 const props = withDefaults(defineProps<{ topN?: number }>(), { topN: 5 });
 
+const terms = useGameTerms();
 const { patches, usageFor, patchRanks } = useStatsRows();
 const { byId } = useCharacters();
 
@@ -74,7 +75,7 @@ useReveal(root, {
       viewBox="0 0 384 232"
       class="block h-auto w-full"
       role="img"
-      aria-label="Character usage rank by patch"
+      :aria-label="`${capWord(terms.character)} usage rank by ${terms.patch}`"
     >
       <line
         v-for="(x, i) in xs"

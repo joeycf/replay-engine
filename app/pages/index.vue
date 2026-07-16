@@ -4,6 +4,7 @@
 // Everything inside ClientOnly (replays are client-fetched); the prerendered
 // fallback shows static skeletons — SEO lives on the registry pages.
 const game = useGame();
+const terms = useGameTerms();
 const { pending } = useReplays();
 const { totals } = useStatsRows();
 const f = useFilters();
@@ -46,7 +47,7 @@ onBeforeUnmount(() => io?.disconnect());
 
 useSiteMeta({
   title: `Browse — ${useBrandName()}`,
-  description: `Browse ${totals.value.replays.toLocaleString('en-US')} competitive ${game.name} replays — filter by character, matchup, player, patch, and source.`,
+  description: `Browse ${totals.value.replays.toLocaleString('en-US')} competitive ${game.name} replays — filter by ${terms.character}, matchup, player, ${terms.patch}, and ${terms.source}.`,
 });
 </script>
 

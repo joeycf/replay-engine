@@ -10,8 +10,10 @@ const props = defineProps<{ replay: Replay }>();
 const { open } = useVideoModal();
 const { byId: playerById } = usePlayers();
 
-const playerLabel = (s?: Side) => (s ? (playerById(s.player)?.handle ?? s.player) : '');
-const isFeatured = (s?: Side) => !!(s && playerById(s.player)?.featured);
+// a side may be a team of people (Side.players) — join like the shipped build
+const playerLabel = (s?: Side) =>
+  s ? sidePlayers(s).map((id) => playerById(id)?.handle ?? id).join(' + ') : '';
+const isFeatured = (s?: Side) => !!s && sidePlayers(s).some((id) => playerById(id)?.featured);
 
 const left = computed<Side | undefined>(() => props.replay.sides[0]);
 const right = computed<Side | undefined>(() => props.replay.sides[1]);

@@ -23,6 +23,46 @@ export function useBrandName(): string {
 }
 
 /**
+ * Resolved per-game vocabulary + the characters-section route base (additive,
+ * v0.2.0). Every engine template that says "character(s)", "side", "patch",
+ * or "source" to the USER — nav, headings, filter labels, placeholders, SEO
+ * strings, JSON-LD — reads the word from here, so a game like 2XKO renders
+ * champion/team/season/channel without overriding a single component. Terms
+ * are lowercase; capitalize at the call site with capWord() where a label
+ * needs it. characterPath keeps every character link on the configured URL
+ * segment (GameConfig.characterRouteSegment — the route remap lives in
+ * nuxt.config's engineCharacterRoutes).
+ */
+export interface GameTerms {
+  character: string;
+  characters: string;
+  side: string;
+  patch: string;
+  patches: string;
+  source: string;
+  /** Route base for the characters section, e.g. '/characters' or '/champions'. */
+  charactersBase: string;
+  characterPath: (id: string) => string;
+}
+
+export function useGameTerms(): GameTerms {
+  const game = useGame();
+  const t = game.terms ?? {};
+  const segment = (game.characterRouteSegment || 'characters').replace(/^\/+|\/+$/g, '');
+  const charactersBase = `/${segment}`;
+  return {
+    character: t.character || 'character',
+    characters: t.characters || 'characters',
+    side: t.side || 'side',
+    patch: t.patch || 'patch',
+    patches: t.patches || 'patches',
+    source: t.source || 'source',
+    charactersBase,
+    characterPath: (id: string) => `${charactersBase}/${id}`,
+  };
+}
+
+/**
  * Canonical absolute site origin for SEO URLs. NUXT_PUBLIC_SITE_URL (runtime
  * config) wins over GameConfig.siteUrl so deploys can override without a code
  * change — exactly like the shipped build.

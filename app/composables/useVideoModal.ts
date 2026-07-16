@@ -66,13 +66,13 @@ export function useVideoModal() {
     const cur = replay.value;
     if (!cur) return [];
     const sigs = new Set(signaturesOf(cur));
-    const people = new Set(cur.sides.map((s) => s.player));
+    const people = new Set(cur.sides.flatMap(sidePlayers));
     const bySignature: Replay[] = [];
     const byPlayer: Replay[] = [];
     for (const r of replays.value) {
       if (r.id === cur.id) continue;
       if (sigs.size && signaturesOf(r).some((k) => sigs.has(k))) bySignature.push(r);
-      else if (r.sides.some((s) => people.has(s.player))) byPlayer.push(r);
+      else if (r.sides.some((s) => sidePlayers(s).some((p) => people.has(p)))) byPlayer.push(r);
     }
     const newest = (a: Replay, b: Replay) => b.date.localeCompare(a.date);
     return [...bySignature.sort(newest), ...byPlayer.sort(newest)].slice(0, RELATED_LIMIT);

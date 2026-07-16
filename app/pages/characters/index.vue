@@ -3,6 +3,7 @@
 // through useAssetUrl (base-path-safe); missing art (fixtures) falls back to
 // an accent-tinted placeholder.
 const game = useGame();
+const terms = useGameTerms();
 const { list } = useCharacters();
 
 const failed = ref(new Set<string>());
@@ -12,21 +13,22 @@ const markFailed = (id: string) => {
 };
 
 useSiteMeta({
-  title: `Characters — ${useBrandName()}`,
-  description: `The ${game.name} roster — usage stats${game.charactersPerSide > 1 ? ', top teammates,' : ''} top pilots, and every replay for all ${list.value.length} characters.`,
+  title: `${capWord(terms.characters)} — ${useBrandName()}`,
+  description: `The ${game.name} roster — usage stats${game.charactersPerSide > 1 ? ', top teammates,' : ''} top pilots, and every replay for all ${list.value.length} ${terms.characters}.`,
 });
 </script>
 
 <template>
   <section class="mx-auto max-w-6xl px-6 py-12">
-    <h1 class="font-display text-d1 font-bold text-text">Characters</h1>
+    <h1 class="font-display text-d1 font-bold text-text">{{ capWord(terms.characters) }}</h1>
     <p class="mt-2 font-ui text-body text-text-secondary">
-      {{ list.length }} characters on file — usage, pairings, and full replay histories.
+      {{ list.length }} {{ terms.characters }} on file — usage, pairings, and full replay
+      histories.
     </p>
     <ul class="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
       <li v-for="c in list" :key="c.id">
         <NuxtLink
-          :to="`/characters/${c.id}`"
+          :to="terms.characterPath(c.id)"
           class="group block overflow-hidden border border-border-subtle bg-surface transition-colors cut-sm hover:border-primary/50"
         >
           <img

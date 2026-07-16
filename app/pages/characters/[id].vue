@@ -7,12 +7,13 @@ import { withBase } from 'ufo';
 // charactersPerSide > 1; `extra` renders as a generic key/value strip.
 const route = useRoute();
 const game = useGame();
+const terms = useGameTerms();
 const { byId } = useCharacters();
 const character = byId(String(route.params.id));
 if (!character) {
   throw createError({
     statusCode: 404,
-    statusMessage: 'Character not found',
+    statusMessage: `${capWord(terms.character)} not found`,
     fatal: true,
   });
 }
@@ -90,19 +91,24 @@ useJsonLd([
     '@type': 'BreadcrumbList',
     itemListElement: [
       { '@type': 'ListItem', position: 1, name: 'Home', item: abs('/') },
-      { '@type': 'ListItem', position: 2, name: 'Characters', item: abs('/characters') },
+      {
+        '@type': 'ListItem',
+        position: 2,
+        name: capWord(terms.characters),
+        item: abs(terms.charactersBase),
+      },
       {
         '@type': 'ListItem',
         position: 3,
         name: character.name,
-        item: abs(`/characters/${character.id}`),
+        item: abs(terms.characterPath(character.id)),
       },
     ],
   },
   {
     '@type': 'CollectionPage',
     name: `${character.name} — ${game.name} replay collection`,
-    url: abs(`/characters/${character.id}`),
+    url: abs(terms.characterPath(character.id)),
     description: `${usage.value.value.toLocaleString('en-US')} competitive ${game.name} replay appearances featuring ${character.name} (all-time usage rank #${usage.value.rank}).`,
     isPartOf: { '@type': 'WebSite', name: useBrandName(), url: abs('/') },
   },

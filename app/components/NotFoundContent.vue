@@ -7,6 +7,7 @@ withDefaults(defineProps<{ code?: number; message?: string }>(), {
   message: undefined,
 });
 
+const terms = useGameTerms();
 const back = () => clearError({ redirect: '/' });
 </script>
 
@@ -22,7 +23,7 @@ const back = () => clearError({ redirect: '/' });
       {{ code === 404 ? 'No data at this route' : 'Something broke the combo' }}
     </h1>
     <p class="mt-3 font-mono text-[12px] text-text-muted">
-      {{ message ?? 'That character, player, or page isn’t in the database.' }}
+      {{ message ?? `That ${terms.character}, player, or page isn’t in the database.` }}
     </p>
     <button
       type="button"

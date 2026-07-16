@@ -40,11 +40,14 @@ function onKeydown(e: KeyboardEvent) {
 }
 
 const charNames = (s?: Side) => s?.characters.map((c) => charById(c)?.name ?? c).join(' + ') ?? '';
-const playerLabel = (s?: Side) => (s ? (playerById(s.player)?.handle ?? s.player) : '');
-const isFeatured = (s?: Side) => !!(s && playerById(s.player)?.featured);
+// a side may be a team of people (Side.players) — join like the shipped build
+const playerLabel = (s?: Side) =>
+  s ? sidePlayers(s).map((id) => playerById(id)?.handle ?? id).join(' + ') : '';
+const isFeatured = (s?: Side) => !!s && sidePlayers(s).some((id) => playerById(id)?.featured);
 const relPlayer = (r: Replay, i: number) => {
   const side = r.sides[i];
-  return side ? (playerById(side.player)?.handle ?? side.player) : '—';
+  if (!side) return '—';
+  return sidePlayers(side).map((id) => playerById(id)?.handle ?? id).join(' + ') || '—';
 };
 
 const isOpen = computed(() => openId.value !== null);

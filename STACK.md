@@ -309,3 +309,30 @@ Structural additions: the real product cut geometry (`cut-xs/sm/md/lg` +
 **Explicitly NOT in the engine (game-side, Phase 3):** the 2XKO fuse system (useFuses,
 Fuse* components, fuse dev pages) — plugs into the extension slots; per-game themes
 (2XKO neon pink/cyan + Chakra Petch arrive as 2XKO's own theme.css).
+
+---
+
+## 7. v0.2.0 — Phase-3 contract additions (all optional/additive)
+
+Driven by the 2XKO refactor's parity gates (the live site's indexed URLs, visible
+vocabulary, and duo-queue data could not ride the v0.1.0 contract):
+
+- **`GameConfig.terms?`** (`character/characters/side/patch/patches/source`, lowercase) —
+  every user-visible engine noun (nav, headings, filter labels, search placeholder, SEO
+  strings, JSON-LD breadcrumbs, 404 copy) resolves through `useGameTerms()`; labels
+  capitalize at the call site with `capWord()`. 2XKO: champion/champions · team ·
+  season/seasons · channel. Defaults preserve v0.1.0 output byte-for-byte.
+- **`GameConfig.characterRouteSegment?`** — the characters section's URL segment
+  (default `characters`). The engine's `engineCharacterRoutes` inline module renames
+  `/characters*` page routes via `pages:extend` at build, and every engine link resolves
+  through `useGameTerms().characterPath` / `.charactersBase` — so 2XKO keeps its live,
+  indexed `/champions/*` URLs with zero page-file duplication. Build-time GameConfig
+  resolution is shared with static-artifacts via `modules/game-config.ts`
+  (`loadMergedGameConfig`).
+- **`Side.players?: string[]`** — a side that is a team of PEOPLE (2XKO duo queue,
+  tournament sets; 321 live videos). `player` stays the primary (= `players[0]`).
+  `utils/filterReplays.sidePlayers()` is the single accessor: the player facet, search
+  haystack, derived options, related-replay affinity, player pages, and card/modal
+  labels (joined `' + '`, featured-if-any) all cover every listed player. An empty
+  `player` with no `players` yields no people (junk-data sides never enter the player
+  facet). Covered in `test:filters` ("Side.players" section).

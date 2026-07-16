@@ -5,6 +5,7 @@
 // with the useFilters schema (/?c=a,b&side=1). Cell tint = color-mix over the
 // semantic primary; the grid sizes itself to the game's roster. Mobile: a
 // contained horizontal scroll with a hint. Hover tooltip: shared HoverTip.
+const terms = useGameTerms();
 const { list: characters } = useCharacters();
 const { pairingAlpha, pairCount } = useStatsRows();
 
@@ -101,7 +102,7 @@ useReveal(
           >{{ name(tip.data.rowId) }}</span
         >
         <span v-if="tip.data.colId === null" class="ml-2 font-mono text-[10px] text-text-muted"
-          >same character</span
+          >same {{ terms.character }}</span
         >
         <template v-else>
           <span class="mx-1 font-ui text-[12px] font-semibold text-text-muted">+</span>

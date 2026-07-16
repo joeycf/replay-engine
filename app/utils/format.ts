@@ -37,6 +37,11 @@ export function characterInitials(character: Pick<Character, 'name' | 'extra'>):
   return (two ?? character.name.slice(0, 2)).toUpperCase();
 }
 
+/** First letter up — for game-term nouns rendered as labels ("champion" → "Champion"). */
+export function capWord(s: string): string {
+  return s.charAt(0).toUpperCase() + s.slice(1);
+}
+
 /** CSS-identifier-safe accent id (mirrors the accents plugin's sanitizer). */
 export function accentSafeId(id: string): string {
   return id.replace(/[^a-zA-Z0-9_-]/g, '-');

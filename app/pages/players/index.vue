@@ -8,7 +8,7 @@ const showAll = ref(false);
 
 useSiteMeta({
   title: `Players — ${useBrandName()}`,
-  description: `${list.value.length.toLocaleString('en-US')} ${useGame().name} players on file — featured competitors, most-used characters, and full replay histories.`,
+  description: `${list.value.length.toLocaleString('en-US')} ${useGame().name} players on file — featured competitors, most-used ${useGameTerms().characters}, and full replay histories.`,
 });
 </script>
 

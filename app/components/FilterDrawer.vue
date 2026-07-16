@@ -12,6 +12,7 @@ const f = props.filters;
 const open = useState('filter-drawer-open', () => false);
 
 const game = useGame();
+const terms = useGameTerms();
 const { list: characters } = useCharacters();
 const { ranked, featured } = useFeaturedPlayers();
 const { pending } = useReplays();
@@ -101,7 +102,8 @@ onBeforeUnmount(() => {
           <!-- facets -->
           <div class="min-h-0 flex-1 overflow-y-auto px-[18px] pb-3 pt-1.5">
             <div :class="labelClass" class="my-2.5">
-              Character{{ game.charactersPerSide > 1 ? ' · side includes' : '' }}
+              {{ capWord(terms.character)
+              }}{{ game.charactersPerSide > 1 ? ` · ${terms.side} includes` : '' }}
             </div>
             <div class="flex flex-wrap gap-[7px]">
               <button
@@ -138,7 +140,7 @@ onBeforeUnmount(() => {
             </div>
 
             <div v-if="game.sourceChannels.length">
-              <div :class="labelClass" class="mb-2.5 mt-5">Source</div>
+              <div :class="labelClass" class="mb-2.5 mt-5">{{ capWord(terms.source) }}</div>
               <div class="flex gap-2">
                 <button
                   v-for="s in game.sourceChannels"
@@ -155,7 +157,7 @@ onBeforeUnmount(() => {
             </div>
 
             <div v-if="f.options.value.patches.length">
-              <div :class="labelClass" class="mb-2.5 mt-5">Patch</div>
+              <div :class="labelClass" class="mb-2.5 mt-5">{{ capWord(terms.patch) }}</div>
               <div class="flex gap-2">
                 <button
                   v-for="p in f.options.value.patches"

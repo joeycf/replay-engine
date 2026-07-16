@@ -10,7 +10,13 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { dirname, resolve } from 'node:path';
-import { buildSearchIndex, emptyFilterState, filterReplays } from '../app/utils/filterReplays.ts';
+import {
+  buildSearchIndex,
+  deriveOptions,
+  emptyFilterState,
+  filterReplays,
+  sidePlayers,
+} from '../app/utils/filterReplays.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const read = (p) => JSON.parse(readFileSync(resolve(here, '..', p), 'utf8'));
@@ -83,5 +89,59 @@ check(
   count({ patches: ['S2'], sources: ['ch-vault'] }),
   4,
 );
+
+// ── Side.players (v0.2.0): a side that is a TEAM of people ─────────────────
+// Synthetic replays — duo sides (2XKO duo queue / tournament sets). The
+// primary `player` stays players[0]; every listed player must match the
+// player facet, land in the search haystack, and appear in derived options.
+const duoReplays = [
+  {
+    id: 'duo_0001',
+    sides: [
+      { player: 'nomad', players: ['nomad', 'echo'], characters: ['aegis', 'bolt'] },
+      { player: 'sage', characters: ['cinder', 'aegis'] },
+    ],
+    date: '2025-06-01T12:00:00Z',
+    patch: 'S2',
+    source: 'ch-neon',
+    // deliberately name-free: the search check below can only hit via the
+    // players[] → handle haystack path, not the title
+    title: 'Duo bracket finals — set 3',
+  },
+  {
+    id: 'duo_0002',
+    sides: [
+      { player: 'pilot', characters: ['bolt', 'cinder'] },
+      { player: 'sage', characters: ['aegis', 'bolt'] },
+    ],
+    date: '2025-06-02T12:00:00Z',
+    patch: 'S2',
+    source: 'ch-vault',
+    title: 'PILOT (Bolt-Cinder) vs SAGE (Aegis-Bolt)',
+  },
+];
+const duoIndex = buildSearchIndex(duoReplays, characters, players);
+const duoRun = (patch) =>
+  filterReplays(duoReplays, { ...emptyFilterState(), ...patch }, duoIndex).length;
+
+assert.deepEqual(
+  sidePlayers(duoReplays[0].sides[0]),
+  ['nomad', 'echo'],
+  'sidePlayers expands players[]',
+);
+assert.deepEqual(sidePlayers(duoReplays[0].sides[1]), ['sage'], 'sidePlayers falls back to player');
+assert.deepEqual(
+  sidePlayers({ player: '', characters: [] }),
+  [],
+  'sidePlayers: empty player yields no people',
+);
+check('duo: second player matches player facet', duoRun({ players: ['echo'] }), 1);
+check('duo: primary player still matches', duoRun({ players: ['nomad'] }), 1);
+check('duo: search hits the second player handle', duoRun({ search: 'echo' }), 1);
+assert.ok(
+  deriveOptions(duoReplays).players.includes('echo'),
+  'deriveOptions lists duo partners',
+);
+console.log('  ✓ Side.players: facet/search/options cover every listed player');
 
 console.log('\n✓ filter semantics verified (10-replay fixture dataset)');

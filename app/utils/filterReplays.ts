@@ -1,4 +1,4 @@
-import type { Character, Player, Replay } from '@engine/types';
+import type { Character, Player, Replay, Side } from '@engine/types';
 
 /**
  * Pure, framework-free filtering core — no Nuxt/Vue APIs — unit-tested in
@@ -78,6 +78,11 @@ export interface FilterOptions {
 
 const allCharacters = (r: Replay): string[] => [...r.sides[0].characters, ...r.sides[1].characters];
 
+/** Every player on a side: `players` when the side is a team of people
+ *  (additive v0.2.0 — 2XKO duo queue / tournament sets), else `[player]`. */
+export const sidePlayers = (s: Side): string[] =>
+  s.players?.length ? s.players : s.player ? [s.player] : [];
+
 /**
  * Search haystack per replay: title + side player handles + character
  * names/aliases (via the well-known `extra.aliases` key). Registries are
@@ -96,7 +101,7 @@ export function buildSearchIndex(
   for (const r of replays) {
     const parts: string[] = [r.title];
     for (const side of r.sides) {
-      parts.push(handle.get(side.player) ?? side.player);
+      for (const pid of sidePlayers(side)) parts.push(handle.get(pid) ?? pid);
       for (const cid of side.characters) parts.push(charText.get(cid) ?? cid);
     }
     index.set(r.id, normalizeText(parts.join(' ')));
@@ -130,8 +135,8 @@ export function matchesReplay(
   }
 
   if (state.players.length) {
-    const sidePlayers = replay.sides.map((s) => s.player);
-    if (!state.players.some((p) => sidePlayers.includes(p))) return false;
+    const present = replay.sides.flatMap(sidePlayers);
+    if (!state.players.some((p) => present.includes(p))) return false;
   }
 
   if (state.sources.length && !state.sources.includes(replay.source)) return false;
@@ -183,7 +188,7 @@ export function deriveOptions(replays: Replay[], rankOrder?: string[]): FilterOp
   const ranks = new Set<string>();
   for (const replay of replays) {
     for (const side of replay.sides) {
-      players.add(side.player);
+      sidePlayers(side).forEach((p) => players.add(p));
       side.characters.forEach((c) => chars.add(c));
       if (side.rank) ranks.add(side.rank);
     }

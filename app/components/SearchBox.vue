@@ -6,6 +6,7 @@ withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
 
 const route = useRoute();
 const router = useRouter();
+const terms = useGameTerms();
 
 const onBrowse = computed(() => route.path === '/');
 
@@ -64,8 +65,8 @@ onBeforeUnmount(() => {
     <input
       :value="local"
       type="search"
-      placeholder="Search title, player, character…"
-      aria-label="Search title, player, or character"
+      :placeholder="`Search title, player, ${terms.character}…`"
+      :aria-label="`Search title, player, or ${terms.character}`"
       class="w-full min-w-0 flex-1 border-none bg-transparent font-ui text-[13px] text-text outline-none placeholder:text-text-muted"
       @input="onInput"
     />

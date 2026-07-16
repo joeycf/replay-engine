@@ -1,11 +1,8 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { defineNuxtModule } from 'nuxt/kit';
-import type { Nuxt } from 'nuxt/schema';
-import { createJiti } from 'jiti';
-import { defu } from 'defu';
 import { joinURL, withBase, withoutLeadingSlash } from 'ufo';
-import type { GameConfig } from '../types';
+import { loadMergedGameConfig } from '../lib/game-config';
 
 /**
  * STATIC BUILD ARTIFACTS — everything the shipped 2XKO build produced with a
@@ -25,41 +22,10 @@ import type { GameConfig } from '../types';
  *    nitro's SPA-fallback shell. Content-checked against the NotFoundContent
  *    marker string so a silent regression fails the build.
  *
- * GameConfig at BUILD time: app/app.config.ts content is runtime app config
- * and never lands in nuxt.options.appConfig (verified empirically), so this
- * module re-does Nuxt's merge itself — jiti-imports each layer's
- * app/app.config.* (with a defineAppConfig shim) and defu-merges in layer
- * priority (app over engine).
+ * GameConfig at BUILD time: resolved via loadMergedGameConfig (shared with the
+ * engineCharacterRoutes remapper in nuxt.config — see modules/game-config.ts
+ * for why app.config.ts must be re-merged by hand).
  */
-
-async function loadMergedGameConfig(nuxt: Nuxt): Promise<GameConfig | undefined> {
-  const jiti = createJiti(import.meta.url, { interopDefault: true });
-  const g = globalThis as Record<string, unknown>;
-  const prev = g.defineAppConfig;
-  // app.config files use the defineAppConfig macro (auto-injected in the app
-  // build); shim it for a plain node import
-  g.defineAppConfig = (c: unknown) => c;
-  const configs: Record<string, unknown>[] = [];
-  try {
-    // _layers[0] is the app, later entries the extended layers — defu keeps
-    // earlier arguments' values, matching Nuxt's app-over-layer merge
-    for (const layer of nuxt.options._layers) {
-      const srcDir = layer.config?.srcDir ?? join(layer.cwd ?? '', 'app');
-      for (const ext of ['ts', 'mts', 'js', 'mjs']) {
-        const file = join(srcDir, `app.config.${ext}`);
-        if (existsSync(file)) {
-          configs.push((await jiti.import(file, { default: true })) as Record<string, unknown>);
-          break;
-        }
-      }
-    }
-  } finally {
-    if (prev === undefined) delete g.defineAppConfig;
-    else g.defineAppConfig = prev;
-  }
-  const merged = defu({}, ...(configs as [Record<string, unknown>])) as { game?: GameConfig };
-  return merged.game;
-}
 
 export default defineNuxtModule({
   meta: { name: 'replay-engine:static-artifacts' },

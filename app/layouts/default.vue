@@ -5,11 +5,12 @@
 // with the templated disclaimer. Semantic tokens only.
 const route = useRoute();
 const drawerOpen = useState('filter-drawer-open', () => false);
+const terms = useGameTerms();
 
 const nav = [
   { label: 'Browse', to: '/' },
   { label: 'Stats', to: '/stats' },
-  { label: 'Characters', to: '/characters' },
+  { label: capWord(terms.characters), to: terms.charactersBase },
   { label: 'Players', to: '/players' },
 ];
 

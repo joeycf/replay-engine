@@ -1,6 +1,7 @@
 import { fileURLToPath } from 'node:url';
 import { joinURL } from 'ufo';
 import tailwindcss from '@tailwindcss/vite';
+import { characterSegment, loadMergedGameConfig } from './lib/game-config';
 
 // The base configuration for the `replay-engine` Nuxt LAYER. Consuming game
 // apps `extends` a pinned tag of this repo and inherit everything here; the
@@ -63,6 +64,24 @@ export default defineNuxtConfig({
       nuxt.hook('nitro:init', (nitro) => {
         for (const route of ['/', '/health', '/not-found']) {
           nitro.options.prerender.routes.push(joinURL(nuxt.options.app.baseURL, route));
+        }
+      });
+    },
+
+    // Remap the characters section's URL segment when the game configures one
+    // (GameConfig.characterRouteSegment, additive v0.2.0): /characters/* pages
+    // are renamed at route-registration time so 2XKO's indexed /champions/*
+    // URLs survive the layer refactor with no page-file duplication. Engine
+    // links resolve through useGameTerms().characterPath, so nav, roster
+    // cards, and JSON-LD follow the same segment.
+    function engineCharacterRoutes(_options: unknown, nuxt: import('nuxt/schema').Nuxt) {
+      nuxt.hook('pages:extend', async (pages) => {
+        const segment = characterSegment(await loadMergedGameConfig(nuxt));
+        if (segment === 'characters') return;
+        for (const page of pages) {
+          if (page.path === '/characters' || page.path.startsWith('/characters/')) {
+            page.path = page.path.replace(/^\/characters/, `/${segment}`);
+          }
         }
       });
     },

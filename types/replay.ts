@@ -21,7 +21,13 @@ export interface Player {
 }
 
 export interface Side {
-  player: string; // Player.id
+  player: string; // Player.id (primary; equals players[0] when players is set)
+  /** All players on this side (additive, v0.2.0) — for games/modes where one
+   *  side is a team of PEOPLE (2XKO duo queue, tournament sets), not just one
+   *  pilot. Absent ⇒ the side is exactly [player]. Independent of
+   *  charactersPerSide. Filtering, search, and display treat every listed
+   *  player as on the side (utils/filterReplays.sidePlayers). */
+  players?: string[];
   characters: string[]; // Character.id[]; length === charactersPerSide
   rank?: string; // present iff the game has ranks
 }

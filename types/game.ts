@@ -28,4 +28,23 @@ export interface GameConfig {
   /** Site-wide OG/Twitter card image path (under base) or absolute URL
    *  (additive, v0.1.0). Engine falls back to the 512 brand icon. */
   ogImage?: string;
+  /** Per-game vocabulary (additive, v0.2.0). The engine renders these nouns in
+   *  nav, headings, filter labels, placeholders, SEO strings, and JSON-LD —
+   *  resolved through useGameTerms(). Defaults: character/characters · side ·
+   *  patch/patches · source. 2XKO: champion/champions · team · season/seasons
+   *  · channel. Lowercase; the engine capitalizes where a label needs it. */
+  terms?: {
+    character?: string;
+    characters?: string;
+    side?: string;
+    patch?: string;
+    patches?: string;
+    source?: string;
+  };
+  /** URL segment for the characters section (additive, v0.2.0): 'characters'
+   *  by default; 2XKO sets 'champions' so its live, indexed /champions/* URLs
+   *  survive the layer refactor (PLAN §6 URL parity). Engine page routes are
+   *  remapped at build (engineCharacterRoutes in nuxt.config); engine links
+   *  resolve through useGameTerms().characterPath. */
+  characterRouteSegment?: string;
 }
