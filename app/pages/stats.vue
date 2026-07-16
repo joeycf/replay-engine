@@ -130,6 +130,11 @@ const contextCount = computed(() =>
       </StatPanel>
     </div>
 
+    <!-- GAME-PANEL ANCHOR 'after-usage' (v0.4.0): a full-width game panel row
+         right below the usage panel — the shipped 2XKO composition put Fuse
+         usage here. NAKED render: the override owns its container/spacing. -->
+    <GameStatsPanels :patch="patch" position="after-usage" />
+
     <!-- Panel 2: duo analytics — generic tag-game panels, gated -->
     <div v-if="showDuo" class="grid grid-cols-1 gap-4 px-4 pb-5 md:grid-cols-2 md:px-7">
       <StatPanel :title="`Top ${terms.side} pairings`" hint="same-side teams · all time">
@@ -140,7 +145,9 @@ const contextCount = computed(() =>
       </StatPanel>
     </div>
 
-    <!-- Panel 3: meta over time -->
+    <!-- Panel 3: meta over time + the 'beside-timeline' game anchor (v0.4.0):
+         the grid's second cell — 2XKO's Fuse-meta-by-era companion panel.
+         Renders only when the timeline row itself does. -->
     <div v-if="patches.length > 1" class="grid grid-cols-1 gap-4 px-4 pb-5 md:grid-cols-2 md:px-7">
       <StatPanel
         title="Meta over time"
@@ -148,12 +155,13 @@ const contextCount = computed(() =>
       >
         <MetaTimeline :top-n="5" />
       </StatPanel>
+      <GameStatsPanels :patch="patch" position="beside-timeline" />
     </div>
 
-    <!-- GAME-PANEL EXTENSION SLOT: a game's own analytics (fuse panels etc.)
-         land here by overriding GameStatsPanels at the same component path -->
+    <!-- GAME-PANEL ANCHOR 'bottom': the original slot position (wrapped for
+         back-compat with v0.3.0-era overrides that render everything here) -->
     <div class="px-4 pb-6 md:px-7">
-      <GameStatsPanels :patch="patch" />
+      <GameStatsPanels :patch="patch" position="bottom" />
     </div>
   </div>
 </template>

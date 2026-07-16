@@ -359,6 +359,14 @@ Browse could not carry):
   no further engine change. Facet `param` is a public URL contract — a game restoring a
   shipped filter keeps its old deep links by reusing the shipped param name (2XKO:
   `fuse`). Covered in `test:filters` ("game-defined facets" section).
+- **Positioned stats anchors (v0.4.0)** — the stats page invokes `GameStatsPanels`
+  at THREE anchors, passing `position: 'after-usage' | 'beside-timeline' | 'bottom'`:
+  a naked full-width row under the usage panel, the Meta-over-time grid's second
+  cell (naked; only when the timeline renders), and the original wrapped bottom
+  slot. **Overrides must branch on `position`** or their content renders at every
+  anchor (the fixtures dummy shows the pattern). Restores the shipped 2XKO stats
+  composition (Fuse usage 2nd, Fuse meta beside the timeline) — found in the
+  Phase-3.5 preview review, where bottom-stacked fuse panels left half-empty rows.
 - **Replay badge slots** — empty same-path-override components:
   `GameReplayBadges.vue` (`replay`, `context: 'card' | 'modal'`) rendered naked between
   a card's matchup and players rows and below the modal's sides block (the

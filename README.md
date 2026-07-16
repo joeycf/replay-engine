@@ -252,8 +252,13 @@ The stats and character pages expose slots for a game's OWN analytics panels
 (PLAN §11 — the fuse rule: never genericize a mechanic one game has). The engine
 ships empty placeholder components; a game overrides them **at the same path**:
 
-- `app/components/GameStatsPanels.vue` — rendered at the bottom of `/stats`,
-  receives `patch: string | null` (the dashboard's active patch selection).
+- `app/components/GameStatsPanels.vue` — invoked at THREE `/stats` anchors
+  (v0.4.0), receiving `patch: string | null` (the dashboard's active patch
+  selection) and `position: 'after-usage' | 'beside-timeline' | 'bottom'` —
+  **branch on `position`** or your content renders at every anchor.
+  `after-usage` = full-width row under the usage panel (naked; bring your own
+  container), `beside-timeline` = the Meta-over-time grid's second cell,
+  `bottom` = the original wrapped slot.
 - `app/components/GameCharacterPanels.vue` — rendered on `/characters/[id]`,
   receives `characterId: string`.
 
