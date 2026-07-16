@@ -42,12 +42,20 @@ function onKeydown(e: KeyboardEvent) {
 const charNames = (s?: Side) => s?.characters.map((c) => charById(c)?.name ?? c).join(' + ') ?? '';
 // a side may be a team of people (Side.players) — join like the shipped build
 const playerLabel = (s?: Side) =>
-  s ? sidePlayers(s).map((id) => playerById(id)?.handle ?? id).join(' + ') : '';
+  s
+    ? sidePlayers(s)
+        .map((id) => playerById(id)?.handle ?? id)
+        .join(' + ')
+    : '';
 const isFeatured = (s?: Side) => !!s && sidePlayers(s).some((id) => playerById(id)?.featured);
 const relPlayer = (r: Replay, i: number) => {
   const side = r.sides[i];
   if (!side) return '—';
-  return sidePlayers(side).map((id) => playerById(id)?.handle ?? id).join(' + ') || '—';
+  return (
+    sidePlayers(side)
+      .map((id) => playerById(id)?.handle ?? id)
+      .join(' + ') || '—'
+  );
 };
 
 const isOpen = computed(() => openId.value !== null);
@@ -199,6 +207,7 @@ onBeforeUnmount(() => {
                           playerLabel(sideA)
                         }}</span>
                       </div>
+                      <GameSideBadge :replay="replay" :side="0" context="modal" />
                       <div v-if="sideA?.rank" class="mt-1 font-mono text-[11px] text-text-muted">
                         {{ sideA.rank }}
                       </div>
@@ -220,6 +229,7 @@ onBeforeUnmount(() => {
                         }}</span>
                         <VerifiedMark v-if="isFeatured(sideB)" :size="10" />
                       </div>
+                      <GameSideBadge :replay="replay" :side="1" context="modal" />
                       <div v-if="sideB?.rank" class="mt-1 font-mono text-[11px] text-text-muted">
                         {{ sideB.rank }}
                       </div>
@@ -265,6 +275,7 @@ onBeforeUnmount(() => {
                         playerLabel(sideA)
                       }}</span>
                     </div>
+                    <GameSideBadge :replay="replay" :side="0" context="modal" compact />
                   </div>
                 </div>
                 <div class="my-2 text-center font-display text-[13px] font-bold text-primary">
@@ -293,9 +304,14 @@ onBeforeUnmount(() => {
                         playerLabel(sideB)
                       }}</span>
                     </div>
+                    <GameSideBadge :replay="replay" :side="1" context="modal" compact />
                   </div>
                 </div>
               </div>
+
+              <!-- game-badge slot (v0.3.0): match-level/unbound chips — the
+                   override owns the row (2XKO's unordered fuse pair) -->
+              <GameReplayBadges :replay="replay" context="modal" />
 
               <!-- related replays -->
               <div v-if="related.length" class="mt-6">

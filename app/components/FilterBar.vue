@@ -34,13 +34,22 @@ const sourceClass = (id: string, i: number) =>
       ? 'bg-primary text-primary-contrast border-primary'
       : 'bg-secondary/15 text-secondary border-secondary'
     : 'bg-surface-raised text-text-secondary border-border hover:text-text';
+
+// game-facet chips: accent-tinted when active (the ported fuse-chip anatomy —
+// accent border + 15%-alpha accent fill); inactive styling is class-based
+const facetActiveStyle = (accent?: string) => ({
+  borderColor: accent ?? 'var(--color-text)',
+  background: accent ? `${accent}26` : 'var(--color-surface-raised)',
+  color: 'var(--color-text)',
+});
 </script>
 
 <template>
   <div class="border-b border-border-subtle bg-bg px-4 py-4 md:px-[26px]">
     <!-- character facet + gated same-side + matchup picker -->
     <div :class="labelClass" class="mb-2.5">
-      {{ capWord(terms.character) }}{{ game.charactersPerSide > 1 ? ` · ${terms.side} includes` : '' }}
+      {{ capWord(terms.character)
+      }}{{ game.charactersPerSide > 1 ? ` · ${terms.side} includes` : '' }}
     </div>
     <div class="flex flex-wrap items-center gap-[7px]">
       <button
@@ -179,6 +188,43 @@ const sourceClass = (id: string, i: number) =>
           <option value="views">Most viewed</option>
           <option v-if="f.hasDurations.value" value="longest">Longest</option>
         </select>
+      </div>
+    </div>
+
+    <!-- game-defined facets (provideGameFacets, v0.3.0) — e.g. 2XKO's fuses -->
+    <div v-for="facet in f.gameFacets" :key="facet.param" class="mt-4">
+      <div class="mb-2.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
+        <span :class="labelClass">{{ facet.label }}</span>
+        <span
+          v-if="facet.note"
+          :data-testid="`${facet.param}-facet-note`"
+          class="font-mono text-[10px] text-text-muted"
+          >{{ facet.note }}</span
+        >
+      </div>
+      <div class="flex flex-wrap items-center gap-[7px]">
+        <button
+          v-for="chip in facet.chips"
+          :key="chip.id"
+          type="button"
+          class="inline-flex h-9 cursor-pointer items-center gap-2 border px-[13px] font-ui text-[12px] font-semibold transition-colors cut-bl-md"
+          :class="
+            f.isFacetActive(facet.param, chip.id)
+              ? ''
+              : 'border-border bg-surface-raised text-text-secondary hover:text-text'
+          "
+          :style="f.isFacetActive(facet.param, chip.id) ? facetActiveStyle(chip.accent) : undefined"
+          :aria-pressed="f.isFacetActive(facet.param, chip.id)"
+          :data-testid="`${facet.param}-chip-${chip.id}`"
+          @click="f.toggleFacetValue(facet.param, chip.id)"
+        >
+          <span
+            v-if="chip.accent"
+            class="h-2 w-2 flex-none rotate-45"
+            :style="{ background: chip.accent }"
+          />
+          {{ chip.label }}
+        </button>
       </div>
     </div>
 

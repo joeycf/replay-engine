@@ -339,3 +339,31 @@ vocabulary, and duo-queue data could not ride the v0.1.0 contract):
   labels (joined `' + '`, featured-if-any) all cover every listed player. An empty
   `player` with no `players` yields no people (junk-data sides never enter the player
   facet). Covered in `test:filters` ("Side.players" section).
+
+---
+
+## 8. v0.3.0 — game-defined filter facets + replay badge slots (all additive)
+
+Driven by Phase 3.5 (the 2XKO fuse surface is a launch-advertised feature the generic
+Browse could not carry):
+
+- **Game facets** — `provideGameFacets([...])` (app plugin; module-scope holder like the
+  registries, `app/utils/gameFacets.ts`). A facet = `{ param, label, note?, chips
+(id/label/accent?), matches(selected, { replay, state }), chipLabel? }`. The engine
+  renders facet rows in FilterBar/FilterDrawer with the standard chip anatomy
+  (accent diamond + accent-tinted active state), wires `param` into URL state / deep
+  links / ActiveChips / Clear all / filterKey, and applies predicates inside the pure
+  core (`filterReplays(…, gameFacets)` — AND across facets; within-facet semantics are
+  the game's). The predicate context carries the **whole FilterState**, so cross-facet
+  composition (the promised "fuse on the same side as the selected characters") needs
+  no further engine change. Facet `param` is a public URL contract — a game restoring a
+  shipped filter keeps its old deep links by reusing the shipped param name (2XKO:
+  `fuse`). Covered in `test:filters` ("game-defined facets" section).
+- **Replay badge slots** — empty same-path-override components:
+  `GameReplayBadges.vue` (`replay`, `context: 'card' | 'modal'`) rendered naked between
+  a card's matchup and players rows and below the modal's sides block (the
+  center/UNBOUND strip — attribution unknown); `GameSideBadge.vue` (`replay`,
+  `side: 0|1`, `context`, `compact?`) rendered inside each modal side block under the
+  player line (per-side chips — attribution known; `compact` = the mobile variant).
+  Overrides own their full markup, so unused slots cost zero pixels (fixture output
+  verified stable).

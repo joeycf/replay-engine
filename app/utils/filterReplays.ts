@@ -50,6 +50,8 @@ export interface FilterState {
   dateTo: string | null;
   search: string;
   sort: ReplaySort;
+  /** game-defined facet selections, keyed by facet param (v0.3.0) */
+  custom?: Record<string, string[]>;
 }
 
 export function emptyFilterState(): FilterState {
@@ -65,6 +67,7 @@ export function emptyFilterState(): FilterState {
     dateTo: null,
     search: '',
     sort: 'newest',
+    custom: {},
   };
 }
 
@@ -109,11 +112,18 @@ export function buildSearchIndex(
   return index;
 }
 
+/** Predicate-shaped view of a game facet (full type in utils/gameFacets.ts). */
+export interface GameFacetPredicate {
+  param: string;
+  matches: (selected: string[], ctx: { replay: Replay; state: FilterState }) => boolean;
+}
+
 /** True if a single replay satisfies EVERY active facet (search handled via index). */
 export function matchesReplay(
   replay: Replay,
   state: FilterState,
   searchIndex?: Map<string, string>,
+  gameFacets?: GameFacetPredicate[],
 ): boolean {
   if (state.characters.length) {
     if (state.coOccurrence && state.characters.length >= 2) {
@@ -151,6 +161,15 @@ export function matchesReplay(
   if (state.dateFrom && replay.date < state.dateFrom) return false;
   if (state.dateTo && replay.date > `${state.dateTo}T23:59:59`) return false;
 
+  // game-defined facets (v0.3.0): AND across facets like everything else;
+  // OR/AND *within* a facet is the game predicate's own business
+  if (gameFacets) {
+    for (const facet of gameFacets) {
+      const selected = state.custom?.[facet.param] ?? [];
+      if (selected.length && !facet.matches(selected, { replay, state })) return false;
+    }
+  }
+
   const tokens = normalizeText(state.search).split(/\s+/).filter(Boolean);
   if (tokens.length) {
     const hay = searchIndex?.get(replay.id) ?? normalizeText(replay.title);
@@ -165,8 +184,9 @@ export function filterReplays(
   replays: Replay[],
   state: FilterState,
   searchIndex?: Map<string, string>,
+  gameFacets?: GameFacetPredicate[],
 ): Replay[] {
-  const out = replays.filter((r) => matchesReplay(r, state, searchIndex));
+  const out = replays.filter((r) => matchesReplay(r, state, searchIndex, gameFacets));
   const s = state.sort;
   return out.sort((a, b) =>
     s === 'oldest'

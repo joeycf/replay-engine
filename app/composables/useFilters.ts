@@ -3,6 +3,8 @@ import type { ComputedRef } from 'vue';
 import type { Replay } from '@engine/types';
 import { buildSearchIndex, deriveOptions, filterReplays } from '../utils/filterReplays';
 import type { FilterOptions, FilterState, ListFacet, ReplaySort } from '../utils/filterReplays';
+import { getProvidedGameFacets } from '../utils/gameFacets';
+import type { GameFacet } from '../utils/gameFacets';
 
 /**
  * URL-synced facade over the pure filter core (utils/filterReplays — the full
@@ -41,9 +43,14 @@ export interface FilterController {
   filterKey: ComputedRef<string>;
   /** Gated facets this game enables — drives the FilterBar/Drawer UI. */
   enabled: { coOccurrence: boolean; rank: boolean };
+  /** Game-defined custom facets (provideGameFacets, v0.3.0) — render order. */
+  gameFacets: GameFacet[];
   /** Whether any replay carries durationSec (shows/hides the Longest sort). */
   hasDurations: ComputedRef<boolean>;
   toggleCharacter: (id: string) => void;
+  /** Toggle a value of a game-defined facet (URL param = facet.param). */
+  toggleFacetValue: (param: string, id: string) => void;
+  isFacetActive: (param: string, id: string) => boolean;
   toggleCoOccurrence: () => void;
   setMatchup: (a: string | null, b: string | null) => void;
   togglePlayer: (id: string) => void;
@@ -69,6 +76,8 @@ export function useFilters(): FilterController {
     coOccurrence: game.charactersPerSide > 1 && !!game.filters.coOccurrence,
     rank: !!game.filters.rank,
   };
+  // constant per app (module-scope provisioning, like the registries)
+  const gameFacets = getProvidedGameFacets();
 
   const parseMatchup = (v: QueryValue): [string, string] | null => {
     const s = one(v);
@@ -94,6 +103,7 @@ export function useFilters(): FilterController {
       const v = one(route.query.sort);
       return v === 'oldest' || v === 'views' || v === 'longest' ? v : 'newest';
     })(),
+    custom: Object.fromEntries(gameFacets.map((gf) => [gf.param, csv(route.query[gf.param])])),
   }));
 
   // ── URL writes (push = Back undoes; replace = typing/sort/date) ──────────
@@ -133,6 +143,10 @@ export function useFilters(): FilterController {
   };
   const setDateRange = (from: string | null, to: string | null) =>
     write({ from: from || null, to: to || null }, 'replace');
+  const toggleFacetValue = (param: string, id: string) =>
+    write({ [param]: toggled(state.value.custom?.[param] ?? [], id).join(',') || null });
+  const isFacetActive = (param: string, id: string) =>
+    (state.value.custom?.[param] ?? []).includes(id);
   const setSort = (v: ReplaySort) => write({ sort: v === 'newest' ? null : v }, 'replace');
 
   let searchTimer: ReturnType<typeof setTimeout> | undefined;
@@ -154,6 +168,7 @@ export function useFilters(): FilterController {
       to: null,
       q: null,
       sort: null,
+      ...Object.fromEntries(gameFacets.map((gf) => [gf.param, null])),
     });
 
   const isActive = (facet: ListFacet, value: string) => state.value[facet].includes(value);
@@ -193,6 +208,13 @@ export function useFilters(): FilterController {
         label: `${s.dateFrom ?? '…'} → ${s.dateTo ?? '…'}`,
         remove: () => setDateRange(null, null),
       });
+    for (const gf of gameFacets)
+      for (const v of s.custom?.[gf.param] ?? [])
+        out.push({
+          key: `${gf.param}:${v}`,
+          label: gf.chipLabel?.(v) ?? gf.chips.find((c) => c.id === v)?.label ?? v,
+          remove: () => toggleFacetValue(gf.param, v),
+        });
     if (s.search)
       out.push({ key: 'q', label: `“${s.search}”`, remove: () => write({ q: null }, 'replace') });
     return out;
@@ -203,7 +225,9 @@ export function useFilters(): FilterController {
   const searchIndex = computed(() =>
     buildSearchIndex(replays.value, characters.value, players.value),
   );
-  const filtered = computed(() => filterReplays(replays.value, state.value, searchIndex.value));
+  const filtered = computed(() =>
+    filterReplays(replays.value, state.value, searchIndex.value, gameFacets),
+  );
   const options = computed(() => deriveOptions(replays.value, game.ranks));
   const hasDurations = computed(() => replays.value.some((r) => (r.durationSec ?? 0) > 0));
 
@@ -221,6 +245,7 @@ export function useFilters(): FilterController {
       s.dateTo,
       s.search,
       s.sort,
+      s.custom,
     ]);
   });
 
@@ -232,8 +257,11 @@ export function useFilters(): FilterController {
     activeCount,
     filterKey,
     enabled,
+    gameFacets,
     hasDurations,
     toggleCharacter,
+    toggleFacetValue,
+    isFacetActive,
     toggleCoOccurrence,
     setMatchup,
     togglePlayer,

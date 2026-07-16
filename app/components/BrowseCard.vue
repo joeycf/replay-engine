@@ -12,7 +12,11 @@ const { byId: playerById } = usePlayers();
 
 // a side may be a team of people (Side.players) — join like the shipped build
 const playerLabel = (s?: Side) =>
-  s ? sidePlayers(s).map((id) => playerById(id)?.handle ?? id).join(' + ') : '';
+  s
+    ? sidePlayers(s)
+        .map((id) => playerById(id)?.handle ?? id)
+        .join(' + ')
+    : '';
 const isFeatured = (s?: Side) => !!s && sidePlayers(s).some((id) => playerById(id)?.featured);
 
 const left = computed<Side | undefined>(() => props.replay.sides[0]);
@@ -137,6 +141,10 @@ const badge = computed(() => {
           />
         </div>
       </div>
+
+      <!-- game-badge slot (v0.3.0): per-side or unbound accent chips — the
+           override owns the row markup (2XKO renders fuse tags here) -->
+      <GameReplayBadges :replay="replay" context="card" />
 
       <!-- players -->
       <div class="mt-[11px] flex items-center justify-between gap-2">

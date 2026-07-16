@@ -59,9 +59,7 @@ const tiles = computed(() => [
 ]);
 
 const usageRows = computed(() => usageFor(patch.value));
-const patchName = computed(() =>
-  patch.value === null ? `All ${terms.patches}` : patch.value,
-);
+const patchName = computed(() => (patch.value === null ? `All ${terms.patches}` : patch.value));
 const contextCount = computed(() =>
   patch.value === null ? totals.value.replays : (totals.value.byPatch?.[patch.value] ?? 0),
 );

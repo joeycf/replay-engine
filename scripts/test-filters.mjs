@@ -138,10 +138,47 @@ assert.deepEqual(
 check('duo: second player matches player facet', duoRun({ players: ['echo'] }), 1);
 check('duo: primary player still matches', duoRun({ players: ['nomad'] }), 1);
 check('duo: search hits the second player handle', duoRun({ search: 'echo' }), 1);
-assert.ok(
-  deriveOptions(duoReplays).players.includes('echo'),
-  'deriveOptions lists duo partners',
-);
+assert.ok(deriveOptions(duoReplays).players.includes('echo'), 'deriveOptions lists duo partners');
 console.log('  ✓ Side.players: facet/search/options cover every listed player');
+
+// ── game-defined facets (v0.3.0): predicate wiring + state composition ─────
+// Facets are injected as the pure core's 4th arg (the useFilters composable
+// passes getProvidedGameFacets() the same way).
+const sourceFacet = {
+  param: 'origin',
+  matches: (selected, { replay }) => selected.includes(replay.source),
+};
+const runFacets = (patch, facets) =>
+  filterReplays(replays, { ...base, ...patch }, index, facets).length;
+
+check('game facet: unselected facet is a no-op', runFacets({}, [sourceFacet]), count({}));
+check(
+  'game facet: predicate filters (origin=ch-neon)',
+  runFacets({ custom: { origin: ['ch-neon'] } }, [sourceFacet]),
+  count({ sources: ['ch-neon'] }),
+);
+check(
+  'game facet: ANDs with native facets (origin=ch-neon + patch S2)',
+  runFacets({ custom: { origin: ['ch-neon'] }, patches: ['S2'] }, [sourceFacet]),
+  count({ sources: ['ch-neon'], patches: ['S2'] }),
+);
+// composition contract: the predicate sees the LIVE FilterState — the future
+// "attach to the same side as the selected characters" refinement needs
+// ctx.state.characters/coOccurrence available today
+const composedFacet = {
+  param: 'style',
+  matches: (selected, { replay, state }) =>
+    selected.includes('with-selected') &&
+    replay.sides.some((s) => state.characters.every((c) => s.characters.includes(c))),
+};
+check(
+  'game facet: ctx.state composes with the character selection',
+  runFacets({ custom: { style: ['with-selected'] }, characters: ['aegis', 'bolt'] }, [
+    composedFacet,
+  ]),
+  count({ characters: ['aegis', 'bolt'], coOccurrence: true }),
+);
+assert.deepEqual(emptyFilterState().custom, {}, 'emptyFilterState carries custom: {}');
+console.log('  ✓ game facets: no-op/predicate/AND/ctx.state composition');
 
 console.log('\n✓ filter semantics verified (10-replay fixture dataset)');

@@ -22,8 +22,7 @@ useSiteMeta({
   <section class="mx-auto max-w-6xl px-6 py-12">
     <h1 class="font-display text-d1 font-bold text-text">{{ capWord(terms.characters) }}</h1>
     <p class="mt-2 font-ui text-body text-text-secondary">
-      {{ list.length }} {{ terms.characters }} on file — usage, pairings, and full replay
-      histories.
+      {{ list.length }} {{ terms.characters }} on file — usage, pairings, and full replay histories.
     </p>
     <ul class="mt-8 grid grid-cols-3 gap-3 sm:grid-cols-4 md:grid-cols-5">
       <li v-for="c in list" :key="c.id">

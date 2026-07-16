@@ -29,9 +29,7 @@ export default defineNuxtConfig({
   // clones the layer with NO node_modules, and the engine's runtime deps
   // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
   // Phase-3 remote-layer check).
-  extends: [
-    process.env.ENGINE_PATH || ['github:you/replay-engine#v1.0.0', { install: true }],
-  ],
+  extends: [process.env.ENGINE_PATH || ['github:you/replay-engine#v1.0.0', { install: true }]],
 });
 ```
 
@@ -262,6 +260,47 @@ ships empty placeholder components; a game overrides them **at the same path**:
 Compose engine primitives inside them (`StatPanel`, `CharacterUsageBars`, …).
 The fixtures app demonstrates the mechanism with a dummy panel; 2XKO's fuse
 panels are the first real consumers (Phase 3).
+
+## Game-defined filter facets (v0.3.0)
+
+A game can add its OWN Browse facet — rendered with the standard chip anatomy
+and fully wired into URL state, deep links, active chips, and Clear all:
+
+```ts
+// app/plugins/facets.ts (in the GAME app)
+export default defineNuxtPlugin(() => {
+  provideGameFacets([
+    {
+      param: 'fuse', //          URL param — a PUBLIC contract: reuse a shipped
+      //                         param name and old deep links keep working
+      label: 'Fuse · either team',
+      note: 'fuse identified for 2,826 of 2,915 replays', // optional honesty line
+      chips: [{ id: 'freestyle', label: 'Freestyle', accent: '#FFD24A' }],
+      matches: (selected, { replay, state }) => {
+        // the game's own semantics (OR/AND within the facet is yours);
+        // `state` is the LIVE FilterState, so predicates can compose with
+        // native facets (e.g. require attachment to the side holding
+        // state.characters) without engine changes
+        return true;
+      },
+    },
+  ]);
+});
+```
+
+## Replay badge slots (v0.3.0)
+
+Small accent chips on cards/modal, following the attribution rules a game
+defines. Override at the same path (like `GameStatsPanels`):
+
+- `GameSideBadge.vue` (`replay`, `side: 0|1`, `context`, `compact?`) — per-side
+  chip when attribution is KNOWN; rendered in each modal side block (`compact`
+  = mobile). Render nothing when attribution is unknown.
+- `GameReplayBadges.vue` (`replay`, `context: 'card' | 'modal'`) — the
+  center/UNBOUND strip for match-level badges (attribution unknown); rendered
+  between a card's matchup and players rows, and below the modal's sides.
+  Overrides own their full row markup (margins included) — unused slots cost
+  zero pixels.
 
 ## Inherited build artifacts
 

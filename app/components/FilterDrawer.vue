@@ -31,6 +31,13 @@ const togClass = (on: boolean) =>
     ? 'bg-primary text-primary-contrast border-primary'
     : 'bg-surface-raised text-text-secondary border-border';
 
+// game-facet chips: accent-tinted when active (mirrors FilterBar)
+const facetActiveStyle = (accent?: string) => ({
+  borderColor: accent ?? 'var(--color-text)',
+  background: accent ? `${accent}26` : 'var(--color-surface-raised)',
+  color: 'var(--color-text)',
+});
+
 function close() {
   open.value = false;
 }
@@ -187,6 +194,41 @@ onBeforeUnmount(() => {
                 >
                   {{ r }}
                 </button>
+              </div>
+            </div>
+
+            <!-- game-defined facets (provideGameFacets, v0.3.0) -->
+            <div v-for="facet in f.gameFacets" :key="facet.param">
+              <div :class="labelClass" class="mb-2.5 mt-5">{{ facet.label }}</div>
+              <div class="grid grid-cols-2 gap-2">
+                <button
+                  v-for="chip in facet.chips"
+                  :key="chip.id"
+                  type="button"
+                  class="inline-flex h-10 cursor-pointer items-center justify-center gap-2 border px-2 font-ui text-[12px] font-semibold"
+                  :class="
+                    f.isFacetActive(facet.param, chip.id)
+                      ? ''
+                      : 'border-border bg-surface-raised text-text-secondary'
+                  "
+                  :style="
+                    f.isFacetActive(facet.param, chip.id)
+                      ? facetActiveStyle(chip.accent)
+                      : undefined
+                  "
+                  :aria-pressed="f.isFacetActive(facet.param, chip.id)"
+                  @click="f.toggleFacetValue(facet.param, chip.id)"
+                >
+                  <span
+                    v-if="chip.accent"
+                    class="h-2 w-2 flex-none rotate-45"
+                    :style="{ background: chip.accent }"
+                  />
+                  {{ chip.label }}
+                </button>
+              </div>
+              <div v-if="facet.note" class="mt-2 font-mono text-[10px] text-text-muted">
+                {{ facet.note }}
               </div>
             </div>
 
