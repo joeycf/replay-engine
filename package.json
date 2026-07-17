@@ -1,6 +1,6 @@
 {
   "name": "replay-engine",
-  "version": "0.5.0",
+  "version": "0.5.1",
   "private": true,
   "type": "module",
   "description": "Shared, base-path-aware Nuxt 4 layer (design system + data contract) for the Replay Database multi-game platform. Consumed via `extends`; never deployed on its own.",

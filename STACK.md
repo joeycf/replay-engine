@@ -414,3 +414,34 @@ Consumers stay pinned at `v0.4.0` — nothing a game imports or renders changed.
   `BrowseCard`/`VideoModal` derive `hqdefault` only, so omission would silently
   downgrade card/modal art. That fallback is a runtime change, deliberately **not** in
   v0.4.1; until it lands, emitters keep writing explicit `thumb` URLs.
+
+---
+
+## 10. v0.5.1 — static-artifacts under a subpath base (Phase-5 blocker fix)
+
+The first-ever subpath game build (Tekken `/tekken/`, Phase 5) hard-failed in
+`modules/static-artifacts.ts`. Two empirical nitro conventions the module had
+conflated (invisible at base `/`, where all prior builds ran):
+
+- **Filesystem:** nitro's static presets template `output.publicDir` WITH the base
+  (`vercel-static` → `.vercel/output/static/{{ baseURL }}`) and write prerendered
+  routes de-based beneath it — so `publicDir` already IS the base directory.
+  Re-applying `withBase()` to a filesystem path doubled the base
+  (`static/tekken/tekken/…`): sitemap + manifest landed at the doubled path and the
+  404-copy probe threw. Fix: artifacts write to `publicDir` directly; `404.html`
+  goes to the **static root** (base segments stripped) — Vercel's 404 lookup ignores
+  the base.
+- **Route strings:** nitro's `prerender:route` hook yields **mixed-space** strings —
+  each route keeps the form it ENTERED the queue in (module seeds + crawled hrefs:
+  base-prefixed; `x-nitro-prerender` payload/manifest routes: router-space). Only
+  `fileName` is uniformly de-based. The module now normalizes with
+  `withoutBase()` **before dedupe/exclusion**, and re-bases `<loc>`s with
+  `withBase()` at emit — otherwise a subpath sitemap emits duplicate `<loc>`s and
+  the `/health`/`/not-found` exclusions miss the prefixed forms.
+
+Verified: fixtures at `/sub/` (artifacts single-based, deduped, exclusions hold,
+designed 404 at static root) and at `/` (byte-identical placement to v0.5.0 —
+root behavior unchanged); `test:filters` / `test:registry` / typecheck / lint green.
+`scripts/verify-subpath.mjs` predates this module and never probed artifacts — its
+gap is what let this ship; extending it with an artifacts-placement assertion is the
+recorded follow-up.
