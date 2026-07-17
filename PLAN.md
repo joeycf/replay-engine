@@ -53,7 +53,7 @@ Four repositories:
                          replaydatabase.com
                                 │
                   ┌─────────────┴──────────────┐
-                  │   replaydatabase-shell      │   owns the domain
+                  │   replay-database-shell      │   owns the domain
                   │   (selector landing page)   │   vercel.json rewrites (subpath mode)
                   └─────────────┬───────────────┘
              /2xko*  ┌──────────┼───────────┐  /tekken*
@@ -81,7 +81,7 @@ Four repositories:
   (`public/data/*.json` produced by its own pipeline), its `app.config.ts` (game-specific
   settings), its character art, its bespoke `/scripts` ingestion, and — rarely — a genuine
   UI override. Each is its own Vercel project with its own scheduled rebuild.
-- **`replaydatabase-shell`** — owns `replaydatabase.com`. Serves the selector at `/` and
+- **`replay-database-shell`** — owns `replaydatabase.com`. Serves the selector at `/` and
   (in subpath mode) proxies `/2xko/*` and `/tekken/*` to the game deployments. Also
   `extends` the engine so the selector's chrome matches the design system.
 
@@ -410,9 +410,9 @@ replay-engine/
 `public/img/`, the Tekken `app/app.config.ts`, and its **own** `app/assets/theme.css`
 carrying Tekken's darker/metallic palette and an `@fontsource` display font.
 
-**`replaydatabase-shell`** (new)
+**`replay-database-shell`** (new)
 ```
-replaydatabase-shell/
+replay-database-shell/
 ├─ nuxt.config.ts               ← extends engine (for chrome/tokens); app.baseURL '/'
 ├─ app/
 │  ├─ app.config.ts             ← umbrella config (brand, list of games + their slugs/urls)
@@ -556,7 +556,7 @@ both branches; finalize it once you pick.
   `NUXT_PUBLIC_SITE_URL`, its own scheduled rebuild (Vercel Cron or a GitHub Action hitting
   a deploy hook) so new uploads appear. YouTube key stays **local-only**; the site builds
   from committed/generated JSON.
-- **`replaydatabase-shell`** — its own project, owns `replaydatabase.com`. In subpath mode
+- **`replay-database-shell`** — its own project, owns `replaydatabase.com`. In subpath mode
   it also carries the rewrites.
 - **Selector counts** — each game publishes a small `summary.json` (its totals) at its
   deploy root; the shell fetches them at build (or you commit them) to render "N replays
@@ -572,7 +572,7 @@ both branches; finalize it once you pick.
 | 2 | Port the 2XKO UI into the engine as generic, config-driven, base-path-aware components/pages/composables **referencing only semantic theme variables**. Still running on fixtures. | `prompt-2-engine-extraction.md` |
 | 3 | Refactor `2xko-replay-database` to a thin app that `extends` the engine; reshape its data to the generic schema; **relocate the 2XKO palette + fonts into its own `theme.css`**; verify counts and that the look is unchanged; keep it live at root. | `prompt-3-2xko-refactor-to-layer.md` |
 | 4 | Build `tekken-replay-database` as the second thin app: bespoke pipeline, shared schema, Tekken config (1v1, ranks), **and its own full Tekken theme** (palette + display font). Validates genericity *and* the re-skin path. | `prompt-4-tekken-app.md` |
-| 5 | Build `replaydatabase-shell`: selector landing page + wire routing (subpath rewrites **or** subdomains) + migrate 2XKO off root. | `prompt-5-shell-and-routing.md` |
+| 5 | Build `replay-database-shell`: selector landing page + wire routing (subpath rewrites **or** subdomains) + migrate 2XKO off root. | `prompt-5-shell-and-routing.md` |
 | 6 | Per-game scheduled rebuilds, `summary.json` for selector counts, cross-game SEO (each game + the selector). | `prompt-6-refresh-and-cross-game-seo.md` |
 
 Ordering rationale: the schema (1) is the foundation; the engine must be proven on
@@ -654,3 +654,34 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   pipeline's format; a shared emitter derives the generic artifacts (identical stats math
   via one extracted module); `overrides.json` supports `exclude: true`; the refresh
   workflow commits substrate + generic artifacts atomically.
+- **Theme contract correction (Phase 4 finding):** app theme files use plain
+  **`:root { … }`**, never `@theme { … }` — the app stylesheet is outside the
+  engine's Tailwind root compile, so a raw `@theme` ships to the browser and is
+  silently dropped in production builds (dev compiles per-file and masks it).
+  Unlayered `:root` custom properties beat the engine's `@layer theme` defaults
+  in every build mode. The override gate is **both directions** on the BUILT
+  output: presence → computed game primary; removal → computed umbrella teal.
+  Canonicalized in engine v0.4.1 docs/tests; Tekken shipped `:root` from day one.
+- **Routing decision (Phase 5): SUBPATH.** Root = selector, `/2xko` + `/tekken` via shell
+  `vercel.json` external rewrites to the game projects' production aliases; 2XKO migrates
+  off the apex with a permanent 301 map (path routes + query-conditional root rules for
+  the legacy shared deep links). Base flips are env-driven (`NUXT_APP_BASE_URL`), the
+  apex domain moves from the 2xko project to the shell, and only the root robots.txt /
+  sitemap index count — the shell owns both. Host-based redirects on game projects are
+  forbidden (rewrite-proxy loop).
+- **Phase 5 findings (pre-cutover):** (1) *Env-only base flips don't work as designed* —
+  each game's literal `app.baseURL: '/'` shadows the engine's env-reading expression in
+  the layer merge, so `NUXT_APP_BASE_URL` alone flips the runtime router while prerender
+  seeds stay root-based (total-404 build, reproduced). Pattern now: each game commits
+  `baseURL: process.env.NUXT_APP_BASE_URL || '/<slug>/'` — the committed default IS
+  production truth; env is the override. (2) *Engine v0.5.1 (required, "zero engine
+  changes" prediction failed):* static-artifacts conflated filesystem space (nitro's
+  static presets suffix `publicDir` with the base and write routes de-based beneath it)
+  with URL space, and `prerender:route` strings are mixed-space — fixed by normalizing
+  with `withoutBase()` before dedupe/exclusion and re-basing only `<loc>`s at emit;
+  `404.html` goes to the static root. Root-base output byte-identical. (3) *Standing rule
+  from three stale-gate incidents* (verify-override, verify-browser, verify-subpath):
+  **when a phase adds a build surface, the base-path/theme gates must be extended in the
+  same phase** — verify-subpath gains an artifacts-placement assertion as the recorded
+  follow-up. Engine lineage: v0.4.1 (theme docs/tests) → v0.5.0 (rank-chip minor, shipped
+  between audited phases) → v0.5.1 (subpath artifacts fix; the platform-wide cutover pin).
