@@ -135,10 +135,13 @@ const facetActiveStyle = (accent?: string) => ({
           {{ p }}
         </button>
       </div>
-      <div v-if="f.enabled.rank && (game.ranks?.length ?? 0) > 0" class="flex items-center gap-1.5">
+      <div
+        v-if="f.enabled.rank && f.rankOptions.value.length > 0"
+        class="flex items-center gap-1.5"
+      >
         <span :class="labelClass" class="mr-1">Rank</span>
         <button
-          v-for="r in game.ranks"
+          v-for="r in f.rankOptions.value"
           :key="r"
           type="button"
           class="h-[34px] cursor-pointer border px-3 font-mono text-[12px]"

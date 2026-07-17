@@ -180,11 +180,11 @@ onBeforeUnmount(() => {
               </div>
             </div>
 
-            <div v-if="f.enabled.rank && (game.ranks?.length ?? 0) > 0">
+            <div v-if="f.enabled.rank && f.rankOptions.value.length > 0">
               <div :class="labelClass" class="mb-2.5 mt-5">Rank</div>
               <div class="grid grid-cols-2 gap-2">
                 <button
-                  v-for="r in game.ranks"
+                  v-for="r in f.rankOptions.value"
                   :key="r"
                   type="button"
                   class="h-10 cursor-pointer border px-2 font-mono text-[13px]"

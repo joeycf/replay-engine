@@ -37,6 +37,9 @@ export interface FilterController {
   state: ComputedRef<FilterState>;
   filtered: ComputedRef<Replay[]>;
   options: ComputedRef<FilterOptions>;
+  /** Rank chips to render: data-present ranks (options.ranks) in highest-first
+   *  (reversed-ladder) display order. Empty when no replay carries a rank. */
+  rankOptions: ComputedRef<string[]>;
   chips: ComputedRef<ActiveChip[]>;
   activeCount: ComputedRef<number>;
   /** Changes exactly when a filter/search/sort changes (not ?v=) — resets paging. */
@@ -229,6 +232,9 @@ export function useFilters(): FilterController {
     filterReplays(replays.value, state.value, searchIndex.value, gameFacets),
   );
   const options = computed(() => deriveOptions(replays.value, game.ranks));
+  // Highest-first for display; the ladder in game.ranks is canonical ascending,
+  // so the reversal is purely presentational (the filter chips read top-down).
+  const rankOptions = computed(() => [...options.value.ranks].reverse());
   const hasDurations = computed(() => replays.value.some((r) => (r.durationSec ?? 0) > 0));
 
   const filterKey = computed(() => {
@@ -253,6 +259,7 @@ export function useFilters(): FilterController {
     state,
     filtered,
     options,
+    rankOptions,
     chips,
     activeCount,
     filterKey,

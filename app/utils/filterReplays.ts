@@ -221,6 +221,9 @@ export function deriveOptions(replays: Replay[], rankOrder?: string[]): FilterOp
     players: sorted(players),
     sources: sorted(sources),
     patches: sorted(patches),
-    ranks: rankOrder?.length ? rankOrder : sorted(ranks),
+    // Ladder order when the game supplies one, but only ranks that actually
+    // appear in the data — a chip that filters to zero replays is never shown
+    // (same data-derived contract as characters/players/patches above).
+    ranks: rankOrder?.length ? rankOrder.filter((r) => ranks.has(r)) : sorted(ranks),
   };
 }

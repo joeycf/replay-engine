@@ -151,6 +151,11 @@ strings. Nothing game-specific is hard-coded in the engine.
 (ladder games) render **only** when your config enables them. `character`,
 `matchup`, `player`, `date`, `patch`, and `source` are always available.
 
+`ranks` stays the **canonical ascending ladder** — the engine derives the chips
+from it rather than rendering it verbatim: only ranks carried by a replay get a
+chip (no chip ever filters to zero), and they render highest-first. Ship the
+whole ladder; the data decides what shows.
+
 ---
 
 ## Theme override contract (the visual skin)
