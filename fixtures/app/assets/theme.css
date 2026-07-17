@@ -1,0 +1,16 @@
+/* =============================================================================
+   FIXTURE PROBE THEME — verify-override.mjs's committed test skin, not a real
+   game brand. Overrides a deliberate SUBSET of the semantic tokens (primary +
+   display face) so the built-bundle gate proves both behaviors at once:
+   overridden tokens win, untouched tokens keep the engine defaults.
+
+   :root, NOT @theme — this IS the contract under test (README "Theme override
+   contract"; STACK §5.13): an app stylesheet never enters the engine's
+   Tailwind root compile, so a raw @theme block would ship to the browser
+   uncompiled and be dropped — the regression the gate exists to catch (found
+   live on 2XKO by the Phase-4 audit).
+   ========================================================================== */
+:root {
+  --color-primary: #ff2d55;
+  --font-display: 'Courier New', monospace;
+}

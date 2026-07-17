@@ -6,4 +6,10 @@
 // merge a game uses. See README "Running the engine standalone".
 export default defineNuxtConfig({
   extends: ['..'],
+
+  // The committed probe theme rides the SAME wiring a real game uses (an app
+  // `css:` entry loading after the layer's CSS), so verify-override.mjs
+  // exercises the true consumer path on the BUILT bundle. The file must stay
+  // a plain `:root` block — that IS the contract under test (STACK §5.13).
+  css: ['~/assets/theme.css'],
 });

@@ -164,10 +164,20 @@ Tokens are **two tiers** (`PLAN.md` §2.6 / §4b):
 - **Theme tokens** — `tailwind/theme-default.css`. A neutral dark default you
   **fully replace** in your app's **`app/assets/theme.css`**.
 
-Because your app's CSS loads **after** the engine layer's, your `@theme` / `:root`
-values **shadow** the defaults. The engine's components reference **only** these
-semantic variables — never a raw hex or a literal font family — so a full re-skin
-is a drop-in CSS operation.
+Your theme file **MUST declare its tokens in a plain, unlayered `:root { … }`
+block — never `@theme`.** An app stylesheet does not pass through the engine's
+Tailwind root compile (only the engine's own `tailwind/index.css` import graph
+does), so an `@theme` at-rule in it reaches the browser raw — an unknown
+at-rule the browser silently drops. The failure is invisible in `nuxt dev`,
+which compiles each CSS file on its own and masks it; it bites only in the
+production bundle, which then ships the umbrella defaults instead of your skin
+(the 2XKO Phase-4 audit caught exactly this live). Unlayered `:root` custom
+properties need no compilation, and because your app's CSS loads **after** the
+engine layer's they beat the engine's `@layer theme` defaults in every build
+mode. The engine's components reference **only** these semantic variables —
+never a raw hex or a literal font family — so a full re-skin is a drop-in CSS
+operation. `scripts/verify-override.mjs` gates this contract on the BUILT
+fixture bundle in both directions (override wins; removal → umbrella).
 
 **Variables you MAY shadow** (the v0.1.0 additions are marked ▸):
 
@@ -221,8 +231,11 @@ the shared product shape.
   src: url('./fonts/your-display.woff2') format('woff2');
 }
 
-/* Shadow the engine's neutral defaults. Loaded after the engine layer → wins. */
-@theme {
+/* Shadow the engine's neutral defaults: plain unlayered :root — NEVER @theme.
+   An app stylesheet skips the engine's Tailwind compile, so a raw @theme block
+   is dropped by the browser and your skin silently never ships (dev masks it).
+   Loaded after the engine layer → these :root values win. */
+:root {
   --color-bg: #0a0410;
   --color-surface: #150a22;
   --color-surface-raised: #1f1030;
@@ -370,7 +383,10 @@ subpath-vs-subdomain decision a config flip.
 1. **Tailwind v4 via `@tailwindcss/vite`, not `@nuxtjs/tailwindcss`.** The
    community module's latest (`6.14`) pins `tailwindcss ~3.4.17` (v3) and cannot
    express the CSS-first `@theme` override architecture this engine's theming is
-   built on. We use Tailwind v4 + its official first-party Vite plugin.
+   built on. We use Tailwind v4 + its official first-party Vite plugin. (`@theme`
+   is engine-internal — `tailwind/theme-default.css` compiles through the engine's
+   own CSS graph; app theme files override with plain `:root`, per the theme
+   contract above.)
 2. **`app.config.ts` lives in `app/`,** not the repo root (Nuxt 4 srcDir change).
 3. **All collections are client-fetched (`server: false`).** Nuxt's internal
    SSR/prerender `$fetch` does not serve the app's _own_ `public/` assets, so a

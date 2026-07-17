@@ -79,6 +79,8 @@ beyond the node-driven scripts (revisit when Phase 2 grows real component logic)
 
 `@nuxtjs/tailwindcss@6` (latest) pins `tailwindcss ~3.4.17` and **cannot run v4** or its
 CSS-first `@theme`; the override architecture (games shadow engine tokens) requires v4.
+(`@theme` is engine-internal: it compiles only inside the engine's own CSS graph below.
+App theme files shadow with plain unlayered `:root`, never `@theme` — §5.13.)
 The engine registers the official Vite plugin in `nuxt.config.ts`:
 
 ```ts
@@ -169,20 +171,20 @@ apps inherit it and must **not** add any Tailwind module themselves. CSS entry:
 
 ### Scripts (the canonical set)
 
-| Script                                   | What it does                                                                                                                     |
-| ---------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
-| `dev` / `build` / `generate` / `preview` | Run against **`fixtures/`** — the thin consuming app (`extends: ['..']`)                                                         |
-| `typecheck`                              | Two-root `vue-tsc` check (see above)                                                                                             |
-| `lint` / `lint:fix`                      | `nuxt prepare && eslint .` (prepare guarantees the generated config exists)                                                      |
-| `format` / `format:check`                | Prettier across the repo                                                                                                         |
-| `test:filters`                           | Pure-logic filter semantics (facets, search, sort) against the fixture dataset                                                   |
-| `test:registry`                          | Registry-provisioning store semantics incl. the fetch-fallback (unprovided) state                                                |
-| `fonts:update`                           | Refresh committed neutral fonts from `@fontsource-*`                                                                             |
-| `scripts/fixtures-data.mjs`              | Derives fixture stats.json from replays (pipeline parity); `--1v1` emits the rank-ladder variant                                 |
-| `scripts/verify-phase2.mjs`              | Full ported-UI click-through (47 checks: filters/matchup/search/sort/modal/drawer/stats/404/SEO/network/reduced-motion/manifest) |
-| `scripts/verify-browser.mjs`             | Phase-1 hydrated-client suite (counts, toggle clicks, theme/accent tokens)                                                       |
-| `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base                                                                 |
-| `scripts/verify-override.mjs`            | Theme-override contract probe (app `theme.css` shadows engine tokens)                                                            |
+| Script                                   | What it does                                                                                                                          |
+| ---------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `dev` / `build` / `generate` / `preview` | Run against **`fixtures/`** — the thin consuming app (`extends: ['..']`)                                                              |
+| `typecheck`                              | Two-root `vue-tsc` check (see above)                                                                                                  |
+| `lint` / `lint:fix`                      | `nuxt prepare && eslint .` (prepare guarantees the generated config exists)                                                           |
+| `format` / `format:check`                | Prettier across the repo                                                                                                              |
+| `test:filters`                           | Pure-logic filter semantics (facets, search, sort) against the fixture dataset                                                        |
+| `test:registry`                          | Registry-provisioning store semantics incl. the fetch-fallback (unprovided) state                                                     |
+| `fonts:update`                           | Refresh committed neutral fonts from `@fontsource-*`                                                                                  |
+| `scripts/fixtures-data.mjs`              | Derives fixture stats.json from replays (pipeline parity); `--1v1` emits the rank-ladder variant                                      |
+| `scripts/verify-phase2.mjs`              | Full ported-UI click-through (47 checks: filters/matchup/search/sort/modal/drawer/stats/404/SEO/network/reduced-motion/manifest)      |
+| `scripts/verify-browser.mjs`             | Phase-1 hydrated-client suite (counts, toggle clicks, theme/accent tokens)                                                            |
+| `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base                                                                      |
+| `scripts/verify-override.mjs`            | Theme-override gate on the BUILT fixture bundle, both directions (`:root` override wins / removal → umbrella) + raw-`@theme` tripwire |
 
 SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lands in
 `fixtures/.vercel/output/static` (games: their own `.vercel/output`).
@@ -285,6 +287,15 @@ SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lan
     the layer app configs themselves (jiti-import each layer's `app/app.config.*` with a
     `defineAppConfig` shim, defu in layer order — `loadMergedGameConfig()` is the
     reference implementation).
+13. **App theme files MUST wrap their tokens in plain unlayered `:root`, never
+    `@theme`.** A consuming app's `css:` stylesheet does not enter the engine's Tailwind
+    root compile, so a raw `@theme` at-rule ships to the browser uncompiled and is
+    silently dropped — production wears the umbrella defaults while `nuxt dev` (per-file
+    CSS compile) looks correct. Caught live on 2XKO by the Phase-4 audit (v0.4.1);
+    Tekken shipped `:root` from day one. Unlayered `:root` beats the engine's
+    `@layer theme` defaults in every build mode. Gated by `scripts/verify-override.mjs`
+    (built fixture bundle, both directions) and by each game's e2e theme-presence test
+    against its own built output.
 
 ---
 
@@ -375,3 +386,31 @@ Browse could not carry):
   player line (per-side chips — attribution known; `compact` = the mobile variant).
   Overrides own their full markup, so unused slots cost zero pixels (fixture output
   verified stable).
+
+---
+
+## 9. v0.4.1 — theme-contract hardening (docs/tests only; zero runtime change)
+
+Consumers stay pinned at `v0.4.0` — nothing a game imports or renders changed.
+
+- The theme override contract now **mandates plain unlayered `:root`** for app theme
+  files (README "Theme override contract"; §5.13). Cause: the 2XKO Phase-4 audit found
+  the production bundle shipping a raw `@theme` block — dropped by the browser, so the
+  live site wore the umbrella teal/Space Grotesk while `nuxt dev` looked correct.
+- `scripts/verify-override.mjs` reworked accordingly: it now **builds the fixtures app
+  and probes the generated bundle's computed styles in BOTH directions** — the committed
+  fixture override (`fixtures/app/assets/theme.css`, `:root` form, wired through the
+  same `css:` array a game uses) must win, and emptying it must fall back to the
+  umbrella — plus a raw-`@theme` tripwire over every emitted stylesheet. The old form
+  probed a dev server carrying a temporary theme: exactly the mode that masks this bug.
+  It also asserted stale pre-Phase-2 values (`--color-surface #131519`, `--cut-md`
+  `0.875rem`), so it had not been re-run since the umbrella port — treat verify scripts
+  whose expectations drift as unrun, not as passing.
+- **Recorded recommendation — replays.json `thumb` omission (emitter contract, future
+  minor).** The 2XKO audit measured **all 2,921** emitted `thumb` values as the
+  id-derivable `https://i.ytimg.com/vi/<id>/maxresdefault.jpg` (~180 KB ≈ 16% of the
+  1.1 MB payload). Emitters could omit pattern-derivable thumbs entirely **if** the
+  engine's client fallback chain tried `maxresdefault` → `hqdefault` on error — today
+  `BrowseCard`/`VideoModal` derive `hqdefault` only, so omission would silently
+  downgrade card/modal art. That fallback is a runtime change, deliberately **not** in
+  v0.4.1; until it lands, emitters keep writing explicit `thumb` URLs.
