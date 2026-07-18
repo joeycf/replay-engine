@@ -139,6 +139,13 @@ export default defineAppConfig({
     // terms: { character: 'champion', characters: 'champions', side: 'team',
     //          patch: 'season', patches: 'seasons', source: 'channel' },
     // characterRouteSegment: 'champions',
+    // Optional stats-dashboard tuning (additive, v0.5.3). The meta-over-time
+    // bump chart: how many characters to plot (default 5), and whether it spans
+    // the whole row instead of sharing it with the `beside-timeline` game anchor
+    // (default false — a game that leaves that anchor empty, e.g. Tekken, sets
+    // it true; 2XKO keeps the default so its Fuse-meta companion still sits in
+    // the grid's second cell).
+    // stats: { metaTimelineTopN: 8, metaTimelineFullWidth: true },
   } satisfies GameConfig,
 });
 ```

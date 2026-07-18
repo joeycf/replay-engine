@@ -98,13 +98,17 @@
          Renders only when the timeline row itself does. -->
     <div
       v-if="patches.length > 1"
-      class="grid grid-cols-1 gap-4 px-4 pb-5 md:grid-cols-2 md:px-7"
+      class="grid grid-cols-1 gap-4 px-4 pb-5 md:px-7"
+      :class="metaFullWidth ? '' : 'md:grid-cols-2'"
     >
       <StatPanel
         title="Meta over time"
         :hint="`usage rank · ${patches[0]} → ${patches[patches.length - 1]}`"
       >
-        <MetaTimeline :top-n="5" />
+        <MetaTimeline
+          :top-n="metaTopN"
+          :wide="metaFullWidth"
+        />
       </StatPanel>
       <GameStatsPanels
         :patch="patch"
@@ -141,6 +145,13 @@ useSiteMeta({
 });
 
 const patch = ref<string | null>(null);
+
+// Meta-over-time layout (GameConfig.stats, v0.5.3). A game that leaves the
+// `beside-timeline` anchor empty (e.g. Tekken) spans the panel full-width and
+// plots more characters; the defaults keep 2XKO's half-width panel beside its
+// Fuse-meta companion.
+const metaTopN = game.stats?.metaTimelineTopN ?? 5;
+const metaFullWidth = game.stats?.metaTimelineFullWidth ?? false;
 
 const cname = (id: string) => byId(id)?.name ?? id;
 const pill = (on: boolean) =>

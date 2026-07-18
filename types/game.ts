@@ -47,4 +47,15 @@ export interface GameConfig {
    *  remapped at build (engineCharacterRoutes in nuxt.config); engine links
    *  resolve through useGameTerms().characterPath. */
   characterRouteSegment?: string;
+  /** Stats-dashboard layout tuning (additive, v0.5.3). Controls the
+   *  meta-over-time bump chart on the stats page:
+   *  - metaTimelineTopN: how many characters to plot (default 5).
+   *  - metaTimelineFullWidth: span the whole row instead of sharing it with
+   *    the `beside-timeline` game anchor (default false). A game that leaves
+   *    that anchor empty (e.g. Tekken) sets this true; 2XKO keeps the default
+   *    so its Fuse-meta companion still sits in the grid's second cell. */
+  stats?: {
+    metaTimelineTopN?: number;
+    metaTimelineFullWidth?: boolean;
+  };
 }
