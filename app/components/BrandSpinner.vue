@@ -1,28 +1,25 @@
-<script setup lang="ts">
-/**
- * The ReplayDB loading spinner — ported from design/brand/replay-loader.svg.
- * The source SVG animates with SMIL and literal brand hexes; SMIL cannot
- * animate to `var()` values, so the choreography (ring draw-in teal→gold,
- * rewind-triangle glitch burst, loop) is re-expressed as CSS keyframes over
- * SEMANTIC tokens — the spinner re-tints under any game theme.
- *
- * `prefers-reduced-motion`: all animation drops and the static mark stands
- * (full ring + solid triangles), exactly like the chart-reveal discipline.
- *
- * Default pending indicator for async UI (modal embed load, in-page pending
- * states). Browse keeps its skeleton cards.
- */
-withDefaults(defineProps<{ size?: number; label?: string }>(), {
-  size: 48,
-  label: 'Loading',
-});
-</script>
-
 <template>
-  <span role="status" :aria-label="label" class="inline-flex items-center justify-center">
-    <svg :width="size" :height="size" viewBox="0 0 100 100" aria-hidden="true" class="block">
+  <span
+    role="status"
+    :aria-label="label"
+    class="inline-flex items-center justify-center"
+  >
+    <svg
+      :width="size"
+      :height="size"
+      viewBox="0 0 100 100"
+      aria-hidden="true"
+      class="block"
+    >
       <!-- track -->
-      <circle cx="50" cy="50" r="40" fill="none" class="spinner-track" stroke-width="5" />
+      <circle
+        cx="50"
+        cy="50"
+        r="40"
+        fill="none"
+        class="spinner-track"
+        stroke-width="5"
+      />
       <!-- draw-in ring: teal → gold flash → fade, per the brand loader -->
       <circle
         cx="50"
@@ -51,6 +48,26 @@ withDefaults(defineProps<{ size?: number; label?: string }>(), {
     </svg>
   </span>
 </template>
+
+<script setup lang="ts">
+/**
+ * The ReplayDB loading spinner — ported from design/brand/replay-loader.svg.
+ * The source SVG animates with SMIL and literal brand hexes; SMIL cannot
+ * animate to `var()` values, so the choreography (ring draw-in teal→gold,
+ * rewind-triangle glitch burst, loop) is re-expressed as CSS keyframes over
+ * SEMANTIC tokens — the spinner re-tints under any game theme.
+ *
+ * `prefers-reduced-motion`: all animation drops and the static mark stands
+ * (full ring + solid triangles), exactly like the chart-reveal discipline.
+ *
+ * Default pending indicator for async UI (modal embed load, in-page pending
+ * states). Browse keeps its skeleton cards.
+ */
+withDefaults(defineProps<{ size?: number; label?: string }>(), {
+  size: 48,
+  label: 'Loading',
+});
+</script>
 
 <style scoped>
 .spinner-track {

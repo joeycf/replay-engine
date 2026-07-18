@@ -1,3 +1,72 @@
+<template>
+  <div
+    ref="root"
+    data-testid="meta-timeline"
+  >
+    <svg
+      viewBox="0 0 384 232"
+      class="block h-auto w-full"
+      role="img"
+      :aria-label="`${capWord(terms.character)} usage rank by ${terms.patch}`"
+    >
+      <line
+        v-for="(x, i) in xs"
+        :key="`grid-${i}`"
+        :x1="x"
+        y1="14"
+        :x2="x"
+        y2="210"
+        class="grid-line"
+      />
+      <g
+        v-for="line in lines"
+        :key="line.id"
+      >
+        <polyline
+          :points="line.points"
+          fill="none"
+          :stroke="line.color"
+          stroke-width="2.5"
+          stroke-linecap="round"
+          stroke-linejoin="round"
+        />
+        <circle
+          v-for="(p, i) in line.pts"
+          :key="i"
+          :cx="p.x"
+          :cy="p.y"
+          r="4.5"
+          :fill="line.color"
+          class="pt-ring"
+          stroke-width="1.5"
+        />
+        <text
+          class="line-label"
+          :x="xs[xs.length - 1]! + 11"
+          :y="line.labelY"
+          :fill="line.color"
+          font-size="11"
+          font-weight="700"
+          dominant-baseline="middle"
+        >
+          {{ line.name }}
+        </text>
+      </g>
+      <text
+        v-for="(p, i) in patches"
+        :key="`axis-${p}`"
+        :x="xs[i]"
+        y="226"
+        class="axis-label"
+        font-size="10"
+        text-anchor="middle"
+      >
+        {{ p.toUpperCase() }}
+      </text>
+    </svg>
+  </div>
+</template>
+
 <script setup lang="ts">
 // Meta over time (design Panel 3): usage-rank bump chart across the game's
 // patches (the shipped "eras", generic). Lines/marks tinted with character
@@ -68,69 +137,6 @@ useReveal(root, {
   },
 });
 </script>
-
-<template>
-  <div ref="root" data-testid="meta-timeline">
-    <svg
-      viewBox="0 0 384 232"
-      class="block h-auto w-full"
-      role="img"
-      :aria-label="`${capWord(terms.character)} usage rank by ${terms.patch}`"
-    >
-      <line
-        v-for="(x, i) in xs"
-        :key="`grid-${i}`"
-        :x1="x"
-        y1="14"
-        :x2="x"
-        y2="210"
-        class="grid-line"
-      />
-      <g v-for="line in lines" :key="line.id">
-        <polyline
-          :points="line.points"
-          fill="none"
-          :stroke="line.color"
-          stroke-width="2.5"
-          stroke-linecap="round"
-          stroke-linejoin="round"
-        />
-        <circle
-          v-for="(p, i) in line.pts"
-          :key="i"
-          :cx="p.x"
-          :cy="p.y"
-          r="4.5"
-          :fill="line.color"
-          class="pt-ring"
-          stroke-width="1.5"
-        />
-        <text
-          class="line-label"
-          :x="xs[xs.length - 1]! + 11"
-          :y="line.labelY"
-          :fill="line.color"
-          font-size="11"
-          font-weight="700"
-          dominant-baseline="middle"
-        >
-          {{ line.name }}
-        </text>
-      </g>
-      <text
-        v-for="(p, i) in patches"
-        :key="`axis-${p}`"
-        :x="xs[i]"
-        y="226"
-        class="axis-label"
-        font-size="10"
-        text-anchor="middle"
-      >
-        {{ p.toUpperCase() }}
-      </text>
-    </svg>
-  </div>
-</template>
 
 <style scoped>
 /* SVG text/stroke styling via classes so families + colors stay semantic. */

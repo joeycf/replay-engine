@@ -46,7 +46,7 @@ so every consuming repo replicates those 6 lines (part of the §1 replication co
 | `@nuxt/eslint`                        | 1.16.0  | ESLint module — generates project-aware flat config on `nuxt prepare`                                                                                                                            |
 | `eslint`                              | 10.6.0  | Linter (flat config)                                                                                                                                                                             |
 | `eslint-config-prettier`              | 10.1.8  | Appended **last** — Prettier owns formatting                                                                                                                                                     |
-| `prettier`                            | 3.9.5   | Formatter (`.prettierrc`: semi, single-quote, trailing-comma all, width 100)                                                                                                                     |
+| `prettier`                            | 3.9.5   | Formatter (`.prettierrc`: semi, single-quote, trailing-comma all, width 100, single-attr-per-line)                                                                                               |
 | `@fontsource-variable/space-grotesk`  | 5.2.10  | Neutral display face source (see §2 fonts)                                                                                                                                                       |
 | `@fontsource-variable/inter`          | 5.2.8   | Neutral UI face source                                                                                                                                                                           |
 | `@fontsource-variable/jetbrains-mono` | 5.2.8   | Neutral mono face source                                                                                                                                                                         |
@@ -162,12 +162,17 @@ apps inherit it and must **not** add any Tailwind module themselves. CSS entry:
 - Repo-root `eslint.config.mjs` = `withNuxt(…overrides, eslintConfigPrettier)` with
   `eslint-config-prettier` **last**. ESLint owns correctness; Prettier owns formatting
   (no stylistic ESLint rules). Game repos replicate this file verbatim.
-- `.prettierrc`: `{ semi: true, singleQuote: true, trailingComma: "all", printWidth: 100 }`.
+- `.prettierrc`: `{ semi: true, singleQuote: true, trailingComma: "all", printWidth: 100, singleAttributePerLine: true }`.
   `.prettierignore` excludes generated output, binaries, `public/`, `design/`, and
   **`PLAN.md`** (hand-authored; never machine-reflowed).
 - Convention surfaced by lint: `vue/multi-word-component-names` is enforced — brand
   components use the `Brand*` prefix (`BrandWordmark`; Phase 2 adds `BrandMark`,
   `BrandSpinner`, `BrandLogo` per PLAN §5).
+- **SFC authoring order (set 2026-07-18):** every `.vue` file is **template-first** —
+  `<template>` → `<script setup lang="ts">` → `<style scoped>`. `singleAttributePerLine`
+  then breaks every multi-attribute tag one-attribute-per-line (single/no-attribute tags
+  stay inline). Applied engine-wide; **consuming repos replicate `.prettierrc` and this
+  block order verbatim** so cross-repo diffs stay clean.
 
 ### Scripts (the canonical set)
 
@@ -199,7 +204,10 @@ SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lan
 - **Layer anatomy:** `$meta.name: 'replay-engine'`; the `@engine` alias pinned via
   `fileURLToPath(new URL('.', import.meta.url))` so engine code never self-references
   through `~~/` (which resolves to the _consumer's_ rootDir under a layer); CSS entry by
-  absolute path for the same reason.
+  absolute path for the same reason. Engine-internal imports (composables/utils/types,
+  including cross-`app/` type imports) go through **`@engine/…`** (e.g.
+  `@engine/app/composables/useStatsRows`) — never relative `../` or `@`/`~`, which
+  mis-resolve to the consumer's srcDir under a layer.
 - **`fixtures/` is a real consuming app**, not a data-copy step: its own
   `fixtures/app/app.config.ts` (`charactersPerSide: 2`, `coOccurrence: true`) merges over
   the engine default (`1`, `false`) through the exact mechanism a game uses. Engine dev is

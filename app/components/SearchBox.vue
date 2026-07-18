@@ -1,3 +1,27 @@
+<template>
+  <form
+    role="search"
+    class="flex items-center gap-[9px] border border-border bg-surface-sunken"
+    :class="compact ? 'px-3 py-[9px]' : 'px-3.5 py-2.5'"
+    @submit.prevent="onSubmit"
+  >
+    <span
+      class="relative h-3.5 w-3.5 flex-none rounded-full border-[1.6px] border-text-muted"
+      aria-hidden="true"
+    >
+      <span class="absolute -bottom-[3px] -right-1 h-[1.6px] w-1.5 rotate-45 bg-text-muted" />
+    </span>
+    <input
+      :value="local"
+      type="search"
+      :placeholder="`Search title, player, ${terms.character}…`"
+      :aria-label="`Search title, player, or ${terms.character}`"
+      class="w-full min-w-0 flex-1 border-none bg-transparent font-ui text-[13px] text-text outline-none placeholder:text-text-muted"
+      @input="onInput"
+    />
+  </form>
+</template>
+
 <script setup lang="ts">
 // Global header search. On Browse (/) it live-binds ?q= (debounced replace).
 // On every other route it's a plain input that navigates to /?q=<query> on
@@ -48,27 +72,3 @@ onBeforeUnmount(() => {
   if (timer) clearTimeout(timer);
 });
 </script>
-
-<template>
-  <form
-    role="search"
-    class="flex items-center gap-[9px] border border-border bg-surface-sunken"
-    :class="compact ? 'px-3 py-[9px]' : 'px-3.5 py-2.5'"
-    @submit.prevent="onSubmit"
-  >
-    <span
-      class="relative h-3.5 w-3.5 flex-none rounded-full border-[1.6px] border-text-muted"
-      aria-hidden="true"
-    >
-      <span class="absolute -bottom-[3px] -right-1 h-[1.6px] w-1.5 rotate-45 bg-text-muted" />
-    </span>
-    <input
-      :value="local"
-      type="search"
-      :placeholder="`Search title, player, ${terms.character}…`"
-      :aria-label="`Search title, player, or ${terms.character}`"
-      class="w-full min-w-0 flex-1 border-none bg-transparent font-ui text-[13px] text-text outline-none placeholder:text-text-muted"
-      @input="onInput"
-    />
-  </form>
-</template>

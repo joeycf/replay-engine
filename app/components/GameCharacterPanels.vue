@@ -1,3 +1,8 @@
+<template>
+  <!-- engine default: no game panels -->
+  <span v-if="false" />
+</template>
+
 <script setup lang="ts">
 // GAME-PANEL EXTENSION SLOT (character detail page) — same override-by-path
 // mechanism as GameStatsPanels: the engine copy renders nothing; a game ships
@@ -8,8 +13,3 @@ defineProps<{
   characterId: string;
 }>();
 </script>
-
-<template>
-  <!-- engine default: no game panels -->
-  <span v-if="false" />
-</template>

@@ -1,53 +1,10 @@
-<script setup lang="ts">
-// Desktop filter bar — port of design 1A rows, config-driven: character chips
-// + same-side toggle (GATED: charactersPerSide > 1 && filters.coOccurrence) +
-// matchup picker; source/patch/rank(GATED: filters.rank)/date/sort; player
-// facet with featured chips + typeahead. Character chips show the full name
-// in a HoverTip. Everything game-shaped comes from useGame()/registries.
-import type { Character } from '@engine/types';
-import type { ReplaySort } from '../utils/filterReplays';
-
-const props = defineProps<{ filters: ReturnType<typeof useFilters> }>();
-const f = props.filters;
-
-const game = useGame();
-const terms = useGameTerms();
-const { list: characters } = useCharacters();
-const { ranked, featured } = useFeaturedPlayers();
-// clampX sized for a single character name, not the matrix's pairing line
-const { tip, showTip, hideTip } = useHoverTip<Character>({ clampX: 70 });
-
-const typeaheadOpen = ref(false);
-const matchupOpen = ref(false);
-
-const togClass = (on: boolean) =>
-  on
-    ? 'bg-primary text-primary-contrast border-primary'
-    : 'bg-surface-raised text-text-secondary border-border hover:text-text';
-
-const labelClass = 'font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted';
-
-const coUsable = computed(() => f.state.value.characters.length >= 2);
-const sourceClass = (id: string, i: number) =>
-  f.isActive('sources', id)
-    ? i === 0
-      ? 'bg-primary text-primary-contrast border-primary'
-      : 'bg-secondary/15 text-secondary border-secondary'
-    : 'bg-surface-raised text-text-secondary border-border hover:text-text';
-
-// game-facet chips: accent-tinted when active (the ported fuse-chip anatomy —
-// accent border + 15%-alpha accent fill); inactive styling is class-based
-const facetActiveStyle = (accent?: string) => ({
-  borderColor: accent ?? 'var(--color-text)',
-  background: accent ? `${accent}26` : 'var(--color-surface-raised)',
-  color: 'var(--color-text)',
-});
-</script>
-
 <template>
   <div class="border-b border-border-subtle bg-bg px-4 py-4 md:px-[26px]">
     <!-- character facet + gated same-side + matchup picker -->
-    <div :class="labelClass" class="mb-2.5">
+    <div
+      :class="labelClass"
+      class="mb-2.5"
+    >
       {{ capWord(terms.character)
       }}{{ game.charactersPerSide > 1 ? ` · ${terms.side} includes` : '' }}
     </div>
@@ -100,14 +57,25 @@ const facetActiveStyle = (accent?: string) => ({
         >
           ⚔ Matchup
         </button>
-        <MatchupPicker v-if="matchupOpen" :filters="f" @close="matchupOpen = false" />
+        <MatchupPicker
+          v-if="matchupOpen"
+          :filters="f"
+          @close="matchupOpen = false"
+        />
       </div>
     </div>
 
     <!-- source · patch · rank · date · sort -->
     <div class="mt-4 flex flex-wrap items-center gap-[18px]">
-      <div v-if="game.sourceChannels.length" class="flex items-center gap-1.5">
-        <span :class="labelClass" class="mr-1">{{ capWord(terms.source) }}</span>
+      <div
+        v-if="game.sourceChannels.length"
+        class="flex items-center gap-1.5"
+      >
+        <span
+          :class="labelClass"
+          class="mr-1"
+          >{{ capWord(terms.source) }}</span
+        >
         <button
           v-for="(s, i) in game.sourceChannels"
           :key="s.id"
@@ -120,9 +88,19 @@ const facetActiveStyle = (accent?: string) => ({
           {{ s.name }}
         </button>
       </div>
-      <span v-if="game.sourceChannels.length" class="h-6 w-px bg-border" />
-      <div v-if="f.options.value.patches.length" class="flex items-center gap-1.5">
-        <span :class="labelClass" class="mr-1">{{ capWord(terms.patch) }}</span>
+      <span
+        v-if="game.sourceChannels.length"
+        class="h-6 w-px bg-border"
+      />
+      <div
+        v-if="f.options.value.patches.length"
+        class="flex items-center gap-1.5"
+      >
+        <span
+          :class="labelClass"
+          class="mr-1"
+          >{{ capWord(terms.patch) }}</span
+        >
         <button
           v-for="p in f.options.value.patches"
           :key="p"
@@ -139,7 +117,11 @@ const facetActiveStyle = (accent?: string) => ({
         v-if="f.enabled.rank && f.rankOptions.value.length > 0"
         class="flex items-center gap-1.5"
       >
-        <span :class="labelClass" class="mr-1">Rank</span>
+        <span
+          :class="labelClass"
+          class="mr-1"
+          >Rank</span
+        >
         <button
           v-for="r in f.rankOptions.value"
           :key="r"
@@ -154,7 +136,11 @@ const facetActiveStyle = (accent?: string) => ({
         </button>
       </div>
       <div class="flex items-center gap-1.5">
-        <span :class="labelClass" class="mr-1">Date</span>
+        <span
+          :class="labelClass"
+          class="mr-1"
+          >Date</span
+        >
         <input
           type="date"
           :value="f.state.value.dateFrom ?? ''"
@@ -179,7 +165,11 @@ const facetActiveStyle = (accent?: string) => ({
         />
       </div>
       <div class="ml-auto flex items-center gap-2">
-        <label :class="labelClass" for="browse-sort">Sort</label>
+        <label
+          :class="labelClass"
+          for="browse-sort"
+          >Sort</label
+        >
         <select
           id="browse-sort"
           :value="f.state.value.sort"
@@ -189,13 +179,22 @@ const facetActiveStyle = (accent?: string) => ({
           <option value="newest">Newest</option>
           <option value="oldest">Oldest</option>
           <option value="views">Most viewed</option>
-          <option v-if="f.hasDurations.value" value="longest">Longest</option>
+          <option
+            v-if="f.hasDurations.value"
+            value="longest"
+          >
+            Longest
+          </option>
         </select>
       </div>
     </div>
 
     <!-- game-defined facets (provideGameFacets, v0.3.0) — e.g. 2XKO's fuses -->
-    <div v-for="facet in f.gameFacets" :key="facet.param" class="mt-4">
+    <div
+      v-for="facet in f.gameFacets"
+      :key="facet.param"
+      class="mt-4"
+    >
       <div class="mb-2.5 flex flex-wrap items-baseline gap-x-3 gap-y-1">
         <span :class="labelClass">{{ facet.label }}</span>
         <span
@@ -233,7 +232,12 @@ const facetActiveStyle = (accent?: string) => ({
 
     <!-- player facet -->
     <div class="mt-4">
-      <div :class="labelClass" class="mb-2.5">Player · featured</div>
+      <div
+        :class="labelClass"
+        class="mb-2.5"
+      >
+        Player · featured
+      </div>
       <div class="flex flex-wrap items-center gap-[7px]">
         <button
           v-for="p in featured"
@@ -248,7 +252,10 @@ const facetActiveStyle = (accent?: string) => ({
           :aria-pressed="f.isActive('players', p.id)"
           @click="f.togglePlayer(p.id)"
         >
-          <VerifiedMark v-if="p.featured" :size="10" />
+          <VerifiedMark
+            v-if="p.featured"
+            :size="10"
+          />
           {{ p.handle }}
           <span class="font-mono text-[10px] text-text-muted">{{ p.appearances }}</span>
         </button>
@@ -261,7 +268,11 @@ const facetActiveStyle = (accent?: string) => ({
           >
             Search all {{ ranked.length.toLocaleString() }} players ▾
           </button>
-          <PlayerTypeahead v-if="typeaheadOpen" :filters="f" @close="typeaheadOpen = false" />
+          <PlayerTypeahead
+            v-if="typeaheadOpen"
+            :filters="f"
+            @close="typeaheadOpen = false"
+          />
         </div>
       </div>
     </div>
@@ -276,3 +287,49 @@ const facetActiveStyle = (accent?: string) => ({
     </HoverTip>
   </div>
 </template>
+
+<script setup lang="ts">
+// Desktop filter bar — port of design 1A rows, config-driven: character chips
+// + same-side toggle (GATED: charactersPerSide > 1 && filters.coOccurrence) +
+// matchup picker; source/patch/rank(GATED: filters.rank)/date/sort; player
+// facet with featured chips + typeahead. Character chips show the full name
+// in a HoverTip. Everything game-shaped comes from useGame()/registries.
+import type { Character } from '@engine/types';
+import type { ReplaySort } from '@engine/app/utils/filterReplays';
+
+const props = defineProps<{ filters: ReturnType<typeof useFilters> }>();
+const f = props.filters;
+
+const game = useGame();
+const terms = useGameTerms();
+const { list: characters } = useCharacters();
+const { ranked, featured } = useFeaturedPlayers();
+// clampX sized for a single character name, not the matrix's pairing line
+const { tip, showTip, hideTip } = useHoverTip<Character>({ clampX: 70 });
+
+const typeaheadOpen = ref(false);
+const matchupOpen = ref(false);
+
+const togClass = (on: boolean) =>
+  on
+    ? 'bg-primary text-primary-contrast border-primary'
+    : 'bg-surface-raised text-text-secondary border-border hover:text-text';
+
+const labelClass = 'font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted';
+
+const coUsable = computed(() => f.state.value.characters.length >= 2);
+const sourceClass = (id: string, i: number) =>
+  f.isActive('sources', id)
+    ? i === 0
+      ? 'bg-primary text-primary-contrast border-primary'
+      : 'bg-secondary/15 text-secondary border-secondary'
+    : 'bg-surface-raised text-text-secondary border-border hover:text-text';
+
+// game-facet chips: accent-tinted when active (the ported fuse-chip anatomy —
+// accent border + 15%-alpha accent fill); inactive styling is class-based
+const facetActiveStyle = (accent?: string) => ({
+  borderColor: accent ?? 'var(--color-text)',
+  background: accent ? `${accent}26` : 'var(--color-surface-raised)',
+  color: 'var(--color-text)',
+});
+</script>

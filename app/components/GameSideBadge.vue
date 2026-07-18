@@ -1,3 +1,8 @@
+<template>
+  <!-- engine default: nothing -->
+  <span v-if="false" />
+</template>
+
 <script setup lang="ts">
 // GAME-BADGE EXTENSION SLOT (v0.3.0) — the per-side badge. A game overrides
 // this at the same path to attach a small accent chip to ONE side when
@@ -16,8 +21,3 @@ defineProps<{
   compact?: boolean;
 }>();
 </script>
-
-<template>
-  <!-- engine default: nothing -->
-  <span v-if="false" />
-</template>

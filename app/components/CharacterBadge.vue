@@ -1,3 +1,26 @@
+<template>
+  <span
+    class="flex flex-none items-center justify-center font-display font-bold text-bg"
+    :class="strong ? 'border-[1.5px] border-border' : 'border border-border'"
+    :style="style"
+    :aria-label="character?.name"
+    @mouseenter="character && showTip($event, character)"
+    @mouseleave="hideTip"
+  >
+    {{ initials }}
+    <!-- teleports to body; only a placeholder stays in the span, keeping it
+         the single root so caller attrs (class, etc.) still fall through -->
+    <HoverTip :tip="tip">
+      <span
+        v-if="tip"
+        class="font-ui text-[12px] font-semibold"
+        :style="{ color: accentVar(tip.data.id, 'var(--color-primary)') }"
+        >{{ tip.data.name }}</span
+      >
+    </HoverTip>
+  </span>
+</template>
+
 <script setup lang="ts">
 // The two-letter character badge (generalizes the shipped ChampBadge).
 // Accent tint resolves through the injected --accent-<id> variable
@@ -42,26 +65,3 @@ const style = computed(() => ({
       : undefined,
 }));
 </script>
-
-<template>
-  <span
-    class="flex flex-none items-center justify-center font-display font-bold text-bg"
-    :class="strong ? 'border-[1.5px] border-border' : 'border border-border'"
-    :style="style"
-    :aria-label="character?.name"
-    @mouseenter="character && showTip($event, character)"
-    @mouseleave="hideTip"
-  >
-    {{ initials }}
-    <!-- teleports to body; only a placeholder stays in the span, keeping it
-         the single root so caller attrs (class, etc.) still fall through -->
-    <HoverTip :tip="tip">
-      <span
-        v-if="tip"
-        class="font-ui text-[12px] font-semibold"
-        :style="{ color: accentVar(tip.data.id, 'var(--color-primary)') }"
-        >{{ tip.data.name }}</span
-      >
-    </HoverTip>
-  </span>
-</template>

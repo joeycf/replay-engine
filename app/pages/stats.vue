@@ -1,3 +1,128 @@
+<template>
+  <div class="mx-auto w-full max-w-[1440px]">
+    <!-- title + patch context -->
+    <div class="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 pb-1.5 pt-[22px] md:px-7">
+      <h1 class="font-display text-[22px] font-bold text-text md:text-[26px]">Meta Stats</h1>
+      <span class="font-mono text-[11px] text-text-muted">
+        {{ patchName }} ·
+        <span data-testid="context-count">{{ contextCount.toLocaleString('en-US') }}</span>
+        replays
+      </span>
+      <div
+        v-if="patches.length"
+        data-testid="patch-chips"
+        class="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 md:mx-0 md:ml-auto md:px-0"
+      >
+        <span
+          class="mr-0.5 hidden font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted sm:block"
+        >
+          {{ capWord(terms.patch) }}
+        </span>
+        <button
+          type="button"
+          class="flex-none cursor-pointer rounded-full border px-3.5 py-2 font-ui text-[12px] font-semibold"
+          :class="pill(patch === null)"
+          @click="patch = null"
+        >
+          All
+        </button>
+        <button
+          v-for="p in patches"
+          :key="p"
+          type="button"
+          class="flex-none cursor-pointer rounded-full border px-[13px] py-2 font-mono text-[12px]"
+          :class="pill(patch === p)"
+          @click="patch = p"
+        >
+          {{ p }}
+        </button>
+      </div>
+    </div>
+
+    <!-- headline tiles -->
+    <div class="grid grid-cols-2 gap-3 px-4 pb-1 pt-4 md:grid-cols-4 md:gap-3.5 md:px-7">
+      <div
+        v-for="t in tiles"
+        :key="t.label"
+        class="border border-border-subtle bg-surface p-4"
+        :style="{ borderTop: `2px solid ${t.accent}` }"
+      >
+        <div class="font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
+          {{ t.label }}
+        </div>
+        <div class="mt-1 truncate font-display text-[22px] font-bold text-text md:text-[30px]">
+          {{ t.value }}
+        </div>
+      </div>
+    </div>
+
+    <!-- Panel 1: character usage -->
+    <div class="px-4 py-5 md:px-7">
+      <StatPanel
+        :title="`${capWord(terms.character)} usage`"
+        :hint="`appearances · ${patchName}`"
+      >
+        <CharacterUsageBars :items="usageRows" />
+      </StatPanel>
+    </div>
+
+    <!-- GAME-PANEL ANCHOR 'after-usage' (v0.4.0): a full-width game panel row
+         right below the usage panel — the shipped 2XKO composition put Fuse
+         usage here. NAKED render: the override owns its container/spacing. -->
+    <GameStatsPanels
+      :patch="patch"
+      position="after-usage"
+    />
+
+    <!-- Panel 2: duo analytics — generic tag-game panels, gated -->
+    <div
+      v-if="showDuo"
+      class="grid grid-cols-1 gap-4 px-4 pb-5 md:grid-cols-2 md:px-7"
+    >
+      <StatPanel
+        :title="`Top ${terms.side} pairings`"
+        hint="same-side teams · all time"
+      >
+        <PairingBars :limit="10" />
+      </StatPanel>
+      <StatPanel
+        title="Synergy matrix"
+        hint="click a cell → filter"
+      >
+        <SynergyMatrix />
+      </StatPanel>
+    </div>
+
+    <!-- Panel 3: meta over time + the 'beside-timeline' game anchor (v0.4.0):
+         the grid's second cell — 2XKO's Fuse-meta-by-era companion panel.
+         Renders only when the timeline row itself does. -->
+    <div
+      v-if="patches.length > 1"
+      class="grid grid-cols-1 gap-4 px-4 pb-5 md:grid-cols-2 md:px-7"
+    >
+      <StatPanel
+        title="Meta over time"
+        :hint="`usage rank · ${patches[0]} → ${patches[patches.length - 1]}`"
+      >
+        <MetaTimeline :top-n="5" />
+      </StatPanel>
+      <GameStatsPanels
+        :patch="patch"
+        position="beside-timeline"
+      />
+    </div>
+
+    <!-- GAME-PANEL ANCHOR 'bottom': the original slot position (wrapped for
+         back-compat with v0.3.0-era overrides that render everything here) -->
+    <div class="px-4 pb-6 md:px-7">
+      <GameStatsPanels
+        :patch="patch"
+        position="bottom"
+      />
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 // Stats dashboard — design screen 3a, config-driven. Fully prerendered with
 // real numbers (provided stats); animations are a client-side reveal layer.
@@ -64,104 +189,3 @@ const contextCount = computed(() =>
   patch.value === null ? totals.value.replays : (totals.value.byPatch?.[patch.value] ?? 0),
 );
 </script>
-
-<template>
-  <div class="mx-auto w-full max-w-[1440px]">
-    <!-- title + patch context -->
-    <div class="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 pb-1.5 pt-[22px] md:px-7">
-      <h1 class="font-display text-[22px] font-bold text-text md:text-[26px]">Meta Stats</h1>
-      <span class="font-mono text-[11px] text-text-muted">
-        {{ patchName }} ·
-        <span data-testid="context-count">{{ contextCount.toLocaleString('en-US') }}</span>
-        replays
-      </span>
-      <div
-        v-if="patches.length"
-        data-testid="patch-chips"
-        class="-mx-1 flex items-center gap-1.5 overflow-x-auto px-1 md:mx-0 md:ml-auto md:px-0"
-      >
-        <span
-          class="mr-0.5 hidden font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted sm:block"
-        >
-          {{ capWord(terms.patch) }}
-        </span>
-        <button
-          type="button"
-          class="flex-none cursor-pointer rounded-full border px-3.5 py-2 font-ui text-[12px] font-semibold"
-          :class="pill(patch === null)"
-          @click="patch = null"
-        >
-          All
-        </button>
-        <button
-          v-for="p in patches"
-          :key="p"
-          type="button"
-          class="flex-none cursor-pointer rounded-full border px-[13px] py-2 font-mono text-[12px]"
-          :class="pill(patch === p)"
-          @click="patch = p"
-        >
-          {{ p }}
-        </button>
-      </div>
-    </div>
-
-    <!-- headline tiles -->
-    <div class="grid grid-cols-2 gap-3 px-4 pb-1 pt-4 md:grid-cols-4 md:gap-3.5 md:px-7">
-      <div
-        v-for="t in tiles"
-        :key="t.label"
-        class="border border-border-subtle bg-surface p-4"
-        :style="{ borderTop: `2px solid ${t.accent}` }"
-      >
-        <div class="font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
-          {{ t.label }}
-        </div>
-        <div class="mt-1 truncate font-display text-[22px] font-bold text-text md:text-[30px]">
-          {{ t.value }}
-        </div>
-      </div>
-    </div>
-
-    <!-- Panel 1: character usage -->
-    <div class="px-4 py-5 md:px-7">
-      <StatPanel :title="`${capWord(terms.character)} usage`" :hint="`appearances · ${patchName}`">
-        <CharacterUsageBars :items="usageRows" />
-      </StatPanel>
-    </div>
-
-    <!-- GAME-PANEL ANCHOR 'after-usage' (v0.4.0): a full-width game panel row
-         right below the usage panel — the shipped 2XKO composition put Fuse
-         usage here. NAKED render: the override owns its container/spacing. -->
-    <GameStatsPanels :patch="patch" position="after-usage" />
-
-    <!-- Panel 2: duo analytics — generic tag-game panels, gated -->
-    <div v-if="showDuo" class="grid grid-cols-1 gap-4 px-4 pb-5 md:grid-cols-2 md:px-7">
-      <StatPanel :title="`Top ${terms.side} pairings`" hint="same-side teams · all time">
-        <PairingBars :limit="10" />
-      </StatPanel>
-      <StatPanel title="Synergy matrix" hint="click a cell → filter">
-        <SynergyMatrix />
-      </StatPanel>
-    </div>
-
-    <!-- Panel 3: meta over time + the 'beside-timeline' game anchor (v0.4.0):
-         the grid's second cell — 2XKO's Fuse-meta-by-era companion panel.
-         Renders only when the timeline row itself does. -->
-    <div v-if="patches.length > 1" class="grid grid-cols-1 gap-4 px-4 pb-5 md:grid-cols-2 md:px-7">
-      <StatPanel
-        title="Meta over time"
-        :hint="`usage rank · ${patches[0]} → ${patches[patches.length - 1]}`"
-      >
-        <MetaTimeline :top-n="5" />
-      </StatPanel>
-      <GameStatsPanels :patch="patch" position="beside-timeline" />
-    </div>
-
-    <!-- GAME-PANEL ANCHOR 'bottom': the original slot position (wrapped for
-         back-compat with v0.3.0-era overrides that render everything here) -->
-    <div class="px-4 pb-6 md:px-7">
-      <GameStatsPanels :patch="patch" position="bottom" />
-    </div>
-  </div>
-</template>

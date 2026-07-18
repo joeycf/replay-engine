@@ -1,38 +1,3 @@
-<script setup lang="ts">
-// Matchup picker — the UI over the composable's mu=a:b facet (Phase 1 shipped
-// the logic; this is the picker). Pick one character per side; Apply writes
-// the order-agnostic opposing-sides filter. Anchored popover, outside-click /
-// Esc to close — the PlayerTypeahead interaction pattern.
-const emit = defineEmits<{ close: [] }>();
-
-const props = defineProps<{ filters: ReturnType<typeof useFilters> }>();
-
-const { list: characters } = useCharacters();
-
-const root = ref<HTMLElement>();
-const a = ref<string | null>(props.filters.state.value.matchup?.[0] ?? null);
-const b = ref<string | null>(props.filters.state.value.matchup?.[1] ?? null);
-
-function onOutside(e: PointerEvent) {
-  if (root.value && !root.value.contains(e.target as Node)) emit('close');
-}
-onMounted(() => document.addEventListener('pointerdown', onOutside, true));
-onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutside, true));
-
-function apply() {
-  props.filters.setMatchup(a.value, b.value);
-  emit('close');
-}
-function clear() {
-  a.value = null;
-  b.value = null;
-  props.filters.setMatchup(null, null);
-  emit('close');
-}
-
-const chipClass = (selected: boolean) => (selected ? 'opacity-100' : 'opacity-45 hover:opacity-80');
-</script>
-
 <template>
   <div
     ref="root"
@@ -102,3 +67,39 @@ const chipClass = (selected: boolean) => (selected ? 'opacity-100' : 'opacity-45
     </div>
   </div>
 </template>
+
+<script setup lang="ts">
+// Matchup picker — the UI over the composable's mu=a:b facet (Phase 1 shipped
+// the logic; this is the picker). Pick one character per side; Apply writes
+// the order-agnostic opposing-sides filter. Anchored popover, outside-click /
+// Esc to close — the PlayerTypeahead interaction pattern.
+const emit = defineEmits<{ close: [] }>();
+
+const props = defineProps<{ filters: ReturnType<typeof useFilters> }>();
+
+const { list: characters } = useCharacters();
+
+const root = ref<HTMLElement>();
+const a = ref<string | null>(props.filters.state.value.matchup?.[0] ?? null);
+const b = ref<string | null>(props.filters.state.value.matchup?.[1] ?? null);
+
+function onOutside(e: PointerEvent) {
+  if (root.value && !root.value.contains(e.target as Node)) emit('close');
+}
+
+function apply() {
+  props.filters.setMatchup(a.value, b.value);
+  emit('close');
+}
+function clear() {
+  a.value = null;
+  b.value = null;
+  props.filters.setMatchup(null, null);
+  emit('close');
+}
+
+const chipClass = (selected: boolean) => (selected ? 'opacity-100' : 'opacity-45 hover:opacity-80');
+
+onMounted(() => document.addEventListener('pointerdown', onOutside, true));
+onBeforeUnmount(() => document.removeEventListener('pointerdown', onOutside, true));
+</script>

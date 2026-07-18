@@ -1,3 +1,199 @@
+<template>
+  <div class="mx-auto w-full max-w-[1440px]">
+    <!-- HERO -->
+    <div class="relative h-[280px] overflow-hidden border-b border-border-subtle md:h-[340px]">
+      <div
+        class="absolute inset-0"
+        style="
+          background: repeating-linear-gradient(
+            135deg,
+            var(--color-surface),
+            var(--color-surface) 12px,
+            var(--color-bg) 12px,
+            var(--color-bg) 24px
+          );
+        "
+      />
+      <img
+        v-if="splash"
+        :src="splash"
+        alt=""
+        fetchpriority="high"
+        class="absolute inset-0 h-full w-full object-cover object-[70%_25%]"
+      />
+      <div
+        class="absolute inset-0"
+        :style="{
+          background: `radial-gradient(80% 120% at 78% 30%, color-mix(in srgb, ${accent} 22%, transparent), transparent 60%), linear-gradient(90deg, var(--color-bg) 25%, transparent 70%)`,
+        }"
+      />
+      <div class="absolute bottom-7 left-4 md:bottom-[34px] md:left-10">
+        <div class="mb-2 flex items-center gap-3">
+          <CharacterBadge
+            :character-id="character.id"
+            :size="52"
+            :notch="11"
+            :font-size="20"
+            strong
+          />
+          <span
+            v-if="latestPatch"
+            class="font-ui text-[11px] font-semibold uppercase tracking-[.18em]"
+            :style="{ color: accent }"
+          >
+            {{ latestPatch }} ·
+            {{ latestRank === 1 ? 'Most picked' : `#${latestRank} most picked` }}
+          </span>
+        </div>
+        <h1
+          class="font-display text-[52px] font-bold uppercase leading-[.9] tracking-[-.02em] text-text md:text-[76px]"
+          :style="{ textShadow: `0 4px 30px color-mix(in srgb, ${accent} 30%, transparent)` }"
+        >
+          {{ character.name }}
+        </h1>
+        <p class="mt-2 font-ui text-[14px] text-text-secondary md:text-[15px]">
+          #{{ usage.rank }} all-time ·
+          <span data-testid="character-appearances">{{ usage.value.toLocaleString('en-US') }}</span>
+          appearances<template v-if="firstPatch"> · first seen {{ firstPatch }}</template>
+        </p>
+      </div>
+    </div>
+
+    <!-- STAT RAIL -->
+    <div
+      class="grid grid-cols-1 gap-4 px-4 py-[22px] md:px-7"
+      :class="showDuo ? 'md:grid-cols-[1.1fr_1fr_1fr]' : 'md:grid-cols-2'"
+    >
+      <section
+        v-if="showDuo && teammates.length"
+        class="border border-border-subtle bg-surface p-5"
+        :style="{ borderTop: `2px solid ${accent}` }"
+      >
+        <h2 class="mb-4 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
+          Top teammates
+        </h2>
+        <PairingBars
+          :items="teammates"
+          :limit="5"
+          :solo-for="character.id"
+        />
+      </section>
+
+      <section class="border border-border-subtle bg-surface p-5">
+        <h2 class="mb-4 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
+          Top pilots
+        </h2>
+        <div
+          data-testid="top-pilots"
+          class="flex flex-col gap-[9px]"
+        >
+          <!-- entity link (player profile) rather than a filtered-Browse query
+               URL: profiles are prerendered pages, so link equity lands there -->
+          <NuxtLink
+            v-for="p in pilots"
+            :key="p.id"
+            :to="`/players/${p.id}`"
+            class="flex items-center gap-2 hover:text-primary-hover"
+          >
+            <VerifiedMark
+              v-if="p.player!.featured"
+              :size="10"
+            />
+            <span class="font-ui text-[13px] font-semibold text-text">{{ p.player!.handle }}</span>
+            <span class="ml-auto font-mono text-[11px] text-text-muted"
+              >{{ p.count.toLocaleString('en-US') }} played</span
+            >
+          </NuxtLink>
+        </div>
+      </section>
+
+      <section class="border border-border-subtle bg-surface p-5">
+        <h2 class="mb-4 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
+          At a glance
+        </h2>
+        <div class="flex flex-col gap-3.5">
+          <div class="flex items-baseline gap-2">
+            <span
+              class="font-display text-[30px] font-bold"
+              :style="{ color: accent }"
+              >#{{ usage.rank }}</span
+            >
+            <span class="font-ui text-[12px] text-text-secondary">usage rank</span>
+          </div>
+          <div class="flex items-baseline gap-2">
+            <span class="font-display text-[30px] font-bold text-text">{{
+              usage.value.toLocaleString('en-US')
+            }}</span>
+            <span class="font-ui text-[12px] text-text-secondary">appearances</span>
+          </div>
+          <div
+            v-if="latestPatch"
+            class="flex items-baseline gap-2"
+          >
+            <span class="font-display text-[30px] font-bold text-text">{{
+              latestCount.toLocaleString('en-US')
+            }}</span>
+            <span class="font-ui text-[12px] text-text-secondary"
+              >{{ latestPatch }} appearances</span
+            >
+          </div>
+          <dl
+            v-if="extraRows.length"
+            class="mt-1 flex flex-col gap-1.5 border-t border-border-subtle pt-3"
+          >
+            <div
+              v-for="[k, v] in extraRows"
+              :key="k"
+              class="flex items-center justify-between gap-3"
+            >
+              <dt class="font-mono text-[10px] uppercase tracking-wider text-text-muted">
+                {{ k }}
+              </dt>
+              <dd class="font-ui text-[12px] font-semibold text-text-secondary">{{ v }}</dd>
+            </div>
+          </dl>
+        </div>
+      </section>
+    </div>
+
+    <!-- GAME-PANEL EXTENSION SLOT (per-character game analytics, Phase 3) -->
+    <div class="px-4 md:px-7">
+      <GameCharacterPanels :character-id="character.id" />
+    </div>
+
+    <!-- REPLAY GRID -->
+    <div class="px-4 pb-7 pt-1.5 md:px-7">
+      <div class="mb-4 flex items-center gap-2.5">
+        <span
+          class="h-2 w-2 rotate-45"
+          :style="{ background: accent }"
+        />
+        <h2 class="font-display text-[17px] font-semibold text-text">
+          {{ character.name }} replays
+        </h2>
+        <span class="font-mono text-[12px] text-text-muted"
+          >{{ usage.value.toLocaleString('en-US') }} appearances</span
+        >
+      </div>
+      <ClientOnly>
+        <ReplayGrid
+          :list="involved"
+          :pending="pending"
+        />
+        <VideoModal />
+        <template #fallback>
+          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            <BrowseCardSkeleton
+              v-for="i in 4"
+              :key="i"
+            />
+          </div>
+        </template>
+      </ClientOnly>
+    </div>
+  </div>
+</template>
+
 <script setup lang="ts">
 import { withBase } from 'ufo';
 // Character page — design template 4a, themed with the character accent
@@ -114,175 +310,3 @@ useJsonLd([
   },
 ]);
 </script>
-
-<template>
-  <div class="mx-auto w-full max-w-[1440px]">
-    <!-- HERO -->
-    <div class="relative h-[280px] overflow-hidden border-b border-border-subtle md:h-[340px]">
-      <div
-        class="absolute inset-0"
-        style="
-          background: repeating-linear-gradient(
-            135deg,
-            var(--color-surface),
-            var(--color-surface) 12px,
-            var(--color-bg) 12px,
-            var(--color-bg) 24px
-          );
-        "
-      />
-      <img
-        v-if="splash"
-        :src="splash"
-        alt=""
-        fetchpriority="high"
-        class="absolute inset-0 h-full w-full object-cover object-[70%_25%]"
-      />
-      <div
-        class="absolute inset-0"
-        :style="{
-          background: `radial-gradient(80% 120% at 78% 30%, color-mix(in srgb, ${accent} 22%, transparent), transparent 60%), linear-gradient(90deg, var(--color-bg) 25%, transparent 70%)`,
-        }"
-      />
-      <div class="absolute bottom-7 left-4 md:bottom-[34px] md:left-10">
-        <div class="mb-2 flex items-center gap-3">
-          <CharacterBadge
-            :character-id="character.id"
-            :size="52"
-            :notch="11"
-            :font-size="20"
-            strong
-          />
-          <span
-            v-if="latestPatch"
-            class="font-ui text-[11px] font-semibold uppercase tracking-[.18em]"
-            :style="{ color: accent }"
-          >
-            {{ latestPatch }} ·
-            {{ latestRank === 1 ? 'Most picked' : `#${latestRank} most picked` }}
-          </span>
-        </div>
-        <h1
-          class="font-display text-[52px] font-bold uppercase leading-[.9] tracking-[-.02em] text-text md:text-[76px]"
-          :style="{ textShadow: `0 4px 30px color-mix(in srgb, ${accent} 30%, transparent)` }"
-        >
-          {{ character.name }}
-        </h1>
-        <p class="mt-2 font-ui text-[14px] text-text-secondary md:text-[15px]">
-          #{{ usage.rank }} all-time ·
-          <span data-testid="character-appearances">{{ usage.value.toLocaleString('en-US') }}</span>
-          appearances<template v-if="firstPatch"> · first seen {{ firstPatch }}</template>
-        </p>
-      </div>
-    </div>
-
-    <!-- STAT RAIL -->
-    <div
-      class="grid grid-cols-1 gap-4 px-4 py-[22px] md:px-7"
-      :class="showDuo ? 'md:grid-cols-[1.1fr_1fr_1fr]' : 'md:grid-cols-2'"
-    >
-      <section
-        v-if="showDuo && teammates.length"
-        class="border border-border-subtle bg-surface p-5"
-        :style="{ borderTop: `2px solid ${accent}` }"
-      >
-        <h2 class="mb-4 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
-          Top teammates
-        </h2>
-        <PairingBars :items="teammates" :limit="5" :solo-for="character.id" />
-      </section>
-
-      <section class="border border-border-subtle bg-surface p-5">
-        <h2 class="mb-4 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
-          Top pilots
-        </h2>
-        <div data-testid="top-pilots" class="flex flex-col gap-[9px]">
-          <!-- entity link (player profile) rather than a filtered-Browse query
-               URL: profiles are prerendered pages, so link equity lands there -->
-          <NuxtLink
-            v-for="p in pilots"
-            :key="p.id"
-            :to="`/players/${p.id}`"
-            class="flex items-center gap-2 hover:text-primary-hover"
-          >
-            <VerifiedMark v-if="p.player!.featured" :size="10" />
-            <span class="font-ui text-[13px] font-semibold text-text">{{ p.player!.handle }}</span>
-            <span class="ml-auto font-mono text-[11px] text-text-muted"
-              >{{ p.count.toLocaleString('en-US') }} played</span
-            >
-          </NuxtLink>
-        </div>
-      </section>
-
-      <section class="border border-border-subtle bg-surface p-5">
-        <h2 class="mb-4 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
-          At a glance
-        </h2>
-        <div class="flex flex-col gap-3.5">
-          <div class="flex items-baseline gap-2">
-            <span class="font-display text-[30px] font-bold" :style="{ color: accent }"
-              >#{{ usage.rank }}</span
-            >
-            <span class="font-ui text-[12px] text-text-secondary">usage rank</span>
-          </div>
-          <div class="flex items-baseline gap-2">
-            <span class="font-display text-[30px] font-bold text-text">{{
-              usage.value.toLocaleString('en-US')
-            }}</span>
-            <span class="font-ui text-[12px] text-text-secondary">appearances</span>
-          </div>
-          <div v-if="latestPatch" class="flex items-baseline gap-2">
-            <span class="font-display text-[30px] font-bold text-text">{{
-              latestCount.toLocaleString('en-US')
-            }}</span>
-            <span class="font-ui text-[12px] text-text-secondary"
-              >{{ latestPatch }} appearances</span
-            >
-          </div>
-          <dl
-            v-if="extraRows.length"
-            class="mt-1 flex flex-col gap-1.5 border-t border-border-subtle pt-3"
-          >
-            <div
-              v-for="[k, v] in extraRows"
-              :key="k"
-              class="flex items-center justify-between gap-3"
-            >
-              <dt class="font-mono text-[10px] uppercase tracking-wider text-text-muted">
-                {{ k }}
-              </dt>
-              <dd class="font-ui text-[12px] font-semibold text-text-secondary">{{ v }}</dd>
-            </div>
-          </dl>
-        </div>
-      </section>
-    </div>
-
-    <!-- GAME-PANEL EXTENSION SLOT (per-character game analytics, Phase 3) -->
-    <div class="px-4 md:px-7">
-      <GameCharacterPanels :character-id="character.id" />
-    </div>
-
-    <!-- REPLAY GRID -->
-    <div class="px-4 pb-7 pt-1.5 md:px-7">
-      <div class="mb-4 flex items-center gap-2.5">
-        <span class="h-2 w-2 rotate-45" :style="{ background: accent }" />
-        <h2 class="font-display text-[17px] font-semibold text-text">
-          {{ character.name }} replays
-        </h2>
-        <span class="font-mono text-[12px] text-text-muted"
-          >{{ usage.value.toLocaleString('en-US') }} appearances</span
-        >
-      </div>
-      <ClientOnly>
-        <ReplayGrid :list="involved" :pending="pending" />
-        <VideoModal />
-        <template #fallback>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            <BrowseCardSkeleton v-for="i in 4" :key="i" />
-          </div>
-        </template>
-      </ClientOnly>
-    </div>
-  </div>
-</template>

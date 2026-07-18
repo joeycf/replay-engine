@@ -1,3 +1,12 @@
+<template>
+  <NuxtLayout>
+    <NotFoundContent
+      :code="code"
+      :message="code === 404 ? undefined : (error?.message ?? 'Unexpected error.')"
+    />
+  </NuxtLayout>
+</template>
+
 <script setup lang="ts">
 import type { NuxtError } from '#app';
 
@@ -13,12 +22,3 @@ useHead({
   meta: [{ name: 'robots', content: 'noindex' }],
 });
 </script>
-
-<template>
-  <NuxtLayout>
-    <NotFoundContent
-      :code="code"
-      :message="code === 404 ? undefined : (error?.message ?? 'Unexpected error.')"
-    />
-  </NuxtLayout>
-</template>

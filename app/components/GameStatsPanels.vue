@@ -1,3 +1,8 @@
+<template>
+  <!-- engine default: no game panels -->
+  <span v-if="false" />
+</template>
+
 <script setup lang="ts">
 // GAME-PANEL EXTENSION SLOT (stats page) — the engine's mechanism for a game
 // to inject its own analytics panels (PLAN §11 "game-specific stat systems").
@@ -23,8 +28,3 @@ defineProps<{
   position?: 'after-usage' | 'beside-timeline' | 'bottom';
 }>();
 </script>
-
-<template>
-  <!-- engine default: no game panels -->
-  <span v-if="false" />
-</template>

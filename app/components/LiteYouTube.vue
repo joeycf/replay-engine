@@ -1,25 +1,3 @@
-<script setup lang="ts">
-// Lite-YouTube facade: thumbnail + play button first; the youtube-nocookie
-// iframe is injected only on click, with the BrandSpinner as the pending
-// indicator until the embed document loads. Grid cards never render this.
-const props = defineProps<{ videoId: string; thumbnail?: string | null; title?: string }>();
-
-const playing = ref(false);
-const loaded = ref(false);
-
-const embedSrc = computed(
-  () => `https://www.youtube-nocookie.com/embed/${props.videoId}?autoplay=1&rel=0`,
-);
-
-watch(
-  () => props.videoId,
-  () => {
-    playing.value = false;
-    loaded.value = false;
-  },
-);
-</script>
-
 <template>
   <div
     class="relative aspect-video overflow-hidden border-b border-border-subtle"
@@ -33,7 +11,10 @@ watch(
         class="absolute inset-0 flex items-center justify-center"
         data-testid="embed-pending"
       >
-        <BrandSpinner :size="64" label="Loading player" />
+        <BrandSpinner
+          :size="64"
+          label="Loading player"
+        />
       </span>
       <iframe
         :src="embedSrc"
@@ -79,6 +60,28 @@ watch(
     </button>
   </div>
 </template>
+
+<script setup lang="ts">
+// Lite-YouTube facade: thumbnail + play button first; the youtube-nocookie
+// iframe is injected only on click, with the BrandSpinner as the pending
+// indicator until the embed document loads. Grid cards never render this.
+const props = defineProps<{ videoId: string; thumbnail?: string | null; title?: string }>();
+
+const playing = ref(false);
+const loaded = ref(false);
+
+const embedSrc = computed(
+  () => `https://www.youtube-nocookie.com/embed/${props.videoId}?autoplay=1&rel=0`,
+);
+
+watch(
+  () => props.videoId,
+  () => {
+    playing.value = false;
+    loaded.value = false;
+  },
+);
+</script>
 
 <style scoped>
 .play-glow {

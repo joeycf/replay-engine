@@ -1,19 +1,13 @@
-<script setup lang="ts">
-// Result count + removable active-filter chips + clear-all (design 1A).
-const props = defineProps<{ filters: ReturnType<typeof useFilters> }>();
-
-const { pending } = useReplays();
-const { chips, filtered } = props.filters;
-</script>
-
 <template>
   <div
     class="flex flex-wrap items-center gap-3 border-b border-border-subtle bg-surface-sunken/60 px-4 py-[13px] md:px-[26px]"
   >
     <span class="font-mono text-[13px] text-text-secondary">
-      <b data-testid="result-count" class="font-bold text-text">{{
-        pending ? '…' : filtered.length.toLocaleString()
-      }}</b>
+      <b
+        data-testid="result-count"
+        class="font-bold text-text"
+        >{{ pending ? '…' : filtered.length.toLocaleString() }}</b
+      >
       replays
     </span>
     <button
@@ -36,3 +30,11 @@ const { chips, filtered } = props.filters;
     </button>
   </div>
 </template>
+
+<script setup lang="ts">
+// Result count + removable active-filter chips + clear-all (design 1A).
+const props = defineProps<{ filters: ReturnType<typeof useFilters> }>();
+
+const { pending } = useReplays();
+const { chips, filtered } = props.filters;
+</script>

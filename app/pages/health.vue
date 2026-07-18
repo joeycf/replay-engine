@@ -1,3 +1,53 @@
+<template>
+  <div class="mx-auto w-full max-w-6xl space-y-8 px-4 py-8">
+    <div>
+      <h1 class="font-display text-2xl font-bold text-text">Health</h1>
+      <p class="mt-1 text-sm text-text-muted">
+        Engine wiring check — collection counts, provisioning paths, and the active
+        <code class="font-mono text-primary">GameConfig</code>.
+      </p>
+    </div>
+
+    <section>
+      <h2 class="mb-3 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
+        Collections
+      </h2>
+      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
+        <div
+          v-for="c in counts"
+          :key="c.label"
+          class="border border-border bg-surface p-4 shadow-sm cut-md"
+        >
+          <p class="font-display text-3xl font-black text-text">{{ c.value }}</p>
+          <p class="mt-1 truncate font-mono text-[11px] text-text-muted">{{ c.label }}</p>
+          <p
+            v-if="c.note"
+            class="mt-0.5 text-[11px] text-text-faint"
+          >
+            {{ c.note }}
+          </p>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <h2 class="mb-3 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
+        Active GameConfig
+      </h2>
+      <dl class="divide-y divide-border-subtle border border-border bg-surface text-sm cut-md">
+        <div
+          v-for="row in configRows"
+          :key="row.key"
+          class="flex items-center justify-between gap-4 px-4 py-2"
+        >
+          <dt class="font-mono text-[11px] text-text-muted">{{ row.key }}</dt>
+          <dd class="text-right font-ui text-text">{{ row.value }}</dd>
+        </div>
+      </dl>
+    </section>
+  </div>
+</template>
+
 <script setup lang="ts">
 /**
  * /health — the wiring check every consuming app reuses. Renders each
@@ -55,48 +105,3 @@ const brand = useBrandName();
 // behavior, restored)
 useHead({ title: `Health · ${brand}`, meta: [{ name: 'robots', content: 'noindex' }] });
 </script>
-
-<template>
-  <div class="mx-auto w-full max-w-6xl space-y-8 px-4 py-8">
-    <div>
-      <h1 class="font-display text-2xl font-bold text-text">Health</h1>
-      <p class="mt-1 text-sm text-text-muted">
-        Engine wiring check — collection counts, provisioning paths, and the active
-        <code class="font-mono text-primary">GameConfig</code>.
-      </p>
-    </div>
-
-    <section>
-      <h2 class="mb-3 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
-        Collections
-      </h2>
-      <div class="grid grid-cols-2 gap-3 sm:grid-cols-4">
-        <div
-          v-for="c in counts"
-          :key="c.label"
-          class="border border-border bg-surface p-4 shadow-sm cut-md"
-        >
-          <p class="font-display text-3xl font-black text-text">{{ c.value }}</p>
-          <p class="mt-1 truncate font-mono text-[11px] text-text-muted">{{ c.label }}</p>
-          <p v-if="c.note" class="mt-0.5 text-[11px] text-text-faint">{{ c.note }}</p>
-        </div>
-      </div>
-    </section>
-
-    <section>
-      <h2 class="mb-3 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
-        Active GameConfig
-      </h2>
-      <dl class="divide-y divide-border-subtle border border-border bg-surface text-sm cut-md">
-        <div
-          v-for="row in configRows"
-          :key="row.key"
-          class="flex items-center justify-between gap-4 px-4 py-2"
-        >
-          <dt class="font-mono text-[11px] text-text-muted">{{ row.key }}</dt>
-          <dd class="text-right font-ui text-text">{{ row.value }}</dd>
-        </div>
-      </dl>
-    </section>
-  </div>
-</template>

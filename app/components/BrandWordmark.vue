@@ -1,15 +1,3 @@
-<script setup lang="ts">
-/**
- * The header wordmark: `{shortName}/REPLAY` per PLAN §4b — each game evoked
- * through type + color, never a trademarked logo. The umbrella default (no
- * game slug) wears the ReplayDB lockup text instead: `Replay·DB`.
- * --font-display + semantic tokens only.
- */
-const game = useGame();
-
-const hasGame = computed(() => !!game.shortName?.trim());
-</script>
-
 <template>
   <NuxtLink
     to="/"
@@ -23,3 +11,15 @@ const hasGame = computed(() => !!game.shortName?.trim());
     <template v-else>Replay<span class="text-primary">DB</span></template>
   </NuxtLink>
 </template>
+
+<script setup lang="ts">
+/**
+ * The header wordmark: `{shortName}/REPLAY` per PLAN §4b — each game evoked
+ * through type + color, never a trademarked logo. The umbrella default (no
+ * game slug) wears the ReplayDB lockup text instead: `Replay·DB`.
+ * --font-display + semantic tokens only.
+ */
+const game = useGame();
+
+const hasGame = computed(() => !!game.shortName?.trim());
+</script>

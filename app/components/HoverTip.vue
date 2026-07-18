@@ -1,17 +1,8 @@
-<script setup lang="ts">
-// Minimal dark-surface tooltip box — the design system has no tooltip
-// component, so this shared build serves the synergy matrix cells and the
-// character filter chips. Show state + position come from useHoverTip; content
-// is the caller's slot. inheritAttrs off because the root is a Teleport:
-// attrs (e.g. data-testid) must land on the box itself.
-import type { HoverTipPos } from '../composables/useHoverTip';
-
-defineOptions({ inheritAttrs: false });
-defineProps<{ tip: HoverTipPos | null }>();
-</script>
-
 <template>
-  <Teleport v-if="tip" to="body">
+  <Teleport
+    v-if="tip"
+    to="body"
+  >
     <div
       v-bind="$attrs"
       class="pointer-events-none fixed z-[80] whitespace-nowrap border border-border bg-surface px-3 py-2 shadow-modal cut-bl-md motion-safe:transition-opacity motion-safe:duration-instant"
@@ -26,3 +17,15 @@ defineProps<{ tip: HoverTipPos | null }>();
     </div>
   </Teleport>
 </template>
+
+<script setup lang="ts">
+// Minimal dark-surface tooltip box — the design system has no tooltip
+// component, so this shared build serves the synergy matrix cells and the
+// character filter chips. Show state + position come from useHoverTip; content
+// is the caller's slot. inheritAttrs off because the root is a Teleport:
+// attrs (e.g. data-testid) must land on the box itself.
+import type { HoverTipPos } from '@engine/app/composables/useHoverTip';
+
+defineOptions({ inheritAttrs: false });
+defineProps<{ tip: HoverTipPos | null }>();
+</script>

@@ -1,16 +1,3 @@
-<script setup lang="ts">
-// The designed 404/error content. The "No data at this route" heading doubles
-// as the marker string the static-artifacts module asserts when it copies the
-// prerendered /not-found page over the host's 404.html — keep them in sync.
-withDefaults(defineProps<{ code?: number; message?: string }>(), {
-  code: 404,
-  message: undefined,
-});
-
-const terms = useGameTerms();
-const back = () => clearError({ redirect: '/' });
-</script>
-
 <template>
   <section class="mx-auto max-w-2xl px-6 py-20 text-center md:py-28">
     <div
@@ -23,7 +10,7 @@ const back = () => clearError({ redirect: '/' });
       {{ code === 404 ? 'No data at this route' : 'Something broke the combo' }}
     </h1>
     <p class="mt-3 font-mono text-[12px] text-text-muted">
-      {{ message ?? `That ${terms.character}, player, or page isn’t in the database.` }}
+      {{ message ?? `That ${terms.character}, player, or page isn't in the database.` }}
     </p>
     <button
       type="button"
@@ -34,3 +21,16 @@ const back = () => clearError({ redirect: '/' });
     </button>
   </section>
 </template>
+
+<script setup lang="ts">
+// The designed 404/error content. The "No data at this route" heading doubles
+// as the marker string the static-artifacts module asserts when it copies the
+// prerendered /not-found page over the host's 404.html — keep them in sync.
+withDefaults(defineProps<{ code?: number; message?: string }>(), {
+  code: 404,
+  message: undefined,
+});
+
+const terms = useGameTerms();
+const back = () => clearError({ redirect: '/' });
+</script>

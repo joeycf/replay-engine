@@ -1,3 +1,7 @@
+<template>
+  <NotFoundContent />
+</template>
+
 <script setup lang="ts">
 // The static host's not-found document: prerendered here, then copied over
 // nitro's SPA-fallback 404.html by the engine's static-artifacts module
@@ -9,7 +13,3 @@ useHead({
   meta: [{ name: 'robots', content: 'noindex' }],
 });
 </script>
-
-<template>
-  <NotFoundContent />
-</template>

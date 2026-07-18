@@ -1,3 +1,11 @@
+<template>
+  <span
+    class="cut-bl-md whitespace-nowrap font-ui font-bold uppercase tracking-[.1em]"
+    :class="[size === 'sm' ? 'px-2 py-1 text-[8.5px]' : 'px-[9px] py-1 text-[9px]', styleClass]"
+    >{{ label }}</span
+  >
+</template>
+
 <script setup lang="ts">
 // Source-channel badge (generalizes the shipped ChannelBadge). The label comes
 // from GameConfig.sourceChannels; styling is deterministic by the source's
@@ -22,11 +30,3 @@ const styleClass = computed(() =>
       : 'border border-warning/50 bg-warning/15 text-warning',
 );
 </script>
-
-<template>
-  <span
-    class="cut-bl-md whitespace-nowrap font-ui font-bold uppercase tracking-[.1em]"
-    :class="[size === 'sm' ? 'px-2 py-1 text-[8.5px]' : 'px-[9px] py-1 text-[9px]', styleClass]"
-    >{{ label }}</span
-  >
-</template>

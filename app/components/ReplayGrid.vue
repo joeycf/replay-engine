@@ -1,3 +1,38 @@
+<template>
+  <div>
+    <div
+      v-if="pending"
+      class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+    >
+      <BrowseCardSkeleton
+        v-for="i in 8"
+        :key="i"
+      />
+    </div>
+    <template v-else-if="list.length">
+      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+        <BrowseCard
+          v-for="r in shown"
+          :key="r.id"
+          :replay="r"
+        />
+      </div>
+      <div
+        v-if="shown.length < list.length"
+        ref="sentinel"
+        class="h-px"
+        aria-hidden="true"
+      />
+    </template>
+    <p
+      v-else
+      class="py-10 text-center font-mono text-[12px] text-text-muted"
+    >
+      No replays on file.
+    </p>
+  </div>
+</template>
+
 <script setup lang="ts">
 // Entity-page replay grid: browse cards + infinite scroll, fed a pre-filtered
 // list (character/player pages). Client-only by nature — the list derives
@@ -42,20 +77,3 @@ onMounted(() => {
 });
 onBeforeUnmount(() => io?.disconnect());
 </script>
-
-<template>
-  <div>
-    <div v-if="pending" class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-      <BrowseCardSkeleton v-for="i in 8" :key="i" />
-    </div>
-    <template v-else-if="list.length">
-      <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        <BrowseCard v-for="r in shown" :key="r.id" :replay="r" />
-      </div>
-      <div v-if="shown.length < list.length" ref="sentinel" class="h-px" aria-hidden="true" />
-    </template>
-    <p v-else class="py-10 text-center font-mono text-[12px] text-text-muted">
-      No replays on file.
-    </p>
-  </div>
-</template>

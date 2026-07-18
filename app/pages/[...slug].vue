@@ -1,3 +1,7 @@
+<template>
+  <div />
+</template>
+
 <script setup lang="ts">
 // Catch-all: any route not matched by a real page is a 404. This is what
 // makes the prerendered /404.html carry the designed error page (the static
@@ -8,7 +12,3 @@ throw createError({
   fatal: true,
 });
 </script>
-
-<template>
-  <div />
-</template>

@@ -1,16 +1,3 @@
-<script setup lang="ts">
-/**
- * The full ReplayDB lockup (mark + wordmark + tagline) from
- * design/brand/replaydb-primary.svg, re-expressed as HTML/CSS with semantic
- * tokens so it re-tints under any theme. Exported primarily for the SHELL's
- * selector page (PLAN §5); game headers keep the text BrandWordmark.
- */
-withDefaults(defineProps<{ markSize?: number; tagline?: boolean }>(), {
-  markSize: 56,
-  tagline: true,
-});
-</script>
-
 <template>
   <span class="inline-flex items-center gap-4">
     <BrandMark :size="markSize" />
@@ -32,3 +19,16 @@ withDefaults(defineProps<{ markSize?: number; tagline?: boolean }>(), {
     </span>
   </span>
 </template>
+
+<script setup lang="ts">
+/**
+ * The full ReplayDB lockup (mark + wordmark + tagline) from
+ * design/brand/replaydb-primary.svg, re-expressed as HTML/CSS with semantic
+ * tokens so it re-tints under any theme. Exported primarily for the SHELL's
+ * selector page (PLAN §5); game headers keep the text BrandWordmark.
+ */
+withDefaults(defineProps<{ markSize?: number; tagline?: boolean }>(), {
+  markSize: 56,
+  tagline: true,
+});
+</script>
