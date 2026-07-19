@@ -146,6 +146,12 @@ export default defineAppConfig({
     // it true; 2XKO keeps the default so its Fuse-meta companion still sits in
     // the grid's second cell).
     // stats: { metaTimelineTopN: 8, metaTimelineFullWidth: true },
+    // Optional character-hero framing (additive, v0.5.4): the hero splash's
+    // object-position. Default '70% 25%' suits wide landscape splashes (2XKO);
+    // games whose portrait renders sit heads-near-top (Tekken) bias the
+    // vertical up so the head isn't cropped. Keep X ~70% to hold the subject
+    // right of the name/stat overlay.
+    // heroFocus: '70% 4%',
   } satisfies GameConfig,
 });
 ```
