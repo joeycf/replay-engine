@@ -19,7 +19,8 @@
         :src="splash"
         alt=""
         fetchpriority="high"
-        class="absolute inset-0 h-full w-full object-cover object-[70%_25%]"
+        class="absolute inset-0 h-full w-full object-cover"
+        :style="{ objectPosition: heroFocus }"
       />
       <div
         class="absolute inset-0"
@@ -214,6 +215,10 @@ if (!character) {
   });
 }
 const accent = accentVar(character.id, 'var(--color-primary)');
+// Hero splash framing comes from game config (default suits wide splashes;
+// portrait-render games bias the crop up so the head isn't cut). Inline style
+// rather than a Tailwind arbitrary class — the value is runtime config.
+const heroFocus = computed(() => game.heroFocus ?? '70% 25%');
 
 const { patches, usageFor, patchRanks, pairsFor, stats } = useStatsRows();
 const usage = computed(

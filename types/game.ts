@@ -28,6 +28,12 @@ export interface GameConfig {
   /** Site-wide OG/Twitter card image path (under base) or absolute URL
    *  (additive, v0.1.0). Engine falls back to the 512 brand icon. */
   ogImage?: string;
+  /** Character-page hero splash framing (additive, v0.5.4): the cover image's
+   *  object-position. Default '70% 25%' suits wide landscape splashes (2XKO);
+   *  games whose portrait renders sit heads-near-top (Tekken) bias the vertical
+   *  up so the head isn't cropped. Keep X ~70% to hold the subject on the
+   *  right, clear of the left-side gradient + name overlay. */
+  heroFocus?: string;
   /** Per-game vocabulary (additive, v0.2.0). The engine renders these nouns in
    *  nav, headings, filter labels, placeholders, SEO strings, and JSON-LD —
    *  resolved through useGameTerms(). Defaults: character/characters · side ·
