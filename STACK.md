@@ -458,8 +458,24 @@ Consumers stay pinned at `v0.4.0` — nothing a game imports or renders changed.
 
 ---
 
-## 10. v0.5.1 — static-artifacts under a subpath base (Phase-5 blocker fix)
+## 10. v0.5.0 – v0.5.1 — rank chips from data; static-artifacts under a subpath
 
+**v0.5.0 — rank chips derive from the data, highest-first.** The rank facet had been
+rendering `GameConfig.ranks` verbatim, so a game shipping the full ladder got a chip for
+every rung — including rungs no replay carries, which filter to zero results. The facet
+now renders `FilterController.rankOptions` instead: `deriveOptions()` intersects the
+canonical ladder with the ranks actually present (`rankOrder.filter((r) => ranks.has(r))`),
+and `useFilters` reverses that for display, so chips read highest-first while the config
+stays canonical ascending. This makes ranks behave like every other data-derived facet
+(characters, players, patches) — **a chip that would filter to zero is never shown**.
+
+The consumer-side contract is therefore "**ship the whole ladder; the data decides what
+shows**" — a game with a 30-rung ladder and three populated ranks renders three chips,
+and needs no config change as coverage grows. Tekken is the only current consumer
+(`filters.rank: true`, `data/ranks.json`). Games without ranks are unaffected; the facet
+is gated off entirely.
+
+**v0.5.1 — static-artifacts under a subpath base (Phase-5 blocker fix).**
 The first-ever subpath game build (Tekken `/tekken/`, Phase 5) hard-failed in
 `modules/static-artifacts.ts`. Two empirical nitro conventions the module had
 conflated (invisible at base `/`, where all prior builds ran):
