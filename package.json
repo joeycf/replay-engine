@@ -13,6 +13,7 @@
     "fonts:update": "node scripts/setup-fonts.mjs",
     "test:filters": "node --experimental-strip-types scripts/test-filters.mjs",
     "test:registry": "node --experimental-strip-types scripts/test-registry.mjs",
+    "verify:replication": "node scripts/verify-replication.mjs",
     "typecheck": "nuxt prepare && nuxt typecheck && nuxt typecheck fixtures",
     "lint": "nuxt prepare && eslint .",
     "lint:fix": "nuxt prepare && eslint . --fix",

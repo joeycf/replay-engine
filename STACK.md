@@ -182,6 +182,30 @@ apps inherit it and must **not** add any Tailwind module themselves. CSS entry:
   stay inline). Applied engine-wide; **consuming repos replicate `.prettierrc` and this
   block order verbatim** so cross-repo diffs stay clean.
 
+### Enforcing the replication contract
+
+Everything §1 and §2 call "replicated" lives in each consuming repo's own copy, which the
+layer cannot reach — so it drifts silently and stays broken until someone notices by hand
+(v0.5.2's `.prettierrc` flag reached the shell but neither game, §11).
+**`npm run verify:replication`** (`scripts/verify-replication.mjs`) is the gate: it
+discovers sibling repos whose `nuxt.config.ts` extends the engine — so a new game is
+covered the day it appears — and checks each invariant the contract actually names:
+
+| rule                 | check                                                                         |
+| -------------------- | ----------------------------------------------------------------------------- |
+| `.prettierrc`        | deep-equal (genuinely verbatim — it decides formatting)                       |
+| `.nvmrc`             | equal                                                                         |
+| `engines.node`       | equal                                                                         |
+| `overrides`          | deep-equal (the `vue-router ^5` peer pin — overrides never propagate)         |
+| `tsconfig.base.json` | consumer `compilerOptions` ⊇ the engine's ("replicate **or extend**")         |
+| `eslint.config.mjs`  | structural — `withNuxt(…)` with `eslintConfigPrettier` **last**               |
+| layer modules        | packages the engine declares in `modules` present in consumer devDeps (§5.10) |
+| SFC block order      | every `.vue` file is template-first                                           |
+
+Not byte-equality where the contract doesn't mean it: each repo legitimately ignores its
+own build dirs and declares its own globals, so `eslint.config.mjs` is checked for shape,
+not sameness. Run it before cutting an engine tag and after adopting one.
+
 ### Scripts (the canonical set)
 
 | Script                                   | What it does                                                                                                                          |
@@ -192,6 +216,7 @@ apps inherit it and must **not** add any Tailwind module themselves. CSS entry:
 | `format` / `format:check`                | Prettier across the repo                                                                                                              |
 | `test:filters`                           | Pure-logic filter semantics (facets, search, sort) against the fixture dataset                                                        |
 | `test:registry`                          | Registry-provisioning store semantics incl. the fetch-fallback (unprovided) state                                                     |
+| `verify:replication`                     | The §1/§2 replication contract across every sibling consuming repo (see below)                                                        |
 | `fonts:update`                           | Refresh committed neutral fonts from `@fontsource-*`                                                                                  |
 | `scripts/fixtures-data.mjs`              | Derives fixture stats.json from replays (pipeline parity); `--1v1` emits the rank-ladder variant                                      |
 | `scripts/verify-phase2.mjs`              | Full ported-UI click-through (47 checks: filters/matchup/search/sort/modal/drawer/stats/404/SEO/network/reduced-motion/manifest)      |
@@ -502,5 +527,6 @@ to `.prettierrc`. Both are standing conventions recorded in §2 (Lint / format) 
 than repeated here — but note that the `.prettierrc` half is part of the §1 replication
 contract and **did not propagate**: it reached the shell but not either game repo until
 2026-07-20, leaving 2XKO formatting `.vue` files against a stale config for two days.
-Re-check `.prettierrc` parity across all four repos whenever a pin is adopted; nothing
-currently enforces it.
+That drift is what prompted `npm run verify:replication` (§2, _Enforcing the replication
+contract_) — run it when adopting a pin, and this class of gap fails loudly instead of
+waiting to be noticed.
