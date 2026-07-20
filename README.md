@@ -1,18 +1,47 @@
-# replay-engine
-
-> Stack details (locked versions, delivery mechanisms, conventions, constraints)
-> live in [`STACK.md`](./STACK.md) — the canonical reference for every consuming
-> repo. Architecture and phases live in [`PLAN.md`](./PLAN.md).
+# Replay Engine
 
 A **base-path-aware Nuxt 4 layer** that holds all shared UI, composables, page
 scaffolding, layouts, design tokens, and the **data contract** for the Replay
 Database multi-game platform. It is a **library, not a deployed site** — each
-game app (`2xko-replay-database`, `tekken-replay-database`, …) `extends` a pinned
-tag of this repo and supplies only its data, its `app.config.ts`, its art, and
-its theme. See [`PLAN.md`](./PLAN.md) for the full architecture.
+consuming app (`2xko-replay-database`, `tekken-replay-database`,
+`replay-database-shell`) `extends` a pinned tag of this repo and supplies only
+its data, its `app.config.ts`, its art, and its theme.
+
+This README is the **consumer contract**: what an app must provide, what it may
+override, and what it inherits for free. Read it at the start of any work that
+touches the layer boundary.
+
+> Stack details (locked versions, delivery mechanisms, conventions, constraints)
+> live in [`STACK.md`](./STACK.md) — the canonical reference for every consuming
+> repo, and the single source of pinned versions. Architecture, phases, and
+> product decisions live in [`PLAN.md`](./PLAN.md).
 
 The engine ships a tiny synthetic **fixture dataset** so it runs standalone in
 the neutral "Replay Database" look for its own development.
+
+> Part of the **Replay Database** platform — [replaydatabase.com](https://replaydatabase.com) ·
+> [shell](https://github.com/joeycf/replay-database-shell) ·
+> [2XKO](https://github.com/joeycf/2xko-replay-database) ·
+> [Tekken](https://github.com/joeycf/tekken-replay-database)
+
+## Stack
+
+Shape only — [`STACK.md`](./STACK.md) holds every pinned version, and nothing
+should restate them.
+
+| layer     | choice                                         | notes                                                                                                                                                                                             |
+| --------- | ---------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Framework | **Nuxt 4** layer (Vue 3, `<script setup>`)     | consumed via `extends`; `peerDependencies: nuxt ^4.0.0`. Never built or deployed on its own                                                                                                       |
+| Language  | **TypeScript** end to end                      | the contract lives in [`types/`](./types), exposed to apps through the `@engine` alias                                                                                                            |
+| Styling   | **Tailwind CSS v4** via `@tailwindcss/vite`    | **not** `@nuxtjs/tailwindcss` (v3-locked — see Notable engineering decisions). Two token tiers: `tailwind/structural.css` (shared, fixed) and `tailwind/theme-default.css` (neutral, replaceable) |
+| Fonts     | **`@fontsource/*`**, committed as Vite assets  | Space Grotesk / Inter / JetBrains Mono under `tailwind/fonts/` with OFL licenses — relative `url()`s, no runtime CDN, no `public/fonts/`                                                          |
+| Animation | **anime.js v4**                                | named-export API, dynamically imported so it stays out of SSR                                                                                                                                     |
+| Tests     | **puppeteer-core** + node scripts              | drives system Chrome; no bundled browser, no test framework                                                                                                                                       |
+| Lint      | **`@nuxt/eslint`** flat config + Prettier last | Prettier owns formatting                                                                                                                                                                          |
+| Node      | **24** (`engines.node: ">=24 <25"`)            | the platform-wide policy; `@types/node` tracks the runtime major                                                                                                                                  |
+
+Runtime `dependencies` are kept deliberately minimal — git-layer consumers
+install them, so nothing dev-shaped belongs there.
 
 ---
 
@@ -29,9 +58,11 @@ export default defineNuxtConfig({
   // clones the layer with NO node_modules, and the engine's runtime deps
   // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
   // Phase-3 remote-layer check).
-  extends: [process.env.ENGINE_PATH || ['github:you/replay-engine#v1.0.0', { install: true }]],
+  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.5.4', { install: true }]],
 });
 ```
+
+`v0.5.4` is the current platform-wide pin — both games and the shell are on it.
 
 **Local co-development** (editing the engine while building a game): keep a local
 checkout next to your app and set `ENGINE_PATH` in the app's `.env`:
@@ -348,6 +379,27 @@ prerendered route list, `robots.txt`, `manifest.webmanifest` from `GameConfig`
 plugin injects the icon set + manifest link + theme-color head tags, all through
 `withBase()`.
 
+## Versioning
+
+The engine is consumed by tag, so a release is a **contract event**, not just a
+commit.
+
+- **Tag, never `main`.** A consuming app pins `#vX.Y.Z`. Tracking a branch would
+  let an engine change reach production without a deliberate app-side decision.
+- **Additive by default.** New contract surface arrives as optional fields and
+  empty-by-default slots, so an app on an older pin keeps building. Each optional
+  field is annotated inline with the version that introduced it — see
+  [`types/game.ts`](./types/game.ts) and the `app.config.ts` example above
+  (`additive, v0.2.0`, `additive, v0.5.4`, …). [`STACK.md`](./STACK.md) carries
+  the deeper per-release notes.
+- **Engine first, then apps.** A change lands and is verified here — `typecheck`,
+  `lint`, `test:filters`, `test:registry`, and the browser suites — before any
+  app moves. Then the tag is cut, and pins are bumped **one app at a time**
+  (`PLAN.md` §7), never as a single sweeping commit.
+- **`ENGINE_PATH` is a local-development affordance only.** It must stay unset in
+  every deployment, or the app builds against whatever happens to be on disk
+  instead of the pin.
+
 ---
 
 ## Running the engine standalone (fixtures)
@@ -425,3 +477,11 @@ subpath-vs-subdomain decision a config flip.
 6. **Motion durations use Tailwind v4's real theme namespace**
    (`--transition-duration-*`); a literal `--duration-*` token is silently
    dropped by v4 and the `duration-*` utilities would fall back to 150ms.
+
+---
+
+**Not documented here, deliberately:** deploy setup, Vercel configuration,
+analytics, cron schedules, and data pipelines. The engine is never deployed and
+owns no data — those belong in each consuming app's README.
+
+> Feature requests and bug reports are welcome via Issues.
