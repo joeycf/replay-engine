@@ -67,9 +67,17 @@ beyond the node-driven scripts (revisit when Phase 2 grows real component logic)
 
 - **Runtime = the newest major that is both Active LTS and available for Vercel builds**
   (currently **24**; `engines.node: ">=24 <25"` in package.json).
+- **`.nvmrc` holds the bare major (`24`)** and is replicated in all four repos (engine,
+  shell, both games) — part of the §1 replication contract. Major only, deliberately: it
+  mirrors the `engines.node` range and the game workflows' `node-version: 24`, so a patch
+  release can never put the file out of step with the artifacts it tracks. `nvm use`
+  resolves it to the newest installed 24.x (v24.16.0 as tested above).
 - `@types/node` always tracks the runtime major (types a major ahead permit phantom APIs).
 - Bumps happen engine-first with the `engines.node` field updated and the full gate
   battery re-verified (positive controls included), then propagate via the engine pin.
+  A Node major bump touches **`engines.node` + `.nvmrc` in every repo**, plus
+  `node-version` in the two game repos' `.github/workflows/data-refresh.yml` (the engine
+  and shell ship no workflows).
 
 ---
 
