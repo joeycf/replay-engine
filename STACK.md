@@ -461,3 +461,46 @@ root behavior unchanged); `test:filters` / `test:registry` / typecheck / lint gr
 `scripts/verify-subpath.mjs` predates this module and never probed artifacts — its
 gap is what let this ship; extending it with an artifacts-placement assertion is the
 recorded follow-up.
+
+---
+
+## 11. v0.5.2 – v0.5.4 — Phase-5 shell polish (all optional/additive)
+
+Driven by the cutover: with two games live behind one shell, the differences between
+them stopped being data and started being layout. Every knob below is optional and
+every default reproduces v0.5.1 output, so adopting these pins is a no-op until a game
+opts in.
+
+- **Unified sticky site footer (v0.5.2)** — `SiteFooter.vue` became a three-column
+  sticky grid (`sticky bottom-0`, `bg-surface-sunken`) with the Buy Me a Coffee link
+  centered and the copyright trailing. Shared by every consuming app, the shell
+  included, so support/attribution chrome is identical platform-wide. No config
+  surface: `BMC_URL` is an engine constant, and the fan-project disclaimer stays
+  templated from `GameConfig.name` / `.rightsHolder`.
+- **`GameConfig.stats?` (v0.5.3)** — `{ metaTimelineTopN?, metaTimelineFullWidth? }`,
+  read in `app/pages/stats.vue` as `?? 5` and `?? false`. Tunes the meta-over-time bump
+  chart: how many characters to plot, and whether it spans the whole row instead of
+  sharing it with the `beside-timeline` `GameStatsPanels` anchor. A game that leaves
+  that anchor empty should set `metaTimelineFullWidth: true` rather than ship a hole —
+  Tekken does (`8` / `true`); 2XKO keeps both defaults so its Fuse-meta companion still
+  occupies the grid's second cell.
+- **`GameConfig.heroFocus?` (v0.5.4)** — the character-page hero splash's
+  `object-position`, read in `app/pages/characters/[id].vue` as `?? '70% 25%'`. The
+  default suits wide landscape splashes (2XKO); games whose renders sit heads-near-top
+  bias the vertical up (Tekken: `'70% 4%'`). Keep X near 70% so the subject stays clear
+  of the left gradient and name/stat overlay. Framing is config precisely so a game
+  never forks the page to re-crop an image.
+- **Selector-aware wordmark (v0.5.4)** — the header wordmark now returns to the game
+  **selector** at the true site root. It is a plain `<a href="/">`, deliberately **not**
+  a `<NuxtLink>`: under a subpath build (`app.baseURL = '/2xko'`) NuxtLink/`withBase`
+  would prefix the base and land on the game's own home instead. The selector lives
+  above the base, so this is the one engine link that intentionally escapes it — do not
+  "fix" it back to `<NuxtLink>`. At a root deploy the selector simply is `/`.
+
+v0.5.2 also set the repo-wide **SFC authoring order** and added `singleAttributePerLine`
+to `.prettierrc`. Both are standing conventions recorded in §2 (Lint / format) rather
+than repeated here — but note that the `.prettierrc` half is part of the §1 replication
+contract and **did not propagate**: it reached the shell but not either game repo until
+2026-07-20, leaving 2XKO formatting `.vue` files against a stale config for two days.
+Re-check `.prettierrc` parity across all four repos whenever a pin is adopted; nothing
+currently enforces it.
