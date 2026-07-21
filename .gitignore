@@ -23,3 +23,6 @@ fixtures/.output
 # "copy fixtures -> public/data" dev flow (see README). The canonical
 # fixture data lives (committed) under fixtures/public/data.
 /public/data
+
+# Local agent config
+.claude/
