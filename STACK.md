@@ -169,7 +169,13 @@ apps inherit it and must **not** add any Tailwind module themselves. CSS entry:
   each repo's `nuxt prepare` generates its project-aware `./.nuxt/eslint.config.mjs`.
 - Repo-root `eslint.config.mjs` = `withNuxt(…overrides, eslintConfigPrettier)` with
   `eslint-config-prettier` **last**. ESLint owns correctness; Prettier owns formatting
-  (no stylistic ESLint rules). Game repos replicate this file verbatim.
+  (no stylistic ESLint rules). What consuming repos replicate is that **shape**, not the
+  bytes: the overrides in the middle are legitimately per-repo (the engine declares
+  browser globals for its Puppeteer scripts and ignores `fixtures/` build dirs; the games
+  ignore `raw/`, `cache/`, `data/`, `design/`; the shell needs none and is a bare
+  `withNuxt(eslintConfigPrettier)`). `verify:replication` therefore checks the shape —
+  prettier imported, `withNuxt(…)` exported, `eslintConfigPrettier` last — and would
+  false-positive on all four repos if it compared bytes.
 - `.prettierrc`: `{ semi: true, singleQuote: true, trailingComma: "all", printWidth: 100, singleAttributePerLine: true }`.
   `.prettierignore` excludes generated output, binaries, `public/`, `design/`, and
   **`PLAN.md`** (hand-authored; never machine-reflowed).
