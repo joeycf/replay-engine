@@ -83,7 +83,18 @@
               </div>
               <div class="flex gap-2">
                 <button
-                  v-for="s in game.sourceChannels"
+                  v-for="g in game.sourceGroups?.length ? game.sourceGroups : []"
+                  :key="g.id"
+                  type="button"
+                  class="flex-1 cursor-pointer border p-[11px] font-ui text-[13px] font-semibold"
+                  :class="togClass(f.isSourceGroupActive(g.sources))"
+                  :aria-pressed="f.isSourceGroupActive(g.sources)"
+                  @click="f.toggleSourceGroup(g.sources)"
+                >
+                  {{ g.name }}
+                </button>
+                <button
+                  v-for="s in game.sourceGroups?.length ? [] : game.sourceChannels"
                   :key="s.id"
                   type="button"
                   class="flex-1 cursor-pointer border p-[11px] font-ui text-[13px] font-semibold"

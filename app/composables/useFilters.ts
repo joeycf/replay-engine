@@ -58,6 +58,10 @@ export interface FilterController {
   setMatchup: (a: string | null, b: string | null) => void;
   togglePlayer: (id: string) => void;
   toggleSource: (id: string) => void;
+  /** Toggle a whole sourceGroup's member ids as a set (v0.5.5). */
+  toggleSourceGroup: (ids: string[]) => void;
+  /** True when any member of a sourceGroup is selected (v0.5.5). */
+  isSourceGroupActive: (ids: string[]) => boolean;
   togglePatch: (id: string) => void;
   toggleRank: (id: string) => void;
   setDateRange: (from: string | null, to: string | null) => void;
@@ -138,6 +142,17 @@ export function useFilters(): FilterController {
     write({ p: toggled(state.value.players, id).join(',') || null });
   const toggleSource = (id: string) =>
     write({ src: toggled(state.value.sources, id).join(',') || null });
+  // sourceGroups (v0.5.5): one chip toggles a SET of source ids. On = none selected
+  // → add all; off = any selected → remove all. Writes the same ?src= CSV, so the
+  // predicate, badge, and per-channel deep links are untouched.
+  const toggleSourceGroup = (ids: string[]) => {
+    const cur = state.value.sources;
+    const next = ids.some((id) => cur.includes(id))
+      ? cur.filter((id) => !ids.includes(id))
+      : [...cur, ...ids.filter((id) => !cur.includes(id))];
+    write({ src: next.join(',') || null });
+  };
+  const isSourceGroupActive = (ids: string[]) => ids.some((id) => state.value.sources.includes(id));
   const togglePatch = (id: string) =>
     write({ patch: toggled(state.value.patches, id).join(',') || null });
   const toggleRank = (id: string) => {
@@ -199,8 +214,26 @@ export function useFilters(): FilterController {
         label: playerById(p)?.handle ?? p,
         remove: () => togglePlayer(p),
       });
-    for (const src of s.sources)
-      out.push({ key: `src:${src}`, label: sourceName(src), remove: () => toggleSource(src) });
+    // sources: collapse to one pill per selected group when sourceGroups is set,
+    // else one pill per selected id.
+    if (game.sourceGroups?.length) {
+      const grouped = new Set<string>();
+      for (const g of game.sourceGroups)
+        if (g.sources.some((id) => s.sources.includes(id))) {
+          out.push({
+            key: `srcgrp:${g.id}`,
+            label: g.name,
+            remove: () => toggleSourceGroup(g.sources),
+          });
+          for (const id of g.sources) grouped.add(id);
+        }
+      for (const src of s.sources)
+        if (!grouped.has(src))
+          out.push({ key: `src:${src}`, label: sourceName(src), remove: () => toggleSource(src) });
+    } else {
+      for (const src of s.sources)
+        out.push({ key: `src:${src}`, label: sourceName(src), remove: () => toggleSource(src) });
+    }
     for (const pt of s.patches)
       out.push({ key: `patch:${pt}`, label: pt, remove: () => togglePatch(pt) });
     for (const rk of s.ranks)
@@ -273,6 +306,8 @@ export function useFilters(): FilterController {
     setMatchup,
     togglePlayer,
     toggleSource,
+    toggleSourceGroup,
+    isSourceGroupActive,
     togglePatch,
     toggleRank,
     setDateRange,

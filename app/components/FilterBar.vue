@@ -76,8 +76,21 @@
           class="mr-1"
           >{{ capWord(terms.source) }}</span
         >
+        <template v-if="game.sourceGroups?.length">
+          <button
+            v-for="(g, i) in game.sourceGroups"
+            :key="g.id"
+            type="button"
+            class="cursor-pointer border px-[13px] py-2 font-ui text-[12px] font-semibold cut-bl-md"
+            :class="sourceGroupClass(g.sources, i)"
+            :aria-pressed="f.isSourceGroupActive(g.sources)"
+            @click="f.toggleSourceGroup(g.sources)"
+          >
+            {{ g.name }}
+          </button>
+        </template>
         <button
-          v-for="(s, i) in game.sourceChannels"
+          v-for="(s, i) in game.sourceGroups?.length ? [] : game.sourceChannels"
           :key="s.id"
           type="button"
           class="cursor-pointer border px-[13px] py-2 font-ui text-[12px] font-semibold cut-bl-md"
@@ -320,6 +333,13 @@ const labelClass = 'font-ui text-[10px] font-semibold uppercase tracking-label t
 const coUsable = computed(() => f.state.value.characters.length >= 2);
 const sourceClass = (id: string, i: number) =>
   f.isActive('sources', id)
+    ? i === 0
+      ? 'bg-primary text-primary-contrast border-primary'
+      : 'bg-secondary/15 text-secondary border-secondary'
+    : 'bg-surface-raised text-text-secondary border-border hover:text-text';
+// same index-based active styling as sourceClass, keyed on the group's id set
+const sourceGroupClass = (ids: string[], i: number) =>
+  f.isSourceGroupActive(ids)
     ? i === 0
       ? 'bg-primary text-primary-contrast border-primary'
       : 'bg-secondary/15 text-secondary border-secondary'

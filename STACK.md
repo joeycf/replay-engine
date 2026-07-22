@@ -552,3 +552,18 @@ contract and **did not propagate**: it reached the shell but not either game rep
 That drift is what prompted `npm run verify:replication` (§2, _Enforcing the replication
 contract_) — run it when adopting a pin, and this class of gap fails loudly instead of
 waiting to be noticed.
+
+## 12. v0.5.5 — source-filter grouping (optional/additive)
+
+- **`GameConfig.sourceGroups?` (v0.5.5)** — `{ id, name, sources: string[] }[]`, read in
+  `FilterBar.vue` / `FilterDrawer.vue`. When set, the source filter renders one chip per
+  group instead of one per `sourceChannels` entry; toggling a group writes its member ids
+  to `?src=` as a set (`toggleSourceGroup` / `isSourceGroupActive` in `useFilters`), and
+  the active-chips row collapses to one pill per selected group. Absent → chips render 1:1,
+  unchanged. Deliberately does **not** touch `SourceBadge` or the `filterReplays` source
+  predicate: the per-video badge still resolves the real channel from `sourceChannels`, and
+  the predicate still matches the same per-channel ids, so per-channel deep links
+  (`?src=proReplays`) and legacy `?ch=` translations keep working. Both games opt in to
+  collapse their channels into **Online + Tournament** (2XKO: proReplays/highLevel/
+  bestReplays + manual; Tekken: highLevel/telly/ranked + tournament). Default reproduces
+  v0.5.4 output, so the pin is a no-op until a game sets `sourceGroups`.
