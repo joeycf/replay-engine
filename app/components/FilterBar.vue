@@ -105,8 +105,12 @@
         v-if="game.sourceChannels.length"
         class="h-6 w-px bg-border"
       />
+      <PatchGroupChips
+        v-if="game.patchGroups?.length && f.options.value.patches.length"
+        :filters="f"
+      />
       <div
-        v-if="f.options.value.patches.length"
+        v-else-if="f.options.value.patches.length"
         class="flex items-center gap-1.5"
       >
         <span

@@ -567,3 +567,38 @@ waiting to be noticed.
   collapse their channels into **Online + Tournament** (2XKO: proReplays/highLevel/
   bestReplays + manual; Tekken: highLevel/telly/ranked + tournament). Default reproduces
   v0.5.4 output, so the pin is a no-op until a game sets `sourceGroups`.
+
+## 13. v0.6.0 — grouped patch facet (season → patch hierarchy)
+
+- **`GameConfig.patchGroups?` (v0.6.0)** — `PatchGroup[]`: parents (era tokens like
+  `S1`/`Beta`, optional `label`/`note`) with optional `children` (patch tokens +
+  dropdown `note` hints). Childless parents render as plain chips. Declared order =
+  display + canonical URL order; ids must be unique across all parents AND children.
+- **URL contract, same `?patch=` param**: the URL carries the COLLAPSED canonical
+  form — a fully-selected parent collapses to its parent token, a partial selection
+  lists child tokens, redundant links (`?patch=S1,1.1.1`) canonicalize on the next
+  toggle. `FilterState.patches` carries the EXPANDED form (a parent token brings
+  itself + all declared children), so the pure predicate at `filterReplays.ts` is
+  UNTOUCHED and legacy season deep links (`?patch=S1`) keep their exact counts:
+  season tokens ARE the parent tokens. A replay may carry a bare era token —
+  "season known, patch unknown" — which matches whole-season selections but never a
+  specific patch. Pure helpers live in `app/utils/patchGroups.ts` (expand/collapse/
+  tri-state/`patchTokenParts`), node-asserted in `test:filters`.
+- **UI**: `PatchGroupChips.vue` (desktop) — tri-state parents (`aria-pressed`
+  true/false/**mixed** + n/m count over data-present children; click = whole-era
+  toggle) with a `▾` expander opening a MatchupPicker-anatomy child dropdown; the
+  drawer renders expandable era sections. Presence-gated like every facet; data
+  tokens the group table doesn't know trail as plain chips (stale-boundaries
+  fallback). ActiveChips collapses a full era to one pill. `VideoModal` meta reads
+  "era · patch" for child tokens; `BrowseCard` stays era-compact.
+- **Verification**: `test:filters` (expand/collapse/tri-state/parity semantics) and
+  the new `scripts/verify-patch-groups.mjs` — a verify-override-style overlay build
+  (fixtures stay ungrouped by default; the untouched `verify-phase2` run on the
+  default build is the byte-stability evidence). Default reproduces v0.5.5 output,
+  so the pin is a no-op until a game sets `patchGroups`.
+- **Consumer pattern (both games)**: the app pipeline owns a `data/patchBoundaries
+.json` (released patches only, hotfixes folded, nested under seasons BY RELEASE
+  DATE) validated by a per-app `scripts/patches.ts`, emits `Replay.patch` as the
+  fine token (era-token fallback) plus a committed `data/patchGroups.json` that
+  `app.config.ts` imports — one authority for derivation AND UI, so they cannot
+  drift. Stats stay era-keyed (`byPatchUsage` untouched).

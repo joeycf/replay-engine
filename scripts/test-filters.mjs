@@ -17,6 +17,14 @@ import {
   filterReplays,
   sidePlayers,
 } from '../app/utils/filterReplays.ts';
+import {
+  collapsePatchTokens,
+  expandPatchTokens,
+  parentOfPatchToken,
+  patchGroupState,
+  patchTokenParts,
+  ungroupedPatchTokens,
+} from '../app/utils/patchGroups.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 const read = (p) => JSON.parse(readFileSync(resolve(here, '..', p), 'utf8'));
@@ -180,5 +188,129 @@ check(
 );
 assert.deepEqual(emptyFilterState().custom, {}, 'emptyFilterState carries custom: {}');
 console.log('  ✓ game facets: no-op/predicate/AND/ctx.state composition');
+
+// ── patchGroups (v0.6.0): expand/collapse URL contract + tri-state ─────────
+// Synthetic hierarchy: two parented eras + a childless Beta. The URL carries
+// the COLLAPSED canonical form; FilterState.patches carries the EXPANDED
+// form (see app/utils/patchGroups.ts header) — collapse expects expanded
+// input, so canonicalization checks compose collapse(expand(x)).
+const groupsFx = [
+  { id: 'S1', children: [{ id: '1.1' }, { id: '1.2' }, { id: '1.3', note: 'DLC' }] },
+  { id: 'S2', children: [{ id: '2.1' }, { id: '2.2' }] },
+  { id: 'Beta' },
+];
+const expand = (t) => expandPatchTokens(t, groupsFx);
+const collapse = (t) => collapsePatchTokens(t, groupsFx);
+const canonical = (t) => collapse(expand(t));
+
+// expansion
+assert.deepEqual(expand(['S1']), ['S1', '1.1', '1.2', '1.3'], 'expand: parent brings children');
+assert.deepEqual(expand(['Beta']), ['Beta'], 'expand: childless parent is itself');
+assert.deepEqual(expand(['2.1', '9.9']), ['2.1', '9.9'], 'expand: child/unknown pass through');
+assert.deepEqual(expand(['S1', '1.2']), ['S1', '1.1', '1.2', '1.3'], 'expand: dedupes');
+assert.deepEqual(expandPatchTokens(['S1', 'x'], []), ['S1', 'x'], 'expand: no groups = identity');
+
+// collapse canonical form
+assert.deepEqual(canonical(['S1']), ['S1'], 'collapse: full era → parent token');
+assert.deepEqual(
+  canonical(['S1', '1.1']),
+  ['S1'],
+  'collapse: redundant parent+child link → parent',
+);
+assert.deepEqual(collapse(['1.1', '1.3']), ['1.1', '1.3'], 'collapse: partial → children only');
+assert.deepEqual(
+  collapse(['S1', '1.1', '1.3']),
+  ['1.1', '1.3'],
+  'collapse: stale parent dropped on partial selection',
+);
+assert.deepEqual(collapse(['S1']), [], 'collapse: bare parent w/ children (last child off) clears');
+assert.deepEqual(canonical(['Beta']), ['Beta'], 'collapse: childless parent passes through');
+assert.deepEqual(
+  canonical(['9.9', 'S2', '1.1']),
+  ['1.1', 'S2', '9.9'],
+  'collapse: declared group order, passthrough tokens trail',
+);
+assert.deepEqual(
+  collapsePatchTokens(['S1', 'x'], []),
+  ['S1', 'x'],
+  'collapse: no groups = identity',
+);
+assert.deepEqual(
+  canonical(canonical(['S2', '1.1'])),
+  canonical(['S2', '1.1']),
+  'canonical idempotent',
+);
+console.log('  ✓ patchGroups: expand/collapse canonical URL contract');
+
+// tri-state (judged over data-PRESENT children; childless parents are binary)
+const present = ['1.1', '1.2', '2.1', 'Beta', 'S1'];
+const gs = (sel) => patchGroupState(groupsFx[0], sel, present);
+assert.equal(gs([]).state, 'none', 'tri-state none');
+assert.equal(gs(['1.1']).state, 'some', 'tri-state some');
+assert.deepEqual([gs(['1.1']).selected, gs(['1.1']).total], [1, 2], 'tri-state n/m over present');
+assert.equal(gs(['1.1', '1.2']).state, 'all', 'tri-state all (1.3 absent from data)');
+assert.equal(
+  patchGroupState(groupsFx[2], ['Beta'], present).state,
+  'all',
+  'childless parent binary on',
+);
+assert.equal(
+  patchGroupState(groupsFx[2], [], present).state,
+  'none',
+  'childless parent binary off',
+);
+console.log('  ✓ patchGroups: tri-state none/some/all with present-gating');
+
+// token display helpers
+assert.equal(parentOfPatchToken('1.2', groupsFx), 'S1', 'parentOf: child → era');
+assert.equal(parentOfPatchToken('S1', groupsFx), null, 'parentOf: parent → null');
+assert.deepEqual(patchTokenParts('1.2', groupsFx), ['S1', '1.2'], 'tokenParts: era · patch');
+assert.deepEqual(patchTokenParts('Beta', groupsFx), ['Beta'], 'tokenParts: parent bare');
+assert.deepEqual(patchTokenParts('9.9', []), ['9.9'], 'tokenParts: no groups = identity');
+assert.deepEqual(
+  ungroupedPatchTokens(['1.1', '9.9', 'Beta'], groupsFx),
+  ['9.9'],
+  'ungrouped: only unknown tokens trail',
+);
+console.log('  ✓ patchGroups: parentOf/tokenParts/ungrouped helpers');
+
+// predicate integration: the UNCHANGED pure core over expanded selections.
+// Fine-token replays plus one era-token replay ("season known, patch
+// unknown") and the era-mapped view of the same data (the old flat facet).
+const mkReplay = (id, patch, date) => ({
+  id,
+  sides: [
+    { player: 'nomad', characters: ['aegis'] },
+    { player: 'sage', characters: ['bolt'] },
+  ],
+  date,
+  patch,
+  source: 'ch-neon',
+  title: `fixture ${id}`,
+});
+const fineReplays = [
+  mkReplay('pg_01', '1.1', '2025-01-10T00:00:00Z'),
+  mkReplay('pg_02', '1.1', '2025-01-20T00:00:00Z'),
+  mkReplay('pg_03', '1.2', '2025-02-10T00:00:00Z'),
+  mkReplay('pg_04', 'S1', '2025-02-20T00:00:00Z'), // era token: patch unknown
+  mkReplay('pg_05', '2.1', '2025-03-10T00:00:00Z'),
+  mkReplay('pg_06', '2.2', '2025-03-20T00:00:00Z'),
+  mkReplay('pg_07', 'Beta', '2024-12-01T00:00:00Z'),
+];
+const eraOf = (t) => parentOfPatchToken(t, groupsFx) ?? t;
+const eraReplays = fineReplays.map((r) => ({ ...r, patch: eraOf(r.patch) }));
+const fineCount = (tokens) =>
+  filterReplays(fineReplays, { ...emptyFilterState(), patches: expand(tokens) }).length;
+const flatEraCount = (tokens) =>
+  filterReplays(eraReplays, { ...emptyFilterState(), patches: tokens }).length;
+
+check('grouped: whole-era selection == old flat season count (S1)', fineCount(['S1']), 4);
+check('grouped: era parity holds', fineCount(['S1']), flatEraCount(['S1']));
+check('grouped: era-token replay matches its whole-era selection', fineCount(['S1']) >= 1, true);
+check('grouped: single patch', fineCount(['1.1']), 2);
+check('grouped: era-token replay does NOT match a child-only pick', fineCount(['1.2']), 1);
+check('grouped: mixed parent + other-era child union', fineCount(['S2', '1.1']), 4);
+check('grouped: childless Beta', fineCount(['Beta']), 1);
+console.log('  ✓ patchGroups: predicate parity over expanded selections');
 
 console.log('\n✓ filter semantics verified (10-replay fixture dataset)');

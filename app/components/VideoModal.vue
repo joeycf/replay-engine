@@ -476,7 +476,9 @@ const metaLine = computed(() => {
   const r = replay.value;
   if (!r) return '';
   return [
-    r.patch,
+    // patchGroups (v0.6.0): a child token reads "era · patch" (S2 · 1.2.1);
+    // identity — the bare token — for parents, unknowns, and non-group apps
+    ...(r.patch ? patchTokenParts(r.patch, game.patchGroups ?? []) : []),
     ...(sideA.value?.rank ? [sideA.value.rank] : []),
     ...((r.durationSec ?? 0) > 0 ? [formatDuration(r.durationSec!)] : []),
     relativeDate(r.date),

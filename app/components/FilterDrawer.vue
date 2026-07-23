@@ -114,7 +114,84 @@
               >
                 {{ capWord(terms.patch) }}
               </div>
-              <div class="flex gap-2">
+              <!-- patchGroups (v0.6.0): expandable era sections; else flat chips -->
+              <template v-if="game.patchGroups?.length">
+                <div
+                  v-for="g in visiblePatchGroups"
+                  :key="g.id"
+                  class="mb-2"
+                  :data-testid="`patch-section-${g.id}`"
+                >
+                  <div class="flex gap-2">
+                    <button
+                      type="button"
+                      class="h-10 flex-1 cursor-pointer border font-mono text-[14px]"
+                      :class="patchParentClass(g)"
+                      :aria-pressed="patchAria(g)"
+                      @click="f.togglePatchGroup(g.id)"
+                    >
+                      {{ g.label ?? g.id
+                      }}<span
+                        v-if="patchStateOf(g).state === 'some'"
+                        class="ml-1.5 font-mono text-[10px] opacity-80"
+                        >{{ patchStateOf(g).selected }}/{{ patchStateOf(g).total }}</span
+                      >
+                    </button>
+                    <button
+                      v-if="presentPatchChildren(g).length"
+                      type="button"
+                      class="h-10 w-10 flex-none cursor-pointer border font-mono text-[12px]"
+                      :class="patchParentClass(g)"
+                      :aria-expanded="expandedPatchGroups.has(g.id)"
+                      :aria-label="`${g.label ?? g.id} ${terms.patches}`"
+                      @click="togglePatchSection(g.id)"
+                    >
+                      {{ expandedPatchGroups.has(g.id) ? '▴' : '▾' }}
+                    </button>
+                  </div>
+                  <div
+                    v-if="expandedPatchGroups.has(g.id)"
+                    class="mt-2 grid grid-cols-2 gap-2"
+                  >
+                    <button
+                      v-for="c in presentPatchChildren(g)"
+                      :key="c.id"
+                      type="button"
+                      class="flex h-10 cursor-pointer flex-col items-center justify-center border px-2 font-mono text-[13px] leading-tight"
+                      :class="togClass(f.isActive('patches', c.id))"
+                      :aria-pressed="f.isActive('patches', c.id)"
+                      @click="f.togglePatch(c.id)"
+                    >
+                      <span>{{ c.label ?? c.id }}</span>
+                      <span
+                        v-if="c.note"
+                        class="max-w-full truncate font-ui text-[9px] opacity-70"
+                        >{{ c.note }}</span
+                      >
+                    </button>
+                  </div>
+                </div>
+                <div
+                  v-if="ungroupedPatches.length"
+                  class="flex gap-2"
+                >
+                  <button
+                    v-for="p in ungroupedPatches"
+                    :key="p"
+                    type="button"
+                    class="h-10 flex-1 cursor-pointer border font-mono text-[14px]"
+                    :class="togClass(f.isActive('patches', p))"
+                    :aria-pressed="f.isActive('patches', p)"
+                    @click="f.togglePatch(p)"
+                  >
+                    {{ p }}
+                  </button>
+                </div>
+              </template>
+              <div
+                v-else
+                class="flex gap-2"
+              >
                 <button
                   v-for="p in f.options.value.patches"
                   :key="p"
@@ -304,7 +381,7 @@
 // FilterBar with the same config gating; character-name HoverTip only fires
 // on hover-capable pointers (narrow desktop windows) — on touch a tap stays a
 // pure toggle.
-import type { Character } from '@engine/types';
+import type { Character, PatchGroup } from '@engine/types';
 
 const props = defineProps<{ filters: ReturnType<typeof useFilters> }>();
 const f = props.filters;
@@ -330,6 +407,42 @@ const togClass = (on: boolean) =>
   on
     ? 'bg-primary text-primary-contrast border-primary'
     : 'bg-surface-raised text-text-secondary border-border';
+
+// patchGroups (v0.6.0): era sections — presence-gated groups, tri-state
+// parent styling (mirrors PatchGroupChips), per-group expand state
+const patchGroups = game.patchGroups ?? [];
+const presentPatches = computed(() => new Set(f.options.value.patches));
+const visiblePatchGroups = computed(() =>
+  patchGroups.filter(
+    (g) =>
+      presentPatches.value.has(g.id) ||
+      (g.children ?? []).some((c) => presentPatches.value.has(c.id)),
+  ),
+);
+const presentPatchChildren = (g: PatchGroup) =>
+  (g.children ?? []).filter((c) => presentPatches.value.has(c.id));
+const ungroupedPatches = computed(() => ungroupedPatchTokens(f.options.value.patches, patchGroups));
+const patchStateOf = (g: PatchGroup) =>
+  patchGroupState(g, f.state.value.patches, f.options.value.patches);
+const patchAria = (g: PatchGroup): 'true' | 'false' | 'mixed' => {
+  const s = patchStateOf(g).state;
+  return s === 'all' ? 'true' : s === 'some' ? 'mixed' : 'false';
+};
+const patchParentClass = (g: PatchGroup) => {
+  const s = patchStateOf(g).state;
+  return s === 'all'
+    ? 'bg-primary text-primary-contrast border-primary'
+    : s === 'some'
+      ? 'bg-primary/15 text-text border-primary'
+      : 'bg-surface-raised text-text-secondary border-border';
+};
+const expandedPatchGroups = ref(new Set<string>());
+function togglePatchSection(id: string) {
+  const next = new Set(expandedPatchGroups.value);
+  if (next.has(id)) next.delete(id);
+  else next.add(id);
+  expandedPatchGroups.value = next;
+}
 
 // game-facet chips: accent-tinted when active (mirrors FilterBar)
 const facetActiveStyle = (accent?: string) => ({

@@ -5,6 +5,7 @@ import { buildSearchIndex, deriveOptions, filterReplays } from '../utils/filterR
 import type { FilterOptions, FilterState, ListFacet, ReplaySort } from '../utils/filterReplays';
 import { getProvidedGameFacets } from '../utils/gameFacets';
 import type { GameFacet } from '../utils/gameFacets';
+import { collapsePatchTokens, expandPatchTokens, patchGroupState } from '../utils/patchGroups';
 
 /**
  * URL-synced facade over the pure filter core (utils/filterReplays — the full
@@ -63,6 +64,9 @@ export interface FilterController {
   /** True when any member of a sourceGroup is selected (v0.5.5). */
   isSourceGroupActive: (ids: string[]) => boolean;
   togglePatch: (id: string) => void;
+  /** Toggle a whole patchGroup (v0.6.0): none/some → the parent token (whole
+   *  era, incl. era-token replays); all → cleared. No-op without groups. */
+  togglePatchGroup: (id: string) => void;
   toggleRank: (id: string) => void;
   setDateRange: (from: string | null, to: string | null) => void;
   setSearch: (v: string) => void;
@@ -85,6 +89,9 @@ export function useFilters(): FilterController {
   };
   // constant per app (module-scope provisioning, like the registries)
   const gameFacets = getProvidedGameFacets();
+  // patchGroups (v0.6.0): [] keeps every code path below on the flat behavior
+  // (expand/collapse are the identity), byte-stable for non-declaring apps
+  const patchGroups = game.patchGroups ?? [];
 
   const parseMatchup = (v: QueryValue): [string, string] | null => {
     const s = one(v);
@@ -101,7 +108,10 @@ export function useFilters(): FilterController {
     matchup: parseMatchup(route.query.mu),
     players: csv(route.query.p),
     sources: csv(route.query.src),
-    patches: csv(route.query.patch),
+    // EXPANDED form: a parent token brings all its declared children (and
+    // itself, so era-token replays — "season known, patch unknown" — match a
+    // whole-season selection). The URL keeps the collapsed canonical form.
+    patches: expandPatchTokens(csv(route.query.patch), patchGroups),
     ranks: enabled.rank ? csv(route.query.rank) : [],
     dateFrom: one(route.query.from),
     dateTo: one(route.query.to),
@@ -154,7 +164,21 @@ export function useFilters(): FilterController {
   };
   const isSourceGroupActive = (ids: string[]) => ids.some((id) => state.value.sources.includes(id));
   const togglePatch = (id: string) =>
-    write({ patch: toggled(state.value.patches, id).join(',') || null });
+    write({
+      patch: collapsePatchTokens(toggled(state.value.patches, id), patchGroups).join(',') || null,
+    });
+  // patchGroups (v0.6.0): parent chip = whole-era toggle. Writing the PARENT
+  // token (expanded before collapse so the canonical form survives) is what
+  // keeps legacy season deep links and their exact counts native.
+  const togglePatchGroup = (id: string) => {
+    const group = patchGroups.find((g) => g.id === id);
+    if (!group) return;
+    const members = new Set([id, ...(group.children ?? []).map((c) => c.id)]);
+    const rest = state.value.patches.filter((t) => !members.has(t));
+    const { state: sel } = patchGroupState(group, state.value.patches, options.value.patches);
+    const next = sel === 'all' ? rest : [...rest, ...expandPatchTokens([id], patchGroups)];
+    write({ patch: collapsePatchTokens(next, patchGroups).join(',') || null });
+  };
   const toggleRank = (id: string) => {
     if (!enabled.rank) return;
     write({ rank: toggled(state.value.ranks, id).join(',') || null });
@@ -194,6 +218,13 @@ export function useFilters(): FilterController {
   // ── labels ────────────────────────────────────────────────────────────────
   const charName = (id: string) => charById(id)?.name ?? id;
   const sourceName = (id: string) => game.sourceChannels.find((s) => s.id === id)?.name ?? id;
+  const patchChildLabel = (token: string) => {
+    for (const g of patchGroups) {
+      const child = g.children?.find((c) => c.id === token);
+      if (child) return child.label ?? child.id;
+    }
+    return token;
+  };
 
   // ── active chips (design order) ──────────────────────────────────────────
   const chips = computed<ActiveChip[]>(() => {
@@ -234,8 +265,22 @@ export function useFilters(): FilterController {
       for (const src of s.sources)
         out.push({ key: `src:${src}`, label: sourceName(src), remove: () => toggleSource(src) });
     }
-    for (const pt of s.patches)
-      out.push({ key: `patch:${pt}`, label: pt, remove: () => togglePatch(pt) });
+    // patches: with patchGroups (v0.6.0) render the CANONICAL form — one pill
+    // per fully-selected parent, child pills for partial picks (mirrors the
+    // sourceGroups collapse above); else one pill per token as before.
+    if (patchGroups.length) {
+      for (const pt of collapsePatchTokens(s.patches, patchGroups)) {
+        const group = patchGroups.find((g) => g.id === pt);
+        out.push({
+          key: `patch:${pt}`,
+          label: group?.label ?? patchChildLabel(pt),
+          remove: group ? () => togglePatchGroup(pt) : () => togglePatch(pt),
+        });
+      }
+    } else {
+      for (const pt of s.patches)
+        out.push({ key: `patch:${pt}`, label: pt, remove: () => togglePatch(pt) });
+    }
     for (const rk of s.ranks)
       out.push({ key: `rank:${rk}`, label: rk, remove: () => toggleRank(rk) });
     if (s.dateFrom || s.dateTo)
@@ -309,6 +354,7 @@ export function useFilters(): FilterController {
     toggleSourceGroup,
     isSourceGroupActive,
     togglePatch,
+    togglePatchGroup,
     toggleRank,
     setDateRange,
     setSearch,

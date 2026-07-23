@@ -1,3 +1,25 @@
+/** One patch under a season parent in `GameConfig.patchGroups` (v0.6.0). */
+export interface PatchGroupChild {
+  /** the patch token as emitted on Replay.patch, e.g. '1.2.1' */
+  id: string;
+  /** display label (defaults to the id) */
+  label?: string;
+  /** optional hint surfaced in the child dropdown, e.g. 'Akali' */
+  note?: string;
+}
+
+/** A parent (era) entry in `GameConfig.patchGroups` (v0.6.0). */
+export interface PatchGroup {
+  /** the era token as previously emitted on Replay.patch, e.g. 'S1' / 'Beta' */
+  id: string;
+  /** display label (defaults to the id) */
+  label?: string;
+  /** optional hint for the parent row */
+  note?: string;
+  /** patches of this era in timeline order; omit for a childless parent */
+  children?: PatchGroupChild[];
+}
+
 /**
  * The game-shaped configuration contract. Every consuming game supplies this
  * via its own `app.config.ts` (merged over the engine's neutral default), and
@@ -26,6 +48,16 @@ export interface GameConfig {
    *  render 1:1 from sourceChannels. Badge + data stay per-channel — SourceBadge and
    *  the filter predicate are untouched, so per-channel deep links keep working. */
   sourceGroups?: { id: string; name: string; sources: string[] }[];
+  /** Hierarchical grouping of the patch facet (additive, v0.6.0): parents (era
+   *  tokens like "S1"/"Beta") with expandable patch children. Parents are
+   *  tri-state — none/some/all children selected — clicking one toggles the
+   *  whole group; a childless parent renders as a plain chip. URL contract on
+   *  the same `?patch=` param: a fully-selected parent collapses to its parent
+   *  token (so pre-hierarchy season deep links keep working unchanged), a
+   *  partial selection lists child tokens. Declared order = display + canonical
+   *  URL order; ids must be unique across all parents AND children. Absent →
+   *  the flat data-derived chips render exactly as before. */
+  patchGroups?: PatchGroup[];
   fonts?: { display: string; ui: string; mono: string }; // defaults from engine
   /** Web-manifest colors (additive, v0.1.0). Engine defaults to the umbrella
    *  brand; a game sets its own to match its theme.css. */

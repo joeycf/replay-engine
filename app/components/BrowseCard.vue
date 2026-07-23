@@ -141,6 +141,7 @@ const props = defineProps<{ replay: Replay }>();
 
 const { open } = useVideoModal();
 const { byId: playerById } = usePlayers();
+const game = useGame();
 
 // a side may be a team of people (Side.players) — join like the shipped build
 const playerLabel = (s?: Side) =>
@@ -162,8 +163,15 @@ const thumb = computed(
   () => props.replay.thumb ?? `https://i.ytimg.com/vi/${props.replay.id}/hqdefault.jpg`,
 );
 
+// patchGroups (v0.6.0): cards stay era-compact — a child token renders as its
+// parent ("S2", not "1.2.1"); identity for parents/unknowns/non-group apps
+const cardPatch = computed(() => {
+  const p = props.replay.patch;
+  if (!p) return p;
+  return parentOfPatchToken(p, game.patchGroups ?? []) ?? p;
+});
 const metaLine = computed(() =>
-  [props.replay.patch, ...(props.replay.sides[0].rank ? [props.replay.sides[0].rank] : [])]
+  [cardPatch.value, ...(props.replay.sides[0].rank ? [props.replay.sides[0].rank] : [])]
     .filter(Boolean)
     .join(' · '),
 );
