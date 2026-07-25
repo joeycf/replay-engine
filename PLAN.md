@@ -685,3 +685,30 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   same phase** — verify-subpath gains an artifacts-placement assertion as the recorded
   follow-up. Engine lineage: v0.4.1 (theme docs/tests) → v0.5.0 (rank-chip minor, shipped
   between audited phases) → v0.5.1 (subpath artifacts fix; the platform-wide cutover pin).
+- **Phase 7 (planned): Street Fighter 6** — third game, Tekken-shaped
+  (`charactersPerSide: 1`, rank ladder, no co-occurrence); expected engine changes
+  zero. First game born into the subpath world: committed `baseURL '/sf6/'` default,
+  no legacy 301s. New-vs-Tekken surface: the shell exists, so launch = game repo
+  live-and-verified at its alias FIRST, then one shell commit (games.ts + two
+  rewrites + gate extensions per the gate-growth rule) — zero broken window.
+  Channels: @SF6HighLevelReplays, @TheFGCplace (game-mix recon required — likely
+  multi-game), @streetfighterreplays41. Cron stagger: 07:17 UTC. Patch eras =
+  "Years" (Y1 2023-06-02 fixed; Y2/Y3 dates verified at build). Theme: "UI Street"
+  direction — safety-orange primary + Drive-paint green secondary on warm asphalt
+  surfaces, collegiate-urban display face; tokens-only, `:root` contract.
+- **Phase 7 (SF6) built & gated — launch pending:** engine pin now **v0.6.0**
+  (v0.5.4 `heroFocus`, v0.5.5 `sourceGroups`, v0.6.0 `patchGroups` — shipped
+  between audited sessions). SF6: 19,495 replays / 1,650 players / 30 characters
+  (Yasmine behind a self-expiring UNRELEASED gate until 2026-08-03); Seasons
+  S1–S4 with S4 pre-declared `confirmed: false`; `scripts/expiries.ts` drives
+  three severities (roster script exit 1 · parse soft ACTION-REQUIRED riding the
+  report.md commit-guard channel · workflow red after commit+push). Zero engine
+  changes needed to function — but the payload-measurement mandate exposed **two
+  live engine defects affecting all three games**: `useReplays()` re-fetches the
+  whale once per consuming component (×5 ≈ 30 MB observed per browse load on
+  SF6) → fix is an engine patch (memoize / getCachedData) + pin bumps; and
+  `patchTokenParts()` renders parent era tokens unlabeled in the modal ("S3" vs
+  the chip's "Season 3"). Shell: third card (ShellGame.video now optional),
+  /sf6 rewrite pair, gates 68/68 app · 14/14 shell · 36/36 cutover, including
+  the fixed per-slug `<loc>` sampler. Next after launch: engine fetch-dedupe
+  patch + pins ×3, then Phase 6 (`summary.json` ×3 → selector counts light up).
