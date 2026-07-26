@@ -145,7 +145,10 @@ try {
   check('dropdown opens', !!(await page.$('[data-testid="patch-group-menu"]')));
   await page.click('[data-testid="patch-child-2.1"]');
   await sleep(400);
-  check('URL lists children only (patch=2.2)', new URL(page.url()).searchParams.get('patch') === '2.2');
+  check(
+    'URL lists children only (patch=2.2)',
+    new URL(page.url()).searchParams.get('patch') === '2.2',
+  );
   check('partial count 2', (await cards()) === 2, String(await cards()));
   check('parent aria-pressed=mixed', (await aria('[data-testid="patch-group-S2"]')) === 'mixed');
   check(
@@ -165,7 +168,11 @@ try {
   await page.goto(`${BASE}/?patch=S1,2.1`, { waitUntil: 'networkidle0' });
   await sleep(500);
   check('mixed parent+child → 7', (await cards()) === 7, String(await cards()));
-  check('S1 true / S2 mixed', (await aria('[data-testid="patch-group-S1"]')) === 'true' && (await aria('[data-testid="patch-group-S2"]')) === 'mixed');
+  check(
+    'S1 true / S2 mixed',
+    (await aria('[data-testid="patch-group-S1"]')) === 'true' &&
+      (await aria('[data-testid="patch-group-S2"]')) === 'mixed',
+  );
   await page.goto(`${BASE}/?patch=S2,2.1`, { waitUntil: 'networkidle0' });
   await sleep(500);
   check('redundant parent+child link → era count 5', (await cards()) === 5, String(await cards()));
@@ -174,7 +181,10 @@ try {
   await page.goto(`${BASE}/`, { waitUntil: 'networkidle0' });
   await sleep(400);
   const cardText = await page.$eval('[data-replay-id="rpl_0001"]', (el) => el.innerText);
-  check('card shows era, not the child token', cardText.includes('S1') && !cardText.includes('1.1'));
+  check(
+    'card shows era, not the child token',
+    cardText.includes('S1') && !cardText.includes('1.1'),
+  );
   await page.click('[data-replay-id="rpl_0001"]');
   await sleep(600);
   const modalText = await page.$eval('[role="dialog"][aria-modal="true"]', (el) => el.innerText);

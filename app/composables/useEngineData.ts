@@ -37,11 +37,48 @@ export interface RegistryHandle<T> {
   provided: boolean;
 }
 
+/**
+ * Shared options for every client-side data fetch the engine makes.
+ *
+ * `dedupe: 'defer'` — Nuxt's default is `'cancel'`, which does NOT share an
+ * in-flight request between callers. Each component that calls the composable
+ * runs its own `execute()`; the previous request's AbortController is aborted,
+ * but those bytes are already on the wire, so the browser completes every one
+ * of them. With N components calling `useReplays()` on one page that is N full
+ * downloads of replays.json — measured at 5 × 6.01 MB = 30 MB on a single SF6
+ * browse load before this landed. `'defer'` makes concurrent callers await the
+ * one shared promise.
+ *
+ * `getCachedData` — once a fetch HAS resolved, a component mounting later
+ * (opening the modal, navigating to a character page) must not fetch again.
+ * Nuxt's default reads `payload.data` only while hydrating and `static.data`
+ * otherwise, and both are empty for a `server: false` fetch on a prerendered
+ * site, so a late subscriber starts a fresh download. Reading `payload.data`
+ * unconditionally is what keeps the result sticky for the life of the page.
+ *
+ * Behaviour only: no signature, no contract, and no config surface changes.
+ */
+interface CacheableNuxtApp {
+  payload: { data: Record<string, unknown> };
+  static: { data: Record<string, unknown> };
+}
+
+function sharedFetchOptions<T>() {
+  return {
+    server: false as const,
+    dedupe: 'defer' as const,
+    default: () => [] as T[],
+    getCachedData: (key: string, nuxtApp: CacheableNuxtApp): T[] | undefined =>
+      (nuxtApp.payload.data[key] ?? nuxtApp.static.data[key]) as T[] | undefined,
+  };
+}
+
 function fetchedRegistry<T extends { id: string }>(key: string, file: string): RegistryHandle<T> {
-  const { data, pending } = useAsyncData<T[]>(key, () => $fetch<T[]>(useDataUrl(file)), {
-    server: false,
-    default: () => [],
-  });
+  const { data, pending } = useAsyncData<T[]>(
+    key,
+    () => $fetch<T[]>(useDataUrl(file)),
+    sharedFetchOptions<T>(),
+  );
   return {
     list: data as Ref<T[]>,
     byId: (id: string) => (data.value as T[]).find((item) => item.id === id),
@@ -109,7 +146,7 @@ export function useReplays() {
   const { data, pending, error } = useAsyncData<Replay[]>(
     'replays',
     () => $fetch<Replay[]>(useDataUrl('replays.json')),
-    { server: false, default: () => [] },
+    sharedFetchOptions<Replay>(),
   );
   const byId = (id: string): Replay | undefined => data.value.find((r) => r.id === id);
   return { replays: data as Ref<Replay[]>, pending, error, byId };

@@ -602,3 +602,35 @@ waiting to be noticed.
   fine token (era-token fallback) plus a committed `data/patchGroups.json` that
   `app.config.ts` imports — one authority for derivation AND UI, so they cannot
   drift. Stats stay era-keyed (`byPatchUsage` untouched).
+
+## 14. v0.6.1 — one fetch per data file, not one per consumer
+
+A pure runtime fix: no contract, config, or signature change, so a consumer pin
+bump is a no-op beyond the saving.
+
+- **The bug.** `useAsyncData`'s default `dedupe` is `'cancel'`, which does NOT
+  share an in-flight request between callers — each component that calls the
+  composable runs its own `execute()`, and the previous request's
+  `AbortController` is aborted only after its bytes are already on the wire, so
+  the browser completes every one of them. Eight components call `useReplays()`
+  (`index.vue`, `characters/[id]`, `players/[id]`, `health`, `useFilters`,
+  `useVideoModal`, `ActiveChips`, `FilterDrawer`); a browse load resolved five of
+  them concurrently and downloaded `replays.json` **five times** — measured at
+  5 × 6.01 MB = 30.06 MB on SF6, and the same code path on every game.
+- **The second leak.** Nuxt's default `getCachedData` reads `payload.data` only
+  while hydrating and `static.data` otherwise. Both are empty for a
+  `server: false` fetch on a prerendered site, so a component mounting later
+  (modal, SPA navigation) started a fresh download of an already-resolved file.
+- **The fix** — `sharedFetchOptions()` in `app/composables/useEngineData.ts`,
+  applied to `useReplays()` AND the `fetchedRegistry()` fallback used by
+  characters/players/stats when nothing is provided: `dedupe: 'defer'` (concurrent
+  callers await the one shared promise) plus an explicit `getCachedData` reading
+  `payload.data` unconditionally (resolved data stays sticky for the life of the
+  page).
+- **Measured on SF6** (19,495 replays, `scripts/e2e.ts` payload block): first load
+  **31.14 MB → 7.10 MB**, `replays.json` **×5 → ×1**; a full SPA session (browse →
+  characters → a character → players → browse) stays at **one** fetch, 6.01 MB.
+  Full-document reloads legitimately refetch — that is a new page, not a leak.
+- **Verification**: engine `test:filters` + `test:registry` unchanged and green;
+  SF6's 68-gate suite green against the patched engine, with the payload block
+  now asserting the single fetch.

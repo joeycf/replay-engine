@@ -58,11 +58,11 @@ export default defineNuxtConfig({
   // clones the layer with NO node_modules, and the engine's runtime deps
   // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
   // Phase-3 remote-layer check).
-  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.6.0', { install: true }]],
+  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.6.1', { install: true }]],
 });
 ```
 
-`v0.6.0` is the current platform-wide pin — both games and the shell are on it.
+`v0.6.1` is the current platform-wide pin.
 
 **Local co-development** (editing the engine while building a game): keep a local
 checkout next to your app and set `ENGINE_PATH` in the app's `.env`:
