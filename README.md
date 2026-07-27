@@ -431,6 +431,13 @@ node scripts/verify-browser.mjs http://localhost:3000        # Phase-1 suite (co
 node scripts/verify-subpath.mjs http://localhost:4174 /sub   # base-path resilience probe
 ```
 
+The subpath probe also has a build-placement mode that needs no browser — point it
+at a generated output root and it asserts nothing escaped the base:
+
+```bash
+node scripts/verify-subpath.mjs --artifacts fixtures/.vercel/output /sub
+```
+
 `/health` renders collection counts + the active `GameConfig` — the wiring check
 every consuming app reuses.
 

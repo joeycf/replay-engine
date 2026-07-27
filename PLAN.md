@@ -712,3 +712,22 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   /sf6 rewrite pair, gates 68/68 app · 14/14 shell · 36/36 cutover, including
   the fixed per-slug `<loc>` sampler. Next after launch: engine fetch-dedupe
   patch + pins ×3, then Phase 6 (`summary.json` ×3 → selector counts light up).
+- **The intermittent Vercel build failures (all three games) — root cause found,
+  fixed in v0.6.2:** nitro's prerender queue holds BOTH spellings of each payload
+  route (base-prefixed `/2xko/<r>/_payload.json?<buildId>`, harvested from the
+  page's `<link>`, and router-space `/<r>/_payload.json`, the renderer's own
+  `x-nitro-prerender` hint); the losing twin 500s and kills the build. Six
+  consecutive failures confirm the class — `/health`'s payload ×3, `/not-found`'s
+  ×3, always the `?<buildId>` spelling, which `canWriteToDisk` refuses to write
+  anyway. Pre-dates Phase 6 (deploy history shows identical failures interleaved
+  with lucky greens). Mixed-space class, third appearance — v0.5.1 fixed the
+  artifacts module's VIEW of the queue, not the queue. Fix = engine **v0.6.2**
+  (deterministic logical-route dedupe in the prerender hooks + the long-deferred
+  verify-subpath artifacts-placement assertion), pins ×4. Two prior hypotheses
+  were falsified and are retracted: (1) a network/giget rate limit — refuted by
+  the build log; (2) ~1,000 orphan root-space payload files outside the base —
+  the built output never had them (router-space payloads land INSIDE the base:
+  `withoutBase` no-ops on a route that never carried the base, and `publicDir` is
+  already base-suffixed). The real orphan was the vercel `overrides` map, where
+  six router-space page twins clobbered the correct entries with root-space
+  serving paths (`{"path": "stats"}`); that is what the new gate catches.

@@ -227,7 +227,7 @@ not sameness. Run it before cutting an engine tag and after adopting one.
 | `scripts/fixtures-data.mjs`              | Derives fixture stats.json from replays (pipeline parity); `--1v1` emits the rank-ladder variant                                      |
 | `scripts/verify-phase2.mjs`              | Full ported-UI click-through (47 checks: filters/matchup/search/sort/modal/drawer/stats/404/SEO/network/reduced-motion/manifest)      |
 | `scripts/verify-browser.mjs`             | Phase-1 hydrated-client suite (counts, toggle clicks, theme/accent tokens)                                                            |
-| `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base                                                                      |
+| `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base; `--artifacts <output dir> [base]` gates BUILD placement (§15)       |
 | `scripts/verify-override.mjs`            | Theme-override gate on the BUILT fixture bundle, both directions (`:root` override wins / removal → umbrella) + raw-`@theme` tripwire |
 
 SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lands in
@@ -507,7 +507,7 @@ designed 404 at static root) and at `/` (byte-identical placement to v0.5.0 —
 root behavior unchanged); `test:filters` / `test:registry` / typecheck / lint green.
 `scripts/verify-subpath.mjs` predates this module and never probed artifacts — its
 gap is what let this ship; extending it with an artifacts-placement assertion is the
-recorded follow-up.
+recorded follow-up. **Landed in v0.6.2** (§15) as `--artifacts`.
 
 ---
 
@@ -634,3 +634,84 @@ bump is a no-op beyond the saving.
 - **Verification**: engine `test:filters` + `test:registry` unchanged and green;
   SF6's 68-gate suite green against the patched engine, with the payload block
   now asserting the single fetch.
+
+## 15. v0.6.2 — one logical route renders exactly once
+
+A build-pipeline fix: no contract, config, or signature change, so a consumer pin
+bump is a no-op beyond the saving. It is also the fix for the **intermittent
+Vercel build failure** that had been killing production builds across all three
+games.
+
+- **The bug.** Nitro's prerender queue is a `Set<string>` deduped by EXACT
+  STRING, but routes enter it in two URL spaces and two query forms:
+  base-prefixed from the engine's/app's seeds and from crawled `<a href>`s;
+  **router space** from Nuxt's pages plugin, which walks the ROUTER's own table
+  and re-enqueues it de-based through `prerenderRoutes()` as an
+  `x-nitro-prerender` header; and payloads in **both** — base-prefixed with a
+  `?<buildId>` cache-buster (the `<link>` in every page head, harvested by the
+  crawler) and router-space without one (the renderer's own header hint, built
+  from the de-based `ssrContext.url`). Under a subpath base every page and every
+  payload was therefore queued twice. On 2XKO: 7,726 route renders for 6,653
+  logical routes.
+- **Why it failed the build.** The two payload twins render the same route
+  concurrently and the loser 500s; `failOnError` then kills the build. Six
+  consecutive 2XKO production builds died exactly this way — victims
+  `/2xko/health/_payload.json?<buildId>` ×3 and
+  `/2xko/not-found/_payload.json?<buildId>` ×3, always the `?<buildId>` spelling.
+  That spelling cannot even produce an artifact: `canWriteToDisk` refuses any
+  route containing `?`, so nitro logs it `(skipped)` and throws the render away.
+  It existed solely as a coin-flip chance to fail the build. The race is
+  timing-dependent and did not reproduce locally: 16 subpath builds on v0.6.1 —
+  including 8 pinned to two cores to mimic a Vercel builder — all went green. The
+  evidence is the deploy history, plus the structural fact that the failing
+  spelling is a duplicate render that can never write an artifact.
+- **The second symptom.** The vercel preset builds `config.json`'s `overrides`
+  from the raw route strings, so the six router-space page twins wrote
+  `{"path": "stats"}` — a ROOT-space serving path for a base-scoped file —
+  clobbering the correct `{"path": "2xko/stats"}` written by their base-prefixed
+  twin. Whichever twin finished last won.
+- **The fix** — `modules/prerender-queue.ts`, two rules applied in
+  `prerender:routes` before a single route is fetched. (A) A `_payload.json` /
+  `_payload.js` route keeps its path and drops the query: the cache-buster is for
+  the BROWSER, the renderer strips it, and nitro can never write it. (B) Routes
+  dedupe on their LOGICAL key — `withoutBase(path) + search`, the same de-basing
+  nitro applies to compute `fileName` — first spelling to claim a key renders,
+  later spellings are dropped. Because the seed set is normalized before
+  rendering starts and every seed is base-prefixed, the surviving spelling is
+  base-prefixed: the one that round-trips (`withBase` → fetch, `withoutBase` →
+  file beneath the base-suffixed `publicDir`) and the one `canPrerender`'s
+  public-asset filter can actually match.
+- **Why `prerender:routes` and not `prerender:route`.** `prerender:route` fires
+  after a route has been fetched — too late to prevent the render. Crawled links
+  and header hints are added later to the SAME `Set` instance that
+  `prerender:routes` hands out, from inside `generateRoute`, with no hook of
+  their own. Taking the queue's own `add` is therefore the only interception
+  point that covers discoveries, and it makes the outcome deterministic instead
+  of dependent on which twin wins a race.
+- **Root builds** shed the same waste (rule A still fires; rule B is an identity
+  on an empty base) with unchanged output: 2XKO at `/` went 7,720 → 6,653 route
+  renders, same 2,136 written routes.
+- **Verification.** 2XKO at `/2xko/` green **3 consecutive runs**, byte-identical
+  counters each time: 6,653 logical routes, 2,136 written, 1,067 payload routes,
+  **0** carrying `?<buildId>`, **0** duplicate route strings in the build log,
+  `/health` + `/not-found` payloads present exactly once. Root before/after:
+  2,317 files both, and once the three inherently per-build tokens are normalized
+  (the buildId UUID, `nitro.json`'s build date, and the `prerenderedAt` epoch ms
+  Nuxt bakes into every payload and HTML) **2,315 of 2,317 files are byte-identical**;
+  the two that differ — `config.json` and `_nuxt/builds/meta/<buildId>.json` —
+  differ only in key/array ORDER (render-completion order, nondeterministic
+  between any two builds) and are identical once sorted: same 1,067 overrides,
+  same 1,067 prerendered routes. Fixtures at `/sub/` build clean and pass the new
+  gate. Engine battery green: `typecheck`, `lint`, `format:check`, `test:filters`,
+  `test:registry`, `verify-override` (both directions), `verify-patch-groups`,
+  `verify:replication`.
+- **Gate growth (the standing rule).** `verify-subpath.mjs` gains
+  `--artifacts <output dir> [base]`, the assertion recorded as a follow-up in
+  §10: no emitted file outside the base (404.html at the static root excepted)
+  and every prerendered-route override serving under the base. It **fails on
+  v0.6.1** output with exactly the six clobbered overrides and passes on v0.6.2 —
+  a real positive control. Note the first assertion passes on v0.6.1 too: the
+  suspected root-space orphan payloads do not exist. Router-space payload routes
+  landed INSIDE the base, because `withoutBase` is a no-op on a route that never
+  carried the base and `publicDir` is already base-suffixed. The orphan was the
+  override map, not the files.

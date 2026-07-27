@@ -3,9 +3,86 @@
  * base path (NUXT_APP_BASE_URL=/sub/), every data fetch, font asset, image and
  * nav link must resolve UNDER the base — an unwrapped absolute path would
  * escape to the root and 404. Records actual network requests to prove it.
- * Usage: node scripts/verify-subpath.mjs [origin] [base]
+ *
+ * Two modes:
+ *   node scripts/verify-subpath.mjs [origin] [base]        runtime request probe
+ *   node scripts/verify-subpath.mjs --artifacts <dir> [base]   build placement gate
+ *
+ * The --artifacts mode is the assertion recorded as a follow-up in v0.5.1 (see
+ * STACK §10): this script probed a RUNNING app and never looked at where the
+ * build actually put things, and that gap is what let the subpath artifacts bug
+ * ship. <dir> is a nitro vercel-static output root (`.vercel/output`). See
+ * checkArtifacts() for the two contracts it enforces.
  */
-import puppeteer from 'puppeteer-core';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
+import { join, relative, resolve } from 'node:path';
+// puppeteer is imported lazily, below the --artifacts early exit: the placement
+// gate reads a directory and needs no browser, so it stays runnable with plain
+// Node in a repo that carries no puppeteer-core.
+
+/**
+ * Build-output placement gate. Under a base, EVERYTHING the build emits lives
+ * beneath the base prefix — the vercel-static preset suffixes `publicDir` with
+ * the base and nitro writes routes de-based beneath it, so anything landing
+ * outside is a space confusion (a route queued in the wrong URL space, or a
+ * filesystem path that had the base applied twice).
+ *
+ *   1. No emitted file sits outside `<static>/<base>` — except `404.html` at
+ *      the static root, which is the contract (Vercel's 404 lookup ignores the
+ *      base, so static-artifacts deliberately writes it there).
+ *   2. Every prerendered-route override in config.json serves a path UNDER the
+ *      base. The vercel preset builds that map from the raw route strings, so a
+ *      route queued in router space writes `{"path": "stats"}` where the file
+ *      really serves at `/<base>/stats` — a root-space serving path for a
+ *      base-scoped file. This is the output-side fingerprint of a mixed-space
+ *      prerender queue, and it is what fails on v0.6.1.
+ */
+function checkArtifacts(outputDir, base, check) {
+  const staticRoot = resolve(outputDir, 'static');
+  const prefix = base.replace(/^\/|\/$/g, '');
+  const ROOT_ALLOWED = new Set(['404.html']);
+
+  const walk = (dir) =>
+    readdirSync(dir).flatMap((entry) => {
+      const full = join(dir, entry);
+      return statSync(full).isDirectory() ? walk(full) : [relative(staticRoot, full)];
+    });
+
+  const outside = walk(staticRoot).filter(
+    (f) => !f.startsWith(`${prefix}/`) && !ROOT_ALLOWED.has(f),
+  );
+  check(
+    `no build artifact outside /${prefix} (404.html at the static root excepted)`,
+    outside.length === 0,
+    outside.slice(0, 6).join(', ') || 'none',
+  );
+
+  const config = JSON.parse(readFileSync(join(outputDir, 'config.json'), 'utf8'));
+  const strays = Object.entries(config.overrides ?? {})
+    .filter(([, v]) => v?.path !== undefined && !`/${v.path}`.startsWith(`/${prefix}`))
+    .map(([k, v]) => `${k} → /${v.path}`);
+  check(
+    `every prerendered-route override serves under /${prefix}`,
+    strays.length === 0,
+    strays.slice(0, 6).join(', ') || 'none',
+  );
+}
+
+let failed = 0;
+const check = (label, ok, detail = '') => {
+  if (!ok) failed += 1;
+  console.log(`${ok ? '  ✓' : '  ✗'} ${label}${detail ? `: ${detail}` : ''}`);
+};
+
+if (process.argv[2] === '--artifacts') {
+  const outputDir = process.argv[3];
+  if (!outputDir) throw new Error('usage: verify-subpath.mjs --artifacts <output dir> [base]');
+  checkArtifacts(outputDir, process.argv[4] ?? '/sub', check);
+  console.log(failed ? `\n✗ ${failed} FAILURE(S)` : '\n✓ SUBPATH ARTIFACT PLACEMENT VERIFIED');
+  process.exit(failed ? 1 : 0);
+}
+
+const { default: puppeteer } = await import('puppeteer-core');
 
 const ORIGIN = process.argv[2] ?? 'http://localhost:3000';
 const BASE = process.argv[3] ?? '/sub';
@@ -23,12 +100,6 @@ page.on('request', (r) => requests.push(new URL(r.url())));
 page.on('response', (r) => {
   if (r.status() === 404) failures404.push(new URL(r.url()).pathname);
 });
-
-let failed = 0;
-const check = (label, ok, detail = '') => {
-  if (!ok) failed += 1;
-  console.log(`${ok ? '  ✓' : '  ✗'} ${label}${detail ? `: ${detail}` : ''}`);
-};
 
 // Browse with the co-occurrence state active — exercises data fetch + filters.
 await page.goto(`${ORIGIN}${BASE}/?characters=aegis,bolt&co=1`, {

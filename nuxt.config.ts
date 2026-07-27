@@ -86,6 +86,14 @@ export default defineNuxtConfig({
       });
     },
 
+    // One logical route renders exactly once. Nitro's queue dedupes by exact
+    // string, but routes enter it in two URL spaces (base-prefixed seeds and
+    // crawled hrefs vs. router-space `x-nitro-prerender` hints) and payloads
+    // additionally in two query forms — so under a subpath base every page and
+    // every payload was queued twice, and the losing payload twin's 500 killed
+    // the build. Normalizes the queue itself, before the first fetch.
+    fileURLToPath(new URL('./modules/prerender-queue.ts', import.meta.url)),
+
     // Build artifacts every game inherits: sitemap.xml from the real prerender
     // list, robots.txt, manifest.webmanifest from GameConfig, and the designed
     // 404.html (prerendered /not-found copied over nitro's SPA fallback).
