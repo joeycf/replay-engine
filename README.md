@@ -58,11 +58,11 @@ export default defineNuxtConfig({
   // clones the layer with NO node_modules, and the engine's runtime deps
   // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
   // Phase-3 remote-layer check).
-  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.6.1', { install: true }]],
+  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.6.3', { install: true }]],
 });
 ```
 
-`v0.6.1` is the current platform-wide pin.
+`v0.6.3` is the current platform-wide pin.
 
 **Local co-development** (editing the engine while building a game): keep a local
 checkout next to your app and set `ENGINE_PATH` in the app's `.env`:
@@ -432,6 +432,43 @@ prerendered route list, `robots.txt`, `manifest.webmanifest` from `GameConfig`
 404 (`404.html` ← the prerendered `/not-found` page, content-checked). The SEO
 plugin injects the icon set + manifest link + theme-color head tags, all through
 `withBase()`.
+
+## Analytics endpoints (v0.6.3) — required when the app runs behind the shell
+
+Both Vercel SDKs are wired by the engine's
+`app/plugins/vercel-observability.client.ts`. A consuming app configures only
+where the beacons go, via `GameConfig.observability`:
+
+```ts
+// app/app.config.ts
+observability: { insights: '/2xko-insights' },
+```
+
+Why this exists: each SDK resolves its script and its beacons against a
+**same-origin** prefix, so the project credited is whichever one owns that path
+on the domain being browsed — never the project that built the page. Behind the
+shell, a game's pages are served from the apex, so by default all of its data
+lands in the **shell's** project.
+
+- **Omit the key** and the defaults (`/_vercel/insights`,
+  `/_vercel/speed-insights`) pool every game into the shell's dashboard. Correct
+  and verified, just shared — and now legible, because the plugin reports
+  base-prefixed paths (`/2xko/stats`, not `/stats`).
+- **Set `insights`** to a per-game prefix to send Web Analytics to the game's
+  **own** project. That prefix MUST have a matching
+  `/<prefix>/:path* → https://<child>/_vercel/insights/:path*` rewrite in the
+  shell's `vercel.json`; the two ship together or every beacon 404s. It has to
+  be same-origin — the child's endpoints send no CORS headers, so an absolute
+  URL dies at preflight.
+- **Leave `speedInsights` alone** unless you have checked the plan: Speed
+  Insights is single-project on Hobby, so its beacons must reach whichever
+  project has the feature enabled.
+
+**A root-based app (base `/`) is left completely alone** — no override at all.
+It is served from its own origin, so Vercel's baked per-project endpoint already
+resolves, and keeping it preserves the ad-blocker resistance that the stable
+`/_vercel/…` path lacks. The shell and the fixtures app are in this case; only a
+subpath build is rewired.
 
 ## Versioning
 

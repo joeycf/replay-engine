@@ -47,10 +47,13 @@ export default defineNuxtConfig({
     // game apps inherit this module, so every repo lints under the same rules.
     '@nuxt/eslint',
 
-    // Vercel Web Analytics — no-ops off-Vercel/in dev. Hoisted engine-wide so
-    // games drop their local copies in Phase 3 (paired with the
-    // speed-insights.client.ts plugin).
-    '@vercel/analytics',
+    // NO '@vercel/analytics' module here. It accepts no options, and its
+    // generated plugin calls injectAnalytics() bare — which resolves the
+    // per-project obfuscated endpoint baked into the build and reports a
+    // base-STRIPPED path. Behind the shell both are wrong (404 beacons, and
+    // /2xko/stats reported as /stats), so Web Analytics and Speed Insights are
+    // both wired explicitly in app/plugins/vercel-observability.client.ts.
+    // See that file's header before reinstating anything here.
 
     // Seed prerender routes under the FINAL resolved base path. A static
     // `routes: ['/']` list would 404 when a game builds at '/2xko' (explicit

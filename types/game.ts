@@ -90,6 +90,35 @@ export interface GameConfig {
    *  remapped at build (engineCharacterRoutes in nuxt.config); engine links
    *  resolve through useGameTerms().characterPath. */
   characterRouteSegment?: string;
+  /** Vercel observability endpoints (additive, v0.6.3). Both SDKs resolve
+   *  their script and their beacons against a SAME-ORIGIN prefix, so the
+   *  project that receives the data is whichever one owns the path on the
+   *  domain being browsed — never the project that built the page.
+   *
+   *  Omit this key and behaviour depends on the base. At base '/' the app is on
+   *  its own origin, so NOTHING is overridden — Vercel's baked per-project
+   *  endpoint already resolves and is the ad-blocker-resistant one. Under a
+   *  subpath the defaults are the stable `/_vercel/insights` and
+   *  `/_vercel/speed-insights`, which behind the shell belong to the SHELL, so
+   *  every game's data lands in the shell's dashboard — correct and verified,
+   *  just pooled, and distinguishable because the plugin now reports
+   *  base-prefixed paths.
+   *
+   *  Set `insights` to a per-game proxy prefix (e.g. '/2xko-insights') to send
+   *  Web Analytics to the game's OWN project instead. That prefix MUST have a
+   *  matching `/<prefix>/:path*` → `https://<child>/_vercel/insights/:path*`
+   *  rewrite in the shell's vercel.json, or every beacon 404s. Same-origin by
+   *  construction: the child's endpoints send no CORS headers, so pointing
+   *  straight at the child's absolute URL would be blocked by preflight.
+   *
+   *  `speedInsights` is left at the default on purpose — Speed Insights is
+   *  single-project on the Hobby plan, so its beacons must reach whichever
+   *  project has it enabled. Do not repoint it per game without checking that
+   *  first. */
+  observability?: {
+    insights?: string;
+    speedInsights?: string;
+  };
   /** Stats-dashboard layout tuning (additive, v0.5.3). Controls the
    *  meta-over-time bump chart on the stats page:
    *  - metaTimelineTopN: how many characters to plot (default 5).

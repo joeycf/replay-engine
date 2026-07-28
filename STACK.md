@@ -27,8 +27,29 @@ belongs here.
 | `@tailwindcss/vite`      | 4.3.2   | Official first-party Vite plugin — the ONLY Tailwind module                                                                                       |
 | `ufo`                    | 1.6.4   | `withBase` / `joinURL` — every absolute URL goes through it                                                                                       |
 | `animejs`                | 4.5.0   | Chart reveals (v4 **named-export** API: `import { animate, stagger }` — never the v3 default import); dynamically imported so it stays out of SSR |
-| `@vercel/analytics`      | 2.0.1   | Web analytics Nuxt module, hoisted engine-wide (no-ops off-Vercel)                                                                                |
-| `@vercel/speed-insights` | 2.0.0   | CWV reporting via the engine's client plugin (sampleRate 0.5)                                                                                     |
+| `@vercel/analytics`      | 2.0.1   | Web analytics — the **generic** `inject`/`pageview`, NOT the Nuxt module (see below)                                                              |
+| `@vercel/speed-insights` | 2.0.0   | CWV reporting — the **generic** `injectSpeedInsights` (sampleRate 0.5), NOT the Nuxt wrapper                                                      |
+
+**MUST: never register `'@vercel/analytics'` as a Nuxt module, and never call
+either package's `nuxt/runtime` wrapper.** Both are wired by hand in
+`app/plugins/vercel-observability.client.ts`, because behind the shell each
+wrapper is wrong in two independent ways:
+
+1. It resolves the **per-project obfuscated endpoint** Vercel bakes into the
+   build (`VITE_VERCEL_OBSERVABILITY_CLIENT_CONFIG` →
+   `/41a6d9d2116e7933/script.js`). That path exists only on the project's own
+   host; proxied onto the apex it 404s, so the SDK reports **nothing**. The seed
+   changes every build, so it cannot be hardcoded — only overridden. Web
+   Analytics needs all three of `viewEndpoint`/`eventEndpoint`/`sessionEndpoint`
+   overridden, not just `endpoint`: the served script resolves the per-type key
+   first.
+2. It reports vue-router's **base-stripped** `route.path`, so `/2xko/stats`
+   arrives as `/stats` and collides with the other games in whichever dashboard
+   receives it. Every reported route/path goes back through `withBase()`.
+
+This cost ~10 days of blind analytics after the Phase-5 subpath cutover. Gated
+now: each game's `e2e.ts` asserts the script src and the base-prefixed report,
+and the shell's `verify-cutover.mjs` asserts both resolve through the apex.
 
 The two `@vercel/*` packages peer-declare `vue-router ^4` while Nuxt 4 ships v5 (runtime
 compatible — the live 2XKO deployment proves it). The engine's `package.json` carries an
@@ -746,3 +767,51 @@ games.
   landed INSIDE the base, because `withoutBase` is a no-op on a route that never
   carried the base and `publicDir` is already base-suffixed. The orphan was the
   override map, not the files.
+
+---
+
+## 16. v0.6.3 — analytics that actually resolves behind the shell
+
+A wiring fix with one additive config field. Consumers behind the shell MUST
+bump and set `observability.insights`; a root-based consumer can ignore it.
+
+- **The bug, and why nothing caught it.** The Phase-5 subpath cutover killed
+  Vercel Web Analytics and Speed Insights for all three games, and they stayed
+  dead ~10 days. Not misattributed — **dropped**. Vercel's build bakes a
+  per-project obfuscated path into every bundle
+  (`VITE_VERCEL_OBSERVABILITY_CLIENT_CONFIG` → `/41a6d9d2116e7933/script.js`),
+  and that path exists only on the project's own host. The shell proxies game
+  pages onto the apex, where it 404s. Confirmed in a real browser:
+  `[Vercel Web Analytics] Failed to load script from /41a6d9d2116e7933/script.js`,
+  with the queued pageview sitting in `window.vaq` forever.
+- **The second, independent bug.** Both SDKs' Nuxt wrappers report vue-router's
+  base-STRIPPED `route.path`, so `/2xko/stats` arrives as `/stats` and collides
+  with the other games in whichever dashboard receives it. Fixing only the
+  endpoints would have produced data that looked fine and merged three games
+  into one set of rows.
+- **The fix.** `app/plugins/vercel-observability.client.ts` replaces both the
+  `'@vercel/analytics'` module and the old `speed-insights.client.ts`, calling
+  each package's GENERIC injector with explicit endpoints, and putting every
+  reported route/path back through `withBase()`. Explicit props win because
+  `loadProps()` spreads the baked config first. Web Analytics needs all three of
+  `viewEndpoint`/`eventEndpoint`/`sessionEndpoint` overridden — the served
+  script resolves the per-type key before falling back to `endpoint`.
+- **Endpoint strategy.** `GameConfig.observability.insights` names a same-origin
+  prefix, paired 1:1 with a `/<prefix>/:path*` →
+  `https://<child>/_vercel/insights/:path*` rewrite in the shell's
+  `vercel.json`, which puts each game's Web Analytics back in its OWN project.
+  Same-origin is mandatory: the child endpoints send no `Access-Control-Allow-*`
+  headers (verified — `OPTIONS` returns 200 with none), so an absolute
+  cross-origin URL dies at preflight. The engine DEFAULT is the stable
+  `/_vercel/insights`, which pools every game into whichever project owns the
+  domain — verified working, and the fallback if the proxy ever misbehaves.
+- **Speed Insights is not per-game.** Single-project on Hobby, so its beacons
+  must reach whichever project has the feature enabled; it stays on the stable
+  apex path. Do not repoint it per game without re-checking that limit.
+- **Gate lesson, fourth instance.** The cutover battery checked themes,
+  canonicals, sitemaps and redirects — nothing asserted a beacon resolves. Now
+  each game's `e2e.ts` asserts the script src, the absence of any 16-hex baked
+  path, and the base-prefixed report; the shell's `verify-cutover.mjs` asserts
+  both SDKs resolve through the apex. Positive-controlled: reverting the engine
+  to the bare module fails the 2XKO gate (31/32, exit 1) and passes with it.
+  Third-party integrations need gates like every other contract surface.
