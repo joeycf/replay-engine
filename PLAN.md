@@ -744,3 +744,27 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   payload routes now satisfy nitro's `fileName !== route` override condition);
   those entries are de-based and inert, as v0.6.1's 1,067 HTML overrides already
   were.
+- **Patch granularity is a platform requirement, not a per-game choice** (added
+  after SF6 shipped era-only while 2XKO and Tekken shipped nested patches). Every
+  new game emits a **patch/era table with child granularity**: `Replay.patch`
+  holds the fine-grained patch token, `GameConfig.patchGroups` nests those
+  children under their eras, and the facet renders parent chips with child
+  dropdowns (modal reads `S3 · 2.02`, not a bare `S3` — `patchTokenParts()`
+  resolves ids, never a parent's `label`, so `Season 3 · 2.02` is not reachable
+  from config; that is a separate engine defect, not a consumer's to work
+  around). Era boundaries come
+  from an explicit hardcoded table of **balance overhauls — never inferred from
+  major version numbers** (SF6's `1.x` line spans two seasons and `2.00` lands
+  mid-season). Era-only is a deliberate exception requiring a stated reason.
+  **Root cause of the miss, and the fix:** the convention lived only as code in
+  two repos, so a new-game prompt that said "read PLAN/STACK/README" could not
+  inherit it — it is now written into all three engine docs and this checklist:
+  README.md "Patch grouping (v0.6.0) — child granularity is expected" (the
+  consumer contract), STACK.md §5 item 14 (the standing MUST) and §13's consumer
+  pattern, and this entry. **What folds into a parent row is vendor-specific**:
+  read the vendor's own version strings before reusing another game's fold rule,
+  and never invent a version to fill a sequence gap. SF6 remediated 2026-07-27 —
+  17 patch children, `Replay.patch` now the fine token.
+  General rule this instantiates: *a convention that exists only in
+  implementations will be missed by the next implementation; put it in the docs
+  the phase prompts already require reading.*

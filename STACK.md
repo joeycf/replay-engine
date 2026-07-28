@@ -343,6 +343,26 @@ SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lan
     `@layer theme` defaults in every build mode. Gated by `scripts/verify-override.mjs`
     (built fixture bundle, both directions) and by each game's e2e theme-presence test
     against its own built output.
+14. **A game's patch facet MUST carry child granularity under its era parents, never
+    era-only.** `Replay.patch` holds the fine patch token, with the era token as the
+    documented "era known, patch unknown" fallback, and `GameConfig.patchGroups` nests
+    those children under their eras — one boundary authority derives BOTH the tokens and
+    the committed `data/patchGroups.json` that `app.config.ts` imports, so derivation and
+    UI cannot drift. Era boundaries come from an explicit table of balance overhauls and
+    are **never inferred from major version numbers** (SF6's `1.x` line spans two seasons
+    and `2.00` lands mid-season; an all-character balance pass does not imply a new era
+    either). Patches nest under eras BY RELEASE DATE. The failure is silent and shaped
+    like success: era-only ships a facet that renders, filters, and passes every count
+    assertion — it simply cannot answer "which patch", and the omission stays invisible
+    until two games are compared. Caught after SF6 (Phase 7) shipped era-only while
+    Tekken and 2XKO had shipped nested patches since v0.6.0, because the convention
+    existed only as code in two repos. Era-only is an exception that requires a stated
+    reason in the app's README. Gated per-app by the patch-table validator (era-token
+    collision, token shape, release order, in-era windows, opening-patch-on-era-start),
+    by emit's era-or-declared token assertion plus ids-unique / no-ungrouped-token
+    checks, and by each game's e2e grouped-patch-facet block (fine-token deep link,
+    mixed union, tri-state round-trip, era-keyed stats, chips == data-present). See
+    README.md "Patch grouping (v0.6.0)" for the consumer contract.
 
 ---
 
@@ -596,12 +616,23 @@ waiting to be noticed.
   (fixtures stay ungrouped by default; the untouched `verify-phase2` run on the
   default build is the byte-stability evidence). Default reproduces v0.5.5 output,
   so the pin is a no-op until a game sets `patchGroups`.
-- **Consumer pattern (both games)**: the app pipeline owns a `data/patchBoundaries
-.json` (released patches only, hotfixes folded, nested under seasons BY RELEASE
-  DATE) validated by a per-app `scripts/patches.ts`, emits `Replay.patch` as the
-  fine token (era-token fallback) plus a committed `data/patchGroups.json` that
+- **Consumer pattern (all three games)**: the app pipeline owns a released-patch
+  table (Tekken and 2XKO: `data/patchBoundaries.json` validated by a per-app
+  `scripts/patches.ts`; SF6: a `PATCHES` const beside `SEASONS` in
+  `scripts/seasons.ts`, so the "an era opens ON a patch" cross-check can see both
+  tables), nested under eras BY RELEASE DATE, and emits `Replay.patch` as the fine
+  token (era-token fallback) plus a committed `data/patchGroups.json` that
   `app.config.ts` imports — one authority for derivation AND UI, so they cannot
-  drift. Stats stay era-keyed (`byPatchUsage` untouched).
+  drift. Stats stay era-keyed (`byPatchUsage` untouched). **What folds into a
+  parent row is vendor-specific, not a fixed segment count**: Tekken folds
+  Bandai's `X.YY.ZZ` hotfixes into `X.YY`; SF6 must NOT fold Capcom's `X.YYZZ`
+  (the dot falls after `ZZ`, so `2.01` and `2.0111` are siblings, and folding
+  would mint a `2.03` that never shipped). Read the vendor's own version strings
+  before choosing — and never invent a version to fill a sequence gap.
+- **`patchTokenParts()` and `BrowseCard` resolve IDS ONLY, never `label`** — a game
+  whose parents carry a `label` still gets `S3 · 2.02` in the modal, not
+  `Season 3 · 2.02`. Config cannot fix it; it needs an engine change. Do not let a
+  consumer game-branch around it (see PLAN.md's patch-granularity entry).
 
 ## 14. v0.6.1 — one fetch per data file, not one per consumer
 

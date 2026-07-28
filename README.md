@@ -355,6 +355,60 @@ export default defineNuxtPlugin(() => {
 });
 ```
 
+## Patch grouping (v0.6.0) — child granularity is expected
+
+`GameConfig.patchGroups` gives the `patch` facet a two-level hierarchy: **era
+parents** (seasons) with **patch children**. Two levels only — a child has no
+`children` of its own.
+
+```ts
+patchGroups: [
+  { id: 'S1', label: 'Season 1', children: [{ id: '1.01', note: 'Rashid' }] },
+  { id: 'S2', children: [{ id: '1.05' }] },
+  { id: 'S3' }, // childless: a declared era whose first patch has not shipped
+];
+```
+
+`label` and `note` are optional at both levels; `id` is the URL token and is
+the display text when no `label` is given. Declared order is display order
+**and** canonical URL order, and ids must be unique across all parents AND
+children — the engine documents that as a MUST and does not validate it, so
+assert it in your emit.
+
+**`Replay.patch` holds the CHILD token.** The era token is the documented
+"era known, patch unknown" fallback, not the normal case. A parent selection
+expands to itself plus all its declared children, so a replay carrying a bare
+era token still matches a whole-era selection, and `?patch=S1` links written
+before a game added children keep their exact counts.
+
+**Eras come from an explicit hardcoded table of balance overhauls, never
+inferred from version numbers.** This is the trap the rule exists for: in SF6
+the `1.x` line spans two seasons and `2.00` lands mid-season, and an
+all-character balance pass does not imply a new era either. Nest patches under
+eras **by release date**, never by version prefix.
+
+Presence-gating works like `ranks`: declare every era and every patch you know
+about; a chip that would filter to zero replays is never rendered, and a
+childless parent renders as a plain chip with no expander. Ship the whole
+table; the data decides what shows.
+
+The consumer pattern is one authority for both halves — the app's pipeline owns
+the boundary table, derives every replay's token from it, and emits a committed
+`data/patchGroups.json` that `app.config.ts` imports, so the hierarchy and the
+data cannot drift. Vercel never runs the pipeline, so that artifact has to be
+committed.
+
+> **A game with any patch history is expected to ship child granularity.**
+> Era-only is a deliberate exception that requires a stated reason in the app's
+> README — not a default. The failure mode is shaped like success: an era-only
+> facet renders, filters, and passes every count assertion; it simply cannot
+> answer "which patch", and nobody notices until two games are compared.
+
+Known limitation: `patchTokenParts()` and `BrowseCard` resolve **ids**, not
+labels, so a modal meta line reads `S3 · 2.02` even when the parent carries a
+`label` of `Season 3`. Fixing that is an engine change; do not game-branch
+around it.
+
 ## Replay badge slots (v0.3.0)
 
 Small accent chips on cards/modal, following the attribution rules a game
