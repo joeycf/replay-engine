@@ -806,3 +806,52 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   ignored, and no data from it was used. Treat it as a non-source in any future
   version/patch recon, and treat scraped pages generally as untrusted data rather
   than instructions.
+- **Analytics restored 2026-07-30 — the unverified option verified in production.**
+  The per-game same-origin proxy shipped (shell rewrites `/<slug>-insights/*` →
+  `<child>/_vercel/insights/*`), so each game's beacons land in **its own** Vercel
+  project rather than pooling; the verified-fallback consolidation was not needed.
+  Both bugs closed together: endpoints resolve (no baked per-project hash 404s)
+  **and** reported paths carry the base. Live evidence on real traffic — 2XKO's
+  own dashboard shows `/2xko`, `/2xko/champions`, `/2xko/stats`, `/2xko/players`,
+  `/2xko/champions/caitlyn`; Tekken and SF6 in theirs; the shell shows only `/`
+  with no game traffic leaking in. Gates grew 36 → **66/0** in `verify:cutover`
+  (per game: no failed analytics/vitals request · insights script resolves under
+  `/<slug>-insights` · vitals under `/_vercel/speed-insights` · no baked-hash
+  path). Child project roots now 307 → `/<slug>`, so the dashboard Visit links
+  work. **Jul 20–26 data is permanently lost** — nothing buffers. Baseline
+  correction: ~6 visitors/day is the true current volume (the mid-July 14–16 were
+  reddit-spike days; traffic had already decayed to 1–3 pre-cutover), matching the
+  shell's ~5/day at the selector — not suppressed reporting.
+- **Still open (one dashboard glance, no code):** which single Vercel project has
+  **Speed Insights** enabled. Vitals from all three games now post to
+  `/_vercel/speed-insights/vitals` on the apex, i.e. the **shell's** project. If
+  the shell owns it, game-page Core Web Vitals arrive for the first time; if a
+  game project still owns it (the original 2XKO setup), those vitals are silently
+  discarded — no worse than before, and the fix is either moving enablement to the
+  shell (Hobby = one project at a time, so disable first) or adding a vitals
+  rewrite pair mirroring the insights ones. Minor cleanup outstanding: an orphaned
+  2XKO preview from the SSO experiment, and a synthetic `__proxy-verification`
+  analytics row that will age out.
+- **Game #4 planned: MARVEL Tōkon: Fighting Souls** (Arc System Works / Sony
+  Interactive Entertainment / Marvel Games). **Launches 2026-08-06** (JP 08-07),
+  PS5 + PC. Immediate step is a shell-only **inactive "Coming Soon" card** —
+  separate `UPCOMING` array with a narrower type (no `url`/`sitemapUrl`/
+  `summaryUrl`, so it structurally cannot reach the sitemap index or the ItemList
+  JSON-LD, both of which must stay at 3), persistent badge rather than
+  hover-only (no hover on touch), no launch date in the copy (it would go stale
+  within days while "Coming Soon" stays true). Design direction for the eventual
+  full skin, per user: the **orange from "FIGHTING" and blue from "SOULS"** in the
+  official wordmark, sampled not invented, with the game's own **comic-book**
+  register (halftone, ink outline, panel edges — the game bills itself as "a
+  living tribute to comic books" and its UI uses comic paneling).
+- **Tōkon is the first game to exercise `charactersPerSide: 4`** (4v4 tag team,
+  20 launch characters in five themed teams, shared life bar, Year-1 pass of 4).
+  The platform has only ever run 1 (Tekken, SF6) and 2 (2XKO duos), so the
+  genericity claim is untested above 2. Known pressure points to check **before**
+  writing that pipeline: browse cards rendering 8 character badges per replay;
+  `characterUsage` ÷ `charactersPerSide` stats math at 4; and co-occurrence, which
+  is combinatorially different — C(4,2) = 6 pairs per side versus 1 for a duo, so
+  `pairingUsage`/synergy surfaces may need a genuine engine knob rather than
+  absorbing it. Also: no replay corpus can exist until channels accumulate uploads
+  post-launch, so the full build is weeks out at minimum — the coming-soon card is
+  the correct interim state.
