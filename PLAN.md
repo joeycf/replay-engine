@@ -855,3 +855,17 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   absorbing it. Also: no replay corpus can exist until channels accumulate uploads
   post-launch, so the full build is weeks out at minimum — the coming-soon card is
   the correct interim state.
+- **Source groups are also a platform convention** (surfaced 2026-07-30, another
+  offscreen-work reveal): 2XKO and Tekken run an **Online / Tournament** split on
+  the source facet via engine v0.5.5 `sourceGroups`, with tournament channels
+  ingested as **one-time backfills** excluded from the daily cron, and duplicate
+  matches across tournament channels resolved by a priority-ordered dedupe
+  (2XKO's `scripts/replay-dupes.ts`). SF6 parity in flight: existing 3 daily
+  channels → `Online`; one-time `Tournament` ingest of @CapcomFighters >
+  @EvoEvents > @TheKingArena > @superfighters-jkm (that order = dedupe tiebreak).
+  Known realities: EvoEvents is majority non-SF6 (big excluded counts are
+  correct); tournament sides carry no ranks (coverage drops honestly); the
+  critical gate is **cron-preservation** — a simulated daily run must prove the
+  backfilled videos survive a fetch that never touches their channels. Like patch
+  granularity, this convention lived only in sibling code; when it lands for SF6
+  it should be written into the engine docs' new-game checklist the same way.
