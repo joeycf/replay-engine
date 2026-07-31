@@ -869,3 +869,46 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   backfilled videos survive a fetch that never touches their channels. Like patch
   granularity, this convention lived only in sibling code; when it lands for SF6
   it should be written into the engine docs' new-game checklist the same way.
+- **Tournament backfill recon corrections (2026-07-31) — three of this doc's
+  premises were wrong:** (1) the one-time-backfill-excluded-from-cron mechanism
+  exists in NO sibling — it was only ever a PLAN.md aspiration; Tekken's
+  tournament channel is an ordinary daily channel and 2XKO's "Tournament" is a
+  hand-authored `data/manual-videos.json`. All contributing channels become
+  ordinary daily channels (first run = the backfill). (2) The field is
+  `Replay.source`; `src` is only the URL param. (3) With `sourceGroups` set the
+  engine renders ONLY group chips; child filtering is URL member-CSV
+  (`?src=a,b,c`) — there is no parent token. **Recon yields:** KingArena
+  2,088/2,333 parseable (the real prize; uploads daily; splits per-video
+  Online/Tournament via a three-way title classifier, ambiguous → review queue);
+  superfighters-jkm 92/190; CapcomFighters and EvoEvents 0 — but CapcomFighters'
+  zero is suspected to be a **gate-ordering artifact** (match-shaped titles carry
+  players+characters but no game marker, so is-SF6-by-title rejects them first;
+  re-recon with description+date game gate on cached data). Evo's characters
+  exist only in footage → documented not-tracked pending a **visual-extraction
+  spike** (separate session; platform-wide). New surface: an SF6 **review queue +
+  local UI** on the 2XKO precedent, two item kinds (source-classification,
+  character-completion), pending items never reach `replays.json`. Dedupe: act on
+  117 intra-Tournament self-re-uploads + 39 cross-group same-video collisions
+  (Online incumbent survives); **~200 legacy tier-A clusters in the shipped
+  Online corpus report-only** — a separate cleanup session with human eyeballing.
+- **Tournament work as-landed (2026-07-31, commit 34d5f25, +3,128 replays):**
+  SF6 19,586 → **22,714** (Online 20,839 / Tournament 1,875); players 1,653 →
+  1,934; rank coverage 52.9% → 45.6% (honest nulls — tournament sides carry no
+  ranks). **CapcomFighters hypothesis confirmed conclusively**: SF6 marker in
+  description 1,025/1,025 vs title 0 — `sf6Signal` (description+date game gate)
+  recovered 1,022 replays from the first-party CPT archive the title gate had
+  zeroed. KingArena classifier: online 1,391 · event 733 · conflicts 38 (all
+  adjudicated → tournament via the new review UI); landed as `kingArenaOnline`
+  1,251 + `kingArenaTournament` 758 after dedupe. Dedupe: 156 dropped (109
+  KingArena self-re-posts, 35 vs shipped Online — incumbent survived every time,
+  5 cross-classifier, 2 Capcom, 5 other), **zero shipped records dropped**;
+  legacy Online-only tier-A pairs firmed to **201**, report-only, regenerable
+  via `npm run data:replay-dupes` (future cleanup session). **Integrity catch:**
+  queue verdicts write to overrides, and override-protection briefly shielded a
+  tournament newcomer from dedupe — fixed so only hand-authored `sides`
+  overrides protect (replay-dupes.ts:87). Review UI's round-trip test caught a
+  real h3 version-skew bug in `readBody` on day one. e2e now 118 assertions;
+  positive controls ×3; quota ~1,880 units on the day, cron steady-state
+  ~1,320/day of 10k. Engine changes zero, shell changes zero. Open follow-up:
+  write the sourceGroups/tournament convention into the engine docs' new-game
+  checklist (engine-repo edit, next engine session).
