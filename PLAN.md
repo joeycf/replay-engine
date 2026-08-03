@@ -912,3 +912,39 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   ~1,320/day of 10k. Engine changes zero, shell changes zero. Open follow-up:
   write the sourceGroups/tournament convention into the engine docs' new-game
   checklist (engine-repo edit, next engine session).
+- **2026-08-03 expiry gates cleared (SF6, commit fe5bb3f)** — both fired on
+  schedule and both were cleared by doing the work. **Yasmine** is the 31st
+  character; accent **`#F49BDF` "eagle orchid"**, user-picked from four
+  synthesized candidates after all three raw art anchors landed in crowded hue
+  regions (contrast 8.91:1 on `--color-surface`, ≥8–12° hue separation from all
+  30 existing accents — the tokens.css method applied rather than eyeballed);
+  `UNRELEASED` now empty, roster floor raised to ≥31. **Season 4 confirmed**
+  (`confirmed: true`) with its first child patch **2.0401**; 18 patches across
+  4 eras, every era opening on its first child's date, dates re-verified against
+  the wiki. e2e 119/119. **The cron collision was the proof:** today's 07:17 cron
+  committed first, and its build — from source with the gates still unfired —
+  showed exactly the coarseness the expiry note predicted (4 Season-4 replays
+  stranded on the bare `S4` token, 30 characters, no `children` key). The rebase
+  resolved five derived artifacts to the new side, then `data:emit` reproduced
+  them byte-for-byte, proving the committed artifacts are what the source
+  produces rather than a hand-merged approximation. **Next expiry only appears
+  when Capcom pages the second Year-4 character and someone adds that row.**
+- **Evo visual-extraction spike (in flight) + Evo as a cross-game channel (user
+  directive):** end state is @EvoEvents tracked in ALL THREE game repos as child
+  token `evoEvents` under each game's Tournament group — Evo 2026 (June 26–28,
+  Las Vegas) ran SF6, Tekken 8, and 2XKO all mainline (2XKO's first mainline
+  Evo), so every repo has content. Characters exist only in footage → the spike
+  builds a deterministic extractor: yt-dlp 1-second segments at 4 timestamps,
+  ffmpeg frames, per-game FIXED HUD crop configs, tesseract OCR fuzzy-matched
+  against the existing roster alias tables, multi-frame voting, confidence
+  gating. **Ground truth is hand-labeled in the review UI** (the
+  character-completion queue becomes the labeling tool); acceptance bar = ≥95%
+  precision on auto-accepted at a measured threshold, low-confidence routes to
+  the human queue — the extractor is architecturally an *automated reviewer*
+  writing the same resolution format. Hard stop at a decision gate after
+  measurement; productionize-SF6 only on approval; Tekken/2XKO replication later
+  (2XKO's crop config reads TWO nameplates per side — first real duo test).
+  Honest notes: segment downloads sit outside YouTube ToS (user's call, stated
+  plainly); GitHub-Actions IPs may be blocked for downloads → local-batch
+  fallback is designed in; Evo volume is prestige-not-scale (dozens of match
+  VODs per game per event; streams/compilations stay excluded).
