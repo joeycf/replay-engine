@@ -948,3 +948,143 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   plainly); GitHub-Actions IPs may be blocked for downloads → local-batch
   fallback is designed in; Evo volume is prestige-not-scale (dozens of match
   VODs per game per event; streams/compilations stay excluded).
+- **Evo spike Part A checkpoint (2026-08-03):** corpus = 81 match-shaped SF6
+  VODs / 910 min / 8 Evo events (a "Top \d+" compilation-marker bug that ate six
+  real matches — round labels, not compilations — was caught and fixed).
+  **Recon resolved the premise dispute in a third direction:** SF6's tournament
+  mode prints CHARACTER names in the top corners (not the CFN nameplate),
+  pixel-identical across Evo 2023→2026 → fixed crop viable. **Reader = OCR after
+  all, NOT dHash** — decisive argument is open-set coverage: templates need a
+  labeled example per class, so tail + future DLC characters would be
+  permanently unreadable; OCR reads names it has never seen (tesseract.js WASM,
+  --no-save; its native confidence is unusable — 0 on a correct read, 95 on a
+  wrong one — so confidence = vote agreement + edit distance). 162/162 Evo
+  handles matched existing players.json identities (the tournament backfill
+  built the substrate that neutralizes the duplicate-player risk).
+  **THE finding — mid-set character switches:** players counter-pick mid-VOD
+  (MenaRD M.Bison→Blanka at the Evo 2026 reset; Leshar Ed→Elena→Ed), detected
+  with sharp temporal boundaries and unanimous reads. This is a SCHEMA truth,
+  not an extraction failure: `MatchVideo.sides` holds exactly one character per
+  side, so a switch VOD is unrepresentable — by the harness (confidence forced
+  to 0 → human) AND by the human's form. Grand finals (the sampled set) are
+  maximally counter-pick-heavy; the corpus-wide switch rate is being measured
+  and is the decision-gate's second number. Options staged for the gate:
+  exclude switch VODs (loses precisely the marquee matches) · union-of-
+  characters per side (engine already renders multi-badge sides; needs a
+  set-vs-duo visual distinction — possible engine minor) · segment one VOD into
+  per-game records (most truthful, biggest lift). Extraction running 6/81,
+  ~100 s/video.
+- **Evo spike A5 + gate decision (2026-08-03):** corpus run 81/81, zero
+  failures, zero null reads, zero bot-checks across 729 downloads (~120 s +
+  22 MB/video; 1.81 GB total, frames pruned). Confidence: 131/162 sides at 1.0;
+  the 16 confidence-0 sides are exactly the switched ones (policy, not
+  uncertainty — underlying reads unanimous at distance 0). **Switch rate
+  19.8%** (16/81), which killed the exclude option. OCR-over-templates
+  vindicated concretely: only 21/31 characters appear in the corpus — a third
+  of the roster would have been permanently templateless. **Gate decision
+  (user's call): union-of-characters per side** — `characters: string[]` 1..N
+  ordered by first appearance; timeline of the switch deliberately out of
+  scope. Expected engine changes ZERO (2XKO's duos already ship 2-char sides
+  through the same contract — verify, and STOP if anything engine-side treats
+  `charactersPerSide` as a hard cap). `charactersPerSide` stays 1 +
+  co-occurrence off (describes the game format, not a record cap). Emit gate
+  relaxes to 1..N, still hard-fails 0. Matchups cross-product per side
+  (honest). Position-swap guard: simultaneous complementary "switches" =
+  broadcast P1/P2 swap, normalize not union (zero instances so far). Sequencing:
+  labeling form grows multi-character FIRST, then all 81 labeled, then the
+  scorer — **the ≥95% accuracy gate still decides Part B.** Under the union
+  design the forced-0 sides become high-confidence data, pushing auto-accept
+  from 80% toward the mid-90s.
+- **Union design verified against the engine (2026-08-03): STOP condition
+  cleared with line-level evidence.** `Side.characters` is `string[]` always —
+  the `length === charactersPerSide` invariant is a **comment, not code**; all
+  12 `charactersPerSide` usages are UI-affordance booleans or soft divisors; no
+  validator anywhere; rendering/filtering already map arrays. **Matchup
+  cross-product needs zero SF6 code** — the engine's `.includes()` predicate
+  does it natively. Three catches the revision added: (1) per-frame OCR reads
+  were never persisted (`extracted.json` holds counts), so the union re-emit is
+  a ~30-min re-OCR over cached frames — zero network — and reads persist from
+  now on; (2) **≥2-frame bar for union membership**: 20 sides read a second
+  character but only 16 clear two frames — the 4 one-frame extras (short game
+  vs misread, indistinguishable at 9 samples) are excluded from the union AND
+  forced below auto-accept for human confirmation — precision-first, visible
+  not absorbed; (3) a second hidden hard gate at `emit.ts:254-256`
+  (`usageTotal !== records.length * 2`) that would have failed the first union
+  record — becomes the computed sum. Also retracted: the Explore pass's claim
+  that overrides carry sides (0/193 do — no migration). Footnote for
+  housekeeping: 2XKO's `characterUsage` dedupes across sides per video,
+  contradicting the engine's own side-appearances doc — cross-repo stats
+  semantics drift (mirror matches only); SF6 keeps its own semantics.
+- **Labeling surface live (2026-08-03 evening):** form + POST verified on a real
+  switched VOD round-trip (Leshar Ed→Elena→Ed → `["ed","elena"]` → snapshot →
+  scorer). Correction to the entry above: **the accuracy gate needs no re-OCR**
+  — `extracted.json` already persists per-character frame counts and scoring is
+  order-insensitive, so the ≥2-frame union is derivable now; the ~30-min re-fold
+  is Part-B presentational (first-appearance order) only. **Blind ground truth:**
+  the session deleted its own round-trip test label because it had seen the
+  extractor's answers — contaminated labels refused on principle. Two items
+  deferred to the gate with data: the proper edit-distance confidence (Part B
+  re-fold) and the 4 one-frame second-character sides, which the user's labels
+  adjudicate as real short games vs misreads.
+- **Evo accuracy gate MET (2026-08-03 night): 96.3% both-sides-exact (78/81) at
+  FULL coverage** — per-side 98.1%, single-char 97.0%, multi-char 14/15 (93.3%).
+  Threshold dial: 0.50 → 98.4% at 78% coverage (re-decide from the post-re-fold
+  curve). Human labeled all 81; **found a shape the machine's sweep missed: one
+  2v2 video, both sides counter-picked** (extractor's sweep had zero both-sides
+  cases). All three disagreements diagnostic: (1) `6Y1z9cg0ohg` want bison got
+  ryu at conf 1.00 — **Japanese-UI SF6 renders M. Bison's nameplate as VEGA**
+  (the classic SF name-swap, previously a slug-table warning, now appearing in
+  pixels); user added the `vega` alias in characters.json mid-labeling, session
+  ran a full blast-radius investigation before parsing (150 "Vega" titles = SFV
+  pre-launch date-gated + player "KINGS VEGA" in handle position → zero
+  reclassification, artifacts byte-identical) — plus a scoring-confidence bug
+  (coverage term dropped in unionOf: agreement measured over frames-that-read,
+  so 2/9 reads scored 1.00); (2) `RnZ2Amz6l2c` — the ≥2-frame rule dropping a
+  real one-frame character, routed to review at 0.43 (tradeoff working as
+  designed); (3) `rEnoiMHeU3Q` got [zangief, blanka] vs label [zangief] — the
+  extractor may be RIGHT (MenaRD, famously Blanka, read on ≥2 frames; suspected
+  label miss → true accuracy would be 97.5%). Confidence isolated 2 of 3; the
+  coverage fix would catch the third. Decision: re-fold (~30 min, zero network,
+  vega alias + coverage term live, produces first-appearance order) with the
+  human re-adjudicating rEnoiMHeU3Q AND the 2v2 video in parallel — final table
+  = non-stale extractor vs adjudicated labels; Part B baselines on it.
+- **Phase R design (pre-Part-B, 2026-08-04):** the re-fold got a better
+  confidence model than specified — the old winner's-share term is *demonstrably
+  wrong* for unions (a correct short-game `ed` at 2/7 reading frames would score
+  0.29), replaced by **contiguity**: `member = min(1, run/2) × (1 − meanDist/3)`
+  (longest consecutive sampled-frame run distinguishes a real game segment from
+  a scattered misread), `coverage = min(1, read/4)` restored (catches the VEGA
+  case), side = min over members × coverage. The 4 one-frame sides get a
+  **targeted dense re-sample** (~20 extra frames each, ~80 one-second downloads)
+  — measure instead of ruling — which also independently cross-checks the
+  human's RnZ2Amz6l2c adjudication. **The 2v2 video IS RnZ2Amz6l2c** (same as
+  disagreement #2), and the position-swap question is resolved by data: the two
+  sides' sets are disjoint ({ed,deejay} vs {cammy,mai}) with zero crossover
+  reads — a P1/P2 swap would show exactly that crossover; genuine double
+  counter-pick, human confirms attribution. Operational trap caught: data:parse
+  reset the queue to [] and the POST 404s absent ids, so queue-evo.ts must
+  re-run before revised verdicts can save. Re-fold runs as a background job,
+  not the batch subagent — that role exists to prevent concurrent-download
+  throttling, and a cached-frame re-OCR has no downloads (the rule's reason
+  honored over its letter). Part B still gated on explicit approval after R6's
+  final table + threshold-from-the-new-curve.
+- **Phase R final (2026-08-04): 79/81 = 97.5% both-sides-exact · per-side 98.8% ·
+  multi-character 15/15 = 100% · zero characters missed vs labels** — both
+  remaining errors are the extractor seeing MORE than the label, never less.
+  Fourth fix found via the newly-persisted reads: **blank frames were breaking
+  runs** ("· ed · ed · deejay…" — tournament VODs cut to crowd/replays/player
+  cams constantly; a single blank between two Ed reads split them into runs of 1
+  and dropped a real character). Fix: blanks are NEUTRAL — absence of evidence
+  is not evidence of absence — runs measured over the subsequence that read
+  something; recovered Fuudo's Ed→DeeJay (17th multi-char video). Confidence:
+  150/162 at 1.00, none below 0.50. **Threshold locked 0.90** (the knee:
+  excludes a known error at 2 review videos; below it nothing filters, above it
+  5× burden for no gain) with the honest limit stated: no threshold rescues a
+  confidently-wrong read — the alias table and review culture matter more.
+  **Both remaining disagreements are set-boundary extras** (Ryu on the first two
+  frames of 6Y1z9cg0ohg; Blanka on the last two of rEnoiMHeU3Q) — two competing
+  explanations: real boundary-game pick vs **broadcast bleed** (VODs can open
+  with the prior match's tail or close with the next match/highlight); only
+  human eyes on the boundary footage settle it. If both confirm: 81/81. Cost
+  honesty kept: re-fold 1 s/9.6 MB per video only because first acquisition
+  (119.5 s/22.3 MB) was already paid.
