@@ -1088,3 +1088,136 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   human eyes on the boundary footage settle it. If both confirm: 81/81. Cost
   honesty kept: re-fold 1 s/9.6 MB per video only because first acquisition
   (119.5 s/22.3 MB) was already paid.
+- **Part B shipped and soaking (2026-08-05, 4 commits pushed): final baseline
+  81/81 = 100%** — both boundary cases CONFIRMED as real picks (Shuto's opening
+  Ryu → [ryu,bison]; MenaRD's closing Blanka → [zangief,blanka]), so every
+  extractor error in the corpus was vocabulary (VEGA) or evidence-standard
+  (≥2-frame, blank-breaking) — **it never fabricated a character**. Boundary-
+  bleed guard deliberately NOT built (zero bleed instances; both extras real);
+  the runbook line lives in the review UI where the reviewer works. **Second
+  override-interaction near-miss caught:** every Evo record is a sides override,
+  and the "hand-authored sides overrides protect from dedupe" rule would have
+  made Evo silently win every duplicate pair, inverting declared channel
+  precedence — corrected (extraction-origin overrides confer no priority; Evo
+  sits below Capcom's first-party archive; user manually ruled the 2 tier-B
+  pairs Evo-over-KingArena by id). Threshold 0.90 wired. **First unattended cron
+  cycle clean on the widened schema:** 22,865 replays, evoEvents 81 (17
+  multi-character), queue 0, malformed 0. Loose ends: cache/evo/ 754 MB
+  purgeable frames + **cookies.txt (live Google session) sitting in a cache dir
+  — move to gitignored secrets/ + EVO_COOKIES, 2XKO convention**. Session
+  self-critique saved to memory: it initially offered three options that all
+  routed around an app-side constraint that was cheap to move.
+- **Part C (Tekken) plan audit (2026-08-06):** five brief premises corrected
+  against the repo — Tekken has NO dedupe/PRIORITY (SF6-only), no
+  idKey/bestSpelling (its `slug()` identity is weaker: "Arslan Ash"/"ArslanAsh"
+  → two pages; match rate is a measured deliverable), no app/pages or server/
+  at all (pure thin consumer — the /dev surface is from-scratch), no
+  expiries.ts, and the union widening is REQUIRED (`character: string`
+  singular). **Short-name bound re-derived from the roster with a distance
+  table:** SF6's ≤2-exact rule is dead code (no Tekken alias under 3 chars) and
+  the length-scaled budget is unsafe on 59/83 aliases — the worst collisions
+  are at length 10 (jin kazama / jun kazama, OSA distance 1), where
+  length-scaling grants budget 3. Replacement: per-alias **unique-decoding
+  radius cap** `min(lengthScaled, floor((minCrossDist−1)/2))` → 21 exact-only /
+  28 @1 / 14 @2 / 20 @3; jin/jun + lee/leo forced exact. Hazards: OCR whitelist
+  has no digits (jack-8 resolves as bare "jack" only by luck — add 8); Devil
+  Jin crop-truncation → JIN exact-hits the wrong character (recon must confirm
+  full-plate capture). *(Back-port the radius cap to SF6 someday —
+  housekeeping.)* **Third override/dedupe interaction catch:** SF6's dedupe
+  keys PRIORITY and FOOTAGE_SOURCES on the SourceId; Evo sharing 'tournament'
+  with bneEsports would (a) never fire channel-priority between them and (b)
+  strip override protection from BNE's genuine hand corrections. Fix: key
+  dedupe on intake `ChannelKey`; `MatchVideo` gains `intake` (substrate schema
+  addition, flagged blast-radius widening). Conscious tradeoff: Evo reuses the
+  'tournament' SourceId — no new public badge, Tekken's flat source model
+  preserved. §0.1 honesty: cron skips commits on no-change days, so the commit
+  trail UNDERCOUNTS green cycles — Actions tab required before §5. Also ported:
+  2XKO's cookie preflight hardening (SF6 lacks it and silently degrades
+  cookieless — SF6 back-port is housekeeping). Corpus: 67 Tekken Evo VODs.
+  Plan self-checkpoints after Phase 1 recon before the download spend.
+- **Part C Phases 0–1 (2026-08-06):** the recon checkpoint's ROI in one number —
+  **SF6's crop ported verbatim reads 0/60 on Tekken**; the grid-searched
+  measured box reads 48/60 (80%, misses = crowd shots, blank-neutral territory),
+  every recon VOD reading exactly the right pair, layout stable across three
+  events/skins/years. **JP localization: negative** (Evo Japan renders Latin
+  script — no VEGA-class problem; checked, not assumed). Corpus: **62**
+  match-shaped VODs / 708 min / 7 events. Title-gate corrections: **`\bT8\b`
+  removed — on this channel T8 means Top 8** (23 of 26 bare-T8 titles are
+  Super Turbo 2014 brackets; one post-2024 "T8 Quarters" would have put ST
+  footage in a Tekken corpus); **T7 marker + date gate both load-bearing** (174
+  T7-marked; 2 published post-T8-launch that the date alone would miss); 6 real
+  Nov-2023 pre-release Showcase matches correctly excluded (incomplete roster).
+  **§0.2 synthetic path test PASS (5/5) with a retroactive catch: all 81 SF6 Evo
+  overrides are hand-authored — `resolvedBy: 'extractor'` had never run against
+  committed data**; the precondition designed to replace calendar-waiting
+  exercised a genuinely virgin production path. §0.1 needs the user's Actions
+  tab before §5 (commit trail undercounts; no-change days skip commits).
+  **Dedupe measurement: 0 actionable** — 19 shared player-pairs vs BNE's 223
+  tournament records, 0 tier-A, 0 tier-B, 6 tier-C (Δ19–79 s; broadcast-vs-
+  capture durations differ structurally) → decision: DEFER the full
+  replay-dupes port; ship `intake: ChannelKey` + a persistent overlap
+  measurement, port when it announces the first actionable pair (the
+  label-grace-counter principle). LilyPichu-vs-Harada exhibition excluded
+  (player pages are for bracket entrants; one-line reversible). SF6 cookie
+  rider committed (bc4de33, staged): secrets/yt-cookies.txt, five preflight
+  failure paths tested.
+- **Part C Phases 2–3 (2026-08-06):** harness + queue + /dev surface built;
+  corpus extracted **63/63, zero failures, zero null-read sides** (111/126 sides
+  at 1.00; 4 shaky thin-read videos at 0.50). **Counter-pick unions 15.9%** —
+  close to SF6's 19.8%; the union design generalizes cross-game. Cost within 3%
+  of SF6's measured figure. **Blindness contamination self-caught:** extracting
+  while building printed predictions for 19/63 videos into the session log the
+  user has seen — owned unprompted, and *instrumented* rather than buried:
+  accuracy.ts now scores blind (44) and exposed (19) populations separately,
+  displays the gap, and states the rule (gap <5pp → full number stands; blind
+  materially worse → the ≥95% gate is judged on the blind row). Ruling: accept
+  two-population scoring, skip the fresh-corpus option — 44 blind is adequate
+  gate resolution (~2.3pp per error) and the gap check corroborates. Same
+  integrity class as Part A's deleted test label, better engineering: quantify
+  the contamination instead of merely avoiding it.
+- **Part C Phase 4 close (2026-08-06 night): Tekken corpus 63/63 = 100%**
+  (126/126 per-side, 13/13 multi-character) after two user adjudications
+  (Rangchu kuma+panda; Nobi steve+lars). **Blind/exposed gap 0.0pp** — the
+  contamination worry was selection bias (summaries had named the hard cases);
+  "the instrumentation earned its keep by disproving its own premise." Both
+  games now close at 100% against adjudicated ground truth; never-fabricates
+  holds cross-game. **THE finding — player attribution: Evo titles order
+  players wrong 37.7% of the time on Tekken (23/61) and 12.8% on SF6 (10/78)**
+  ("Punk vs Big Bird" with Big Bird on the left); HUD-handle attribution
+  measures 61/61 = 100%. Enrollment on title-order attribution would have
+  credited over a third of Tekken's Evo records to the wrong player. SF6's 81
+  shipped records are safe (hand-authored against footage) but the defect is
+  latent in `complete-characters.ts` — never run in production — so
+  **handle-probe promotion now BLOCKS enrollment in both repos.** Title order
+  is demoted from signal to at-best-flagged-hint; unreadable handle regions
+  route to review, never silently fall back. **Amber disputed state shipped in
+  all three review UIs** with a boolean-only wire (server computes the
+  comparison, discards the machine's answer — the labeling surface stays
+  blind; "the flag says look again, never say this"), perturbation-controlled;
+  running it on SF6: **0 disputed across all 81** — the 81/81 corroborated from
+  an independent direction. 2XKO's disputed flag + manual-entry swap ship dark
+  (no data yet), disclosed. **62→63 deliberateness check open:** the blanket
+  `\bshowcase\b` marker removal re-admitted one post-launch video (the six
+  pre-release stay date-gated) — confirm LilyPichu/Harada is in or out ON
+  PURPOSE before player pages mint. Remaining before §5: handle-probe
+  promotion ×2 repos · AUTO_ACCEPT from Tekken's own curve · codify sub-0.60
+  dense re-sample · the user's §0.1 Actions check (still outstanding).
+- **Part C close-out plan approved (2026-08-07 ~03:00 UTC): §0.1 MET (3/3 green
+  cycles), enrollment unblocked.** AUTO_ACCEPT = **0.90 in both repos by stated
+  prudence, not by curve** — Tekken's curve came back degenerate (100% precision
+  at every level; no knee exists), so no gate is justified by measured error and
+  the plan says so plainly; one constant keeps the pipelines comparable.
+  Side-resolution design: two-way choice (candidates known from title), wide
+  HANDLE_REGIONS for org tags, best-window OSA, per-frame voting — and the
+  load-bearing gate: **`ok` requires `side.decided`; an undecided side "is a
+  coin-flip dressed as a verdict" and stays in the queue** (0 undecided measured
+  across 61, gated anyway). Title order survives only as the queue item's
+  provisional arrangement a human confirms. HANDLE_ALIASES promoted from spike
+  to production (curated merges must run where records are built). Enrollment
+  converts the 63 hand labels directly into shipped records via the record
+  builder — the labeling session was data entry all along. Verification's
+  decisive test: the end-to-end side-resolution check runs ON one of the 21
+  title-reversed videos, where title-order pairing would be provably wrong.
+  Tekken gains `gameSignal` as a per-channel opt-in (its four native channels
+  never needed game markers). Feedback attached at approval: SF6's FULL e2e
+  battery re-runs too — complete-characters.ts is in its production path.
