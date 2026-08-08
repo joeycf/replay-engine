@@ -1393,3 +1393,25 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   under the new guard = the incident's live close-out; Tekken cycle 2 at 06:47
   = the Evo gate) → Evo migration commits → **Part C closes** → sibling guard
   ports ride along.
+- **Collapse timeline CORRECTED (2026-08-08): the damage predated the incident
+  response by ~15 hours.** `c9312fc` ("data: refresh 2026-08-07 — 4130 videos")
+  shipped at the Aug 7 06:17 cron — BEFORE the evening discovery session, whose
+  "lands in ~5 hours" prediction was measured against a local tree one commit
+  behind origin; the push rejection is what surfaced the truth. My prior
+  reconstruction (a lost morning race, push-ordering fault) was wrong and is
+  retracted — nobody raced; the race was over before anyone knew it existed.
+  **Worse than a prune:** the collapse's 3 "surviving" proReplays records are
+  MARVEL Tōkon matches parsed as 2XKO (shared ▰ grammar) — the cron replaced
+  part of the archive with another game, live for ~24h. **The recovery merge is
+  superset-verified against BOTH parents**: 0 records absent vs pre-collapse
+  5,434; only the 3 Tōkon pollutants absent vs the collapsed 4,130. Result
+  **5,454** = 1,317 carried + 1,730 highLevel + 2,376 bestReplays + 21
+  evoEvents + 10 manual; battery 32/32 on the merged tree incl. ?ch=pro at 611.
+  The freeze keeps the pollution out permanently (proReplays raw never read
+  again). **Decision: check-then-push-all** — the ten-second Tekken cycle-2
+  glance satisfies the Evo gate, then the whole stack pushes together
+  (restoring 1,300 live records + de-polluting outranks rebuilding the merge
+  to split Evo out); engine's 1-ahead docs commit rides along. **Part C closes
+  with this push.** Silver lining #2: the pollution PROVES the ▰ grammar
+  cross-parses — Tōkon's parser is nearly free, and game-marker gates are
+  mandatory wherever that grammar appears.
