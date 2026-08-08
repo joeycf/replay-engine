@@ -1415,3 +1415,36 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   with this push.** Silver lining #2: the pollution PROVES the ▰ grammar
   cross-parses — Tōkon's parser is nearly free, and game-marker gates are
   mandatory wherever that grammar appears.
+- **2026-08-08: recovery on origin, NOT in production.** Git state healed
+  (9e669ad recovery merge → 2c3ded0 first green cron, 5,454, guard pass-path
+  observed live; sibling guards pushed: tekken 9a01ae3, sf6 1076b5b; Part C's
+  Evo migration in the stack) — but the apex still serves the collapse-era
+  4,130: the two post-recovery commits produced no successful deploy. Under
+  investigation via Vercel CLI: failed builds (suspects: the Evo migration's
+  /dev pages + server/api/dev routes vs the static generate; build resources) ·
+  never-triggered (git integration) · or stale alias/cache. Meta-lesson, one
+  layer up from the session's own "fetch before diagnosing" memory: its
+  close-out claimed "back on the live site" from the push alone — **verifying a
+  deploy means fetching the deployed thing.** Incident stays OPEN until
+  production reads 5,454. The what's-next queue (Tōkon design session ready ·
+  build gated on corpus · consolidated housekeeping batch) stands ready behind
+  it.
+- **Incident CLOSED for real (2026-08-08): production was healed at 00:57:43
+  EDT — nine hours before my "hold the celebration."** The four-branch
+  diagnosis found none of them: all deploys Ready, git integration live (4 s
+  trigger latency), apex and deployment host byte-identical, live payload shows
+  proReplays 1,317 + evoEvents 21, /dev surfaces 404 by two mechanisms. The
+  user's 4,130 = a stale SPA tab (open tabs hold replays.json in memory
+  forever); **mine = my own tool's cache serving back my earlier
+  genuinely-correct-at-the-time fetch** — retracted, with the refined rule: a
+  verification fetch must be CACHE-COLD (the session's replays.json probe was
+  decisive precisely because nobody had ever fetched it). Real cost of the
+  collapse: **21 hours live to visitors** — which surfaced the missing
+  deploy-side control, now queued: a post-deploy smoke check asserting the
+  SERVED record count (the collapse guard's downstream twin). **Part C closed +
+  incident closed**: @EvoEvents in all three games, archive whole at 5,454,
+  guards ×3 (2XKO observed both directions; sibling first unattended runs =
+  the only watch item). Consolidated housekeeping prompt delivered
+  (Parts A docs-codification / B gates-hygiene incl. the smoke check / C
+  product polish incl. legacy-201 with user eyeballs; font-template and -evo
+  re-validation explicitly deferred).
