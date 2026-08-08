@@ -1221,3 +1221,175 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   Tekken gains `gameSignal` as a per-channel opt-in (its four native channels
   never needed game markers). Feedback attached at approval: SF6's FULL e2e
   battery re-runs too — complete-characters.ts is in its production path.
+- **Part C SHIPPED (2026-08-07 04:28 UTC) — @EvoEvents live in Tekken; 3 repos
+  pushed (tekken 9 commits/4f32278, sf6 4/31149a7, 2xko 2/96a80a2).** Tekken
+  14,686 replays (+63 Evo, 13 new, −1 deleted upstream). Side resolution in
+  production in both repos with the `decided` gate; dense re-sample codified;
+  AUTO_ACCEPT 0.90; Tekken battery 95/0. **The merge was the interesting part:**
+  all three repos were 1 behind (cron had pushed); SF6/2XKO rebased clean
+  (code-only), Tekken genuinely conflicted on five DERIVED files — resolved not
+  by picking a side but by **merging code (zero conflicts there) and re-running
+  `data:parse` to regenerate**, one resolution point instead of eight. Then the
+  superset check found the result one record short: `PBnEwxiehtg` existed in the
+  cron's data but in no `raw/*.json` — the upload was deleted from the channel
+  between fetches. **raw/ is truth**, so the record goes with it and the next
+  cron would drop it identically; arithmetic reconciled exactly. Full battery
+  re-run on the merged tree before pushing (the merge changed data/). Standing
+  lesson: derived-file conflicts are regenerated, never resolved by hand.
+  Remaining Part C item: the 2XKO merge session (`charsPerSide: 2`) — and its
+  two shipped-dark surfaces (manual-entry swap, disputed flag) still have no
+  data to exercise them.
+- **Part C finale prompt issued (2XKO Evo, 2026-08-07):** merge-not-copy into
+  2XKO's native machinery (`fuses.ts` frame cache + cookies + review UI +
+  original `replay-dupes.ts`). Four recon unknowns, none inheritable: where four
+  champion identities live (partner may be portrait-only → the dHash+hue route
+  returns, costume-hazard measured), broadcast framing (gates BOTH champion and
+  fuse crops), the channel's 2XKO title-order defect rate, identity overlap
+  (expect < SF6's 162/162; new bracket-entrant pages legitimate). **The
+  pairing-stats trap is the session's deep question:** co-occurrence is ON only
+  here, and a 3-champion union side under naive C(n,2) fabricates a never-played
+  pair — default: unions count in characterUsage, are EXCLUDED from
+  pairingUsage with a report count (fabrication poisons synergy silently;
+  under-counting is recoverable); segment-aware true pairs derivable later from
+  per-frame reads. **"VI" makes the radius cap load-bearing again** (two-letter
+  champion). Fuse parity: Evo VODs run through existing fuses.ts on a SHARED
+  cache; broadcast-degraded fuses stay null and route to fuse-review. First
+  real exercise of the two dark surfaces is a deliverable. Enrollment gated on
+  ≥2 green Tekken cycles (accumulating) + the already-passed synthetic tests.
+  Small-n honesty: at ~20–40 VODs the gate is qualitative — zero fabrications,
+  every miss explained, multi-champion subset exact.
+- **2XKO Evo mid-session checkpoint (2026-08-07): Steps 0/1/2/4 landed; corpus
+  21 VODs, extraction running background (resumable, flushes per video).**
+  Step 0 was a live production fix nobody knew was needed: parse.ts silently
+  discarded fuse detections AND fuse-review verdicts on hand-authored records
+  on every run (A/B md5-proved). Also defused: 2 SHIPPED zero-champion records
+  that a throwing emit gate would have broken the cron on — warn-and-count
+  instead. **The VEGA-class hazard materialized as a SCRIPT change: Evo Japan
+  renders champion nameplates in KATAKANA** — アーリ/アカリ (ahri/akali) sit at
+  OSA distance 1 where Latin is 3, and Hikari played both on one side; the
+  radius cap's third re-derivation is its most load-bearing. Reader: three real
+  bugs fixed (framing estimated from HUD-less walk-on frames; right crop
+  bleeding into portrait speckle; sharp's trim() silently no-op unless
+  buffer-round-tripped after negate()); two events anchor plates 0.07
+  frame-widths apart → column-ink-profile isolation replaced the bounding box;
+  795 s → 23 s per video. **Honest limit: Latin nameplates defeat tesseract
+  despite perfect legibility (AHRI → "V-V.JI")** — user chose to ship the
+  split: katakana events auto-read, Latin routes to review (~half of 21 =
+  ~10 hand completions; trivial at this scale). Documented escape hatch for
+  later: ~20-champion roster + fixed nameplate font ⇒ auto-rendered font
+  templates + dHash reads what OCR can't, extending automatically with DLC.
+  Emit's computed-sum gate re-derived for 2XKO's OWN semantics — per-video
+  deduped union, where the siblings' sum-of-side-lengths form gives 21,730 vs
+  actual 19,563 and would throw on run one (the documented cross-repo
+  usage-semantics divergence, now with exact numbers). The silent
+  pairing-exclusion surfaced: 1 oversized side already in shipped data
+  (zxRvkDeYL8w). Sequencing: extraction continues background → Step 5 (review
+  surface — critical path for both Latin completion and blind labeling) →
+  labels → score (small-n qualitative) → Step 3 (fuses over the completed
+  shared cache) → Step 6 gated on the user's TEKKEN Actions check (≥2 green
+  cycles; commit evidence undercounts; still outstanding).
+- **2XKO Steps 5+3 (2026-08-07 evening):** review surface live — worklist keys
+  on manual-videos.json, NOT extracted.json ("a video whose extraction failed
+  outright is exactly the one a human most needs to see"); accept-proposal maps
+  screen→title through leftIsFirst and REFUSES on an undecided side (the
+  decided gate propagated into the UI affordance); disputed flag widened
+  behaviour-identically; Latin videos skip the dense re-sample (font blindness
+  isn't evidence scarcity). **Step 3's answer is "not yet," proven against
+  pixels:** native fuse templates misread broadcast footage 3-of-4 (one
+  confidently wrong) — **the Evo overlay REDRAWS the pill rather than scaling
+  it** (struct 26–30 vs ceiling 30), same lesson as the champion crops. Two
+  -evo templates cut and verified (train-equals-test, honestly flagged); **the
+  runner refuses to write with 4 of 6 classes untemplated — "an absent class
+  can't abstain; it gets absorbed by its nearest neighbour," fabrication not
+  partial coverage.** Evo fuses ship null-with-refusal; templates cut
+  opportunistically as future frames show the missing classes. `fuse-detect.ts`
+  extracted from fuses.ts (1092→~830) with a --validate baseline and identical
+  per-id score md5 after — provably behaviour-preserving, one implementation
+  two callers. **Ruling on the surfaced judgment call: -evo templates stay
+  opt-in** — the native 98.75% is a published property of a specific template
+  configuration; widening it trades a fabrication-class regression on
+  validated ground truth for promotions, and if ever taken it's a deliberate
+  re-validation session with a new published figure, never a side effect.
+- **2XKO close-out (2026-08-07 night): the small-n gate PASSES on its stated
+  terms — zero fabrications across all 21, 100% precision at every threshold,
+  no undecided sides, every miss an omission.** Split table: katakana 9/10
+  both-sides (95% per-side) · Latin 4/11 (the designed abstention — font
+  blindness routes to review, and the human completed those sides) · all 13/21.
+  Totals honestly moved AGAINST the extractor when jEWF1k9zyPk became scorable
+  (read only screen-left; multi-champion subset now 1/2). **Side resolution
+  18/18 — after fixing the scorer itself:** the old attribution check required
+  both sides exact, excluding every one-unread-side video — exactly where both
+  reversals lived — so it reported "0 reversed" while the extractor had called
+  two and been right about both. "A measurement that structurally can't observe
+  the positive case isn't a measurement." Ground-truth title-order defect rate
+  **2/18 = 11.1%** (SF6 12.8%, Tekken 37.7%) — third confirmation that sides
+  are read, never assumed. A p≈8e-7 flag retracted in the README as a false
+  positive against the wrong null. Pipeline end-to-end with labels: 31 manual
+  records clean, 3 new players (myth/jakenbake/yohosie), **2 oversized sides
+  now surfaced** (usage-counted, pairing-excluded — the gate doing its job on
+  real data). Remaining: Step 6 on the Tekken Actions check; 4 untemplated Evo
+  fuses self-resolve as future events show them. **Part C is one push from
+  closed across all three games.**
+- **PRODUCTION INCIDENT averted (2026-08-07 ~21:00): Pro Replays — 2XKO's
+  largest source, 1,317 of 5,434 records (24%) — pivoted to "MARVEL TOKON Pro
+  Replays" and UNLISTED its entire 2XKO catalogue.** Unlisted videos vanish
+  from the uploads playlist, so the next cron's fetch would see 7 records where
+  it saw 1,317 and data:build would commit a ~4,124-record catalog — and the
+  stale-raw guard's own comment blesses the path ("fresh dumps missing ids are
+  legitimate — that's how deleted videos get pruned"): right for deletions,
+  wrong for a channel walking away. Caught ONLY because the Evo enrollment
+  required the first real fetch in three days; the session stopped before any
+  write, probed 5/5 unlisted videos (still resolve, titles intact), and paused
+  with snapshots. **Response: workflow disabled in Actions (clock removed) →
+  collapse guard** (per-channel, refuse on drop >10% AND >20 records, override
+  flag, abort-before-write; positive control = the live incident itself) →
+  **RETAIN-and-FREEZE decision** (records are real, videos still play at their
+  URLs; frozen channel: fetch skips, parse carries committed records forward
+  byte-stable, prune only by explicit override, frozen count surfaced in
+  report.md) → guard ported to tekken + sf6 (class proven real) → Evo migration
+  finishes calmly after, still gated on the Tekken cycle check. **Silver
+  lining: the departing channel is Tōkon's first identified source channel**
+  (UCdppkT52RXi-pGvyibNIXNw) — top of the game-4 candidate list.
+- **Incident-response plan approved (auto, 2026-08-07 late):** four exceedances
+  over the directive. (1) The guard's soundness proven, not assumed: **videos ≤
+  raw always holds for a fetched channel**, so raw below committed count is
+  always real loss, never churn (today's normal gaps: +18, +67). (2) **The
+  count pin** — `frozen.records: 1317` hard-asserted every parse, because
+  videos.json is both source AND target of the carry and a bad run would poison
+  the next run's reference permanently; editing the pin is the explicit-prune
+  mechanism, reviewable in a diff. (3) **Three naive-freeze breakages found in
+  the code**: rawPaths statSync throw; the stale-raw guard's rawIds putting all
+  1,317 carried ids in `missing` (firing the OTHER guard every run);
+  buildManualRecords' collision check silently losing coverage — plus the
+  lowReports desync (10 of 12 current lows ARE proReplays). (4) **Full merge
+  over fuse-fill for carried records** — verbatim carry would recreate, for
+  1,317 records, the review-page-writes-a-file-the-pipeline-ignores bug fixed
+  hours earlier; curation must keep reaching frozen records, and verification
+  tests exactly that property. e2e canaries NAMED in advance (fuse-coverage
+  floor, Online group sum, the proReplays legacy deep-link). Sibling port =
+  guard-only re-derivation (array CHANNELS, no adjacent guard, Tekken groups on
+  `intake`). Tōkon seed preserved: raw/_tokon-sample.json, and its title
+  grammar is the same ▰-delimited shape this repo already parses. Follow-up
+  logged: fuse-gaps.ts buckets only zero-fuse records — 24 half-attributed
+  proReplays records never reach review (pre-existing blind spot).
+- **Incident CLOSED in code (2026-08-07 ~23:15, commit 147b681 staged):** guard
+  positive-controlled on the live incident (fires at 99.5% drop / override
+  proceeds / both healthy channels + synthetic small drops pass / synthetic
+  −12.7% fires); freeze carries **1,317 / 0 missing / 0 content-changed**,
+  catalogue 5,452 (5,434 + 18 real growth), e2e 32/32 incl. the named canaries;
+  all three predicted breakages real and fixed; the curation-reaches-frozen
+  property VERIFIED (a fuse verdict on a carried id lands next parse). **Commit
+  hygiene:** the tree had guard+freeze entangled with the staged Evo migration
+  → reset to HEAD and REPLAYED guard+freeze via an idempotent-by-anchor script
+  so 147b681 is provably uncontaminated; Evo work restored on top, verified
+  21/21 overrides + 15/15 katakana + 21/21 fuse verdicts. **Process error
+  disclosed unprompted:** a mid-work `git checkout -- data/` was too broad and
+  reverted the Evo migration + labels + katakana aliases — fully recovered
+  because the snapshots existed (the labels-are-precious rule's third payout),
+  with one refinement noted: data/characters.json wasn't in the snapshot
+  (recovered only because deterministic) — snapshot scope must include EVERY
+  touched data file. Remaining: user pushes 147b681 + re-enables workflow
+  tonight; tomorrow one Actions visit covers BOTH checks (2XKO's 06:17 cron
+  under the new guard = the incident's live close-out; Tekken cycle 2 at 06:47
+  = the Evo gate) → Evo migration commits → **Part C closes** → sibling guard
+  ports ride along.
