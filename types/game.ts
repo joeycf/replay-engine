@@ -74,8 +74,10 @@ export interface GameConfig {
   /** Per-game vocabulary (additive, v0.2.0). The engine renders these nouns in
    *  nav, headings, filter labels, placeholders, SEO strings, and JSON-LD —
    *  resolved through useGameTerms(). Defaults: character/characters · side ·
-   *  patch/patches · source. 2XKO: champion/champions · team · season/seasons
-   *  · channel. Lowercase; the engine capitalizes where a label needs it. */
+   *  patch/patches · source. 2XKO: champion/champions · team · season/seasons,
+   *  and it keeps the default `source` — it overrode this to 'channel' until
+   *  sourceGroups collapsed its chips to Online/Tournament, which are not
+   *  channels. Lowercase; the engine capitalizes where a label needs it. */
   terms?: {
     character?: string;
     characters?: string;

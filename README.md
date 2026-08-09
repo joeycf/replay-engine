@@ -119,7 +119,11 @@ import type { Character, Player, Replay, Stats, KnownStats } from '@engine/types
 Contract essentials (full definitions in `types/`):
 
 - A `Replay` has exactly **two `sides`**; each `Side` is one `player` plus a
-  `characters: string[]` whose **length === `charactersPerSide`**.
+  `characters: string[]` holding **1..N** character ids in first-appearance
+  order. `charactersPerSide` describes the game's simultaneous-character format
+  and drives UI affordances — it is **not** a length cap on the array, and
+  nothing validates it as one. A tournament SET whose player counter-picked
+  lists every character that side used. See "Extraction conventions" below.
 - `Side.players?: string[]` (optional, additive v0.2.0): a side that is a team
   of PEOPLE (2XKO duo queue, tournament sets). `player` stays the primary
   (= `players[0]`); filtering, search, player pages, and card/modal labels
@@ -166,7 +170,9 @@ export default defineAppConfig({
     // Optional vocabulary + URL segment (additive, v0.2.0). Every user-visible
     // engine noun resolves through these; the characters section's routes are
     // renamed to the segment at build. 2XKO: champion/champions · team ·
-    // season/seasons · channel, segment 'champions' (its live indexed URLs).
+    // season/seasons, segment 'champions' (its live indexed URLs). It keeps the
+    // default `source`: it overrode this to 'channel' until sourceGroups
+    // collapsed its chips to Online/Tournament, which are not channels.
     // terms: { character: 'champion', characters: 'champions', side: 'team',
     //          patch: 'season', patches: 'seasons', source: 'channel' },
     // characterRouteSegment: 'champions',
@@ -199,6 +205,181 @@ strings. Nothing game-specific is hard-coded in the engine.
 from it rather than rendering it verbatim: only ranks carried by a replay get a
 chip (no chip ever filters to zero), and they render highest-first. Ship the
 whole ladder; the data decides what shows.
+
+---
+
+## Onboarding a new game — the pipeline contract
+
+Everything above is the engine boundary: pin, data, config. This section is the
+other half — the conventions a game's **pipeline** has to honour. They are not
+enforced by the engine, they were each learned from a defect that shipped, and
+every one of them fails silently. `PLAN.md` "New-game checklist" walks them in
+order; this is the reference the checklist links to.
+
+### Sources, groups, and dedupe keys
+
+**Consolidate channels into groups; keep the per-channel tokens underneath.**
+`GameConfig.sourceGroups` (v0.5.5) renders one chip per group instead of one per
+channel — both shipped games collapse to **Online / Tournament**. The per-video
+badge still resolves the real channel from `sourceChannels`, and the source
+predicate still matches per-channel ids, so per-channel deep links keep working.
+With `sourceGroups` set the engine renders **only** group chips; child filtering
+is URL member-CSV (`?src=a,b,c`) — there is no parent token.
+
+**One physical channel may emit several `Replay.source` tokens.** SF6's
+@TheKingArena is classified per video by title signals into `kingArenaOnline`
+and `kingArenaTournament`; a title carrying both signals goes to the review
+queue rather than guessing. Split at the token, not at the channel.
+
+**Tournament channels are ordinary daily channels.** The
+one-time-backfill-excluded-from-cron mechanism exists in no sibling and never
+did — it was a PLAN aspiration. Every contributing channel joins the daily
+fetch, and the first run _is_ the backfill. The gate that matters is
+cron-preservation: a simulated daily run must prove backfilled videos survive a
+fetch that never touches their channels.
+
+**Dedupe on the intake `ChannelKey`, never on a shared `SourceId`.** Two
+channels may deliberately share a public source token (a new tournament channel
+reusing `tournament` to avoid minting a public badge). Keying dedupe on the
+shared token means channel-priority never fires between them, and override
+protection leaks from one channel's hand corrections to the other's. Carry the
+intake key on the record and key dedupe off that.
+
+**Extraction-origin overrides confer no dedupe priority.** Every visually
+extracted record is a `sides` override, so a naive "hand-authored overrides win"
+rule silently makes the extracted channel beat every duplicate, inverting
+declared channel precedence. Only _hand-authored_ `sides` overrides protect.
+
+### Patch granularity
+
+The consumer contract is its own section — see
+[Patch grouping (v0.6.0)](#patch-grouping-v060--child-granularity-is-expected).
+Three clauses the checklist repeats because each has already been got wrong:
+
+- **Eras open on balance overhauls**, from an explicit hardcoded table — never
+  inferred from major version numbers, and an all-character balance pass does
+  not imply a new era.
+- **Never invent a version to fill a sequence gap.** A synthesis recommending an
+  invented `2.03` was caught and refused; the real version is `2.0301`.
+- **Fold rules come from the vendor's own version grammar.** Tekken folds
+  Bandai's `X.YY.ZZ` hotfixes into `X.YY`; SF6 folds nothing, because Capcom's
+  `X.YYZZ` is one atomic field and folding would mint a version that never
+  shipped. Read the vendor's strings before reusing another game's rule.
+
+### Extraction conventions
+
+For games whose titles do not name characters, the pipeline reads them from
+footage. This is the most defect-dense surface on the platform.
+
+**Recon before building.** Measure what the footage actually shows on a sample
+before committing to a method; the corpus decides the method, not the other way
+round.
+
+**Crops never transfer between games.** A crop ported verbatim from one game to
+another reads **0/60**; the same game's grid-searched box reads **48/60**. HUD
+geometry is per-game and must be re-derived every time, however similar the
+layouts look.
+
+**Derive the edit budget from the roster's own distance table.** A purely
+length-scaled budget is unsafe: the worst collisions are long strings one edit
+apart (`jin kazama` / `jun kazama`), where length-scaling grants budget 3. Cap
+each alias by its **unique-decoding radius** —
+`min(lengthScaled, floor((minCrossDist − 1) / 2))` — so aliases that cannot be
+told apart must match exactly. Measured on one roster: 21 of 83 aliases end up
+exact-only.
+
+**Blank frames are neutral.** Tournament VODs cut to crowd, replays and player
+cams constantly. Treating a blank as a negative splits one real run into two
+short ones and drops a character that was genuinely there; absence of evidence
+is not evidence of absence. Measure runs over the subsequence that read
+something.
+
+**Union membership takes ≥2 frames.** A character seen in exactly one frame is
+indistinguishable from a misread at normal sample counts — exclude it from the
+union _and_ force the record below auto-accept so a human sees it. Precision
+first; visible, not absorbed.
+
+**Side attribution comes from the footage, never from title order.** Measured
+title-order defect rates: **37.7%** on one game's event corpus, **12.8%** on
+another, **11.1%** on a third. HUD-handle attribution measured 100% on the same
+sample. Title order is at best a flagged hint and must never silently back-fill;
+an unreadable handle region routes to review.
+
+**The `decided` gate.** Auto-accept requires the side to be _decided_. An
+undecided side is a coin-flip dressed as a verdict — it stays in the queue no
+matter how confident the character read was.
+
+**Unions are 1..N characters in first-appearance order.** Emit gates hard-fail
+only on **0** characters; a side longer than `charactersPerSide` is legal data,
+not a bug. Such sides **count in `characterUsage` but are excluded from
+`pairingUsage`**, with the excluded count reported — naive `C(n,2)` over a
+multi-character side fabricates pairs that were never played, and fabrication
+poisons a synergy panel silently while under-counting stays recoverable.
+
+### Channel lifecycle
+
+**The collapse guard is standard equipment.** Refuse to write when a channel
+loses **more than 10% AND more than 20** of its committed records; allow an
+explicit per-channel override flag; abort **before** any write. Both thresholds
+are required — a percentage alone punishes a small channel for ordinary churn,
+an absolute alone misses a large channel bleeding slowly. Compare against
+whatever actually reaches the site (raw is only a fair proxy when the game gate
+runs at fetch). A channel collapses because it was deleted, renamed, made
+private, or **rebranded to another game and unlisted its back catalogue** — all
+observed.
+
+**The freeze pattern is the alternative to pruning.** A channel that stopped
+publishing this game keeps records that are still real and still play at their
+URLs. Freeze it: fetch skips it, parse carries its committed records forward
+byte-stable, pruning happens only by explicit override, and the frozen count
+surfaces in the pipeline report. **Pin the carried count and hard-assert it every
+run** — the committed data file is both the source and the target of the carry,
+so one bad run poisons the next run's reference permanently and silently.
+Editing the pin is the deliberate-prune mechanism, and it shows up in review.
+
+> **Game-marker gates are mandatory wherever a title grammar is shared across
+> games.** A publisher that reuses one title format across two titles will
+> eventually push the other game's matches through your parser, and they parse
+> cleanly — players, characters, everything. One cron replaced part of an
+> archive with another game's matches and served it for ~24 hours. Gate on a
+> marker the other game cannot carry, and widen the gate to the description when
+> the title does not carry one.
+
+### The review queue
+
+**Two item kinds:** source-classification (which channel token does this video
+belong to) and character-completion (what did each side actually play). Both
+resolve into the overrides file.
+
+**Pending items never reach `replays.json`.** An unresolved item is absent from
+the site, not present-and-guessed.
+
+**Labeling stays blind.** The server computes any machine-vs-human comparison and
+discards the machine's answer before rendering — the flag says _look again_,
+never _say this_. A label produced by someone who has seen the extractor's
+output is contaminated and worth less than no label.
+
+**Snapshot before any git operation, covering every data file the session
+touched.** A `git checkout -- data/` that was one directory too broad reverted a
+migration, a set of hand labels, and a roster edit at once; the labels survived
+only because a snapshot existed, and the one file missing from that snapshot was
+recovered only because it happened to be deterministic. Labels are precious and
+cannot be regenerated.
+
+### Stat semantics are declared per game
+
+`characterUsage` and its neighbours do **not** carry one platform-wide unit —
+see [`types/stats.ts`](./types/stats.ts). A 1v1 game counts **side
+appearances**, so a mirror adds 2. A tag game on a shared roster, where both
+sides routinely field the same character, may instead count a **per-record
+deduped union**, answering "how many replays feature this character". Both are
+correct; they are different questions.
+
+What the contract requires is that each game **state its unit in its own README
+and assert it in emit**, and that the same denominator drives that game's usage
+bars, per-patch timeline and player tables. Emitting one unit for
+`characterUsage` and another for `playerCharacters` makes three panels disagree
+with no visible symptom.
 
 ---
 

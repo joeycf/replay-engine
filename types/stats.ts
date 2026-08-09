@@ -11,17 +11,30 @@ import type { Stats } from './replay';
  *   ("aegis|bolt"); meaningful only when charactersPerSide > 1.
  * - `byPatchUsage` key ORDER is the timeline order (JSON preserves insertion
  *   order) — the pipeline emits patches oldest → newest.
- * - `playerCharacters[player][character]` counts (player × character) side
- *   appearances; ÷ charactersPerSide ≈ replay appearances.
+ * - THE USAGE UNIT IS PER-GAME AND DECLARED, NOT PLATFORM-WIDE. A 1v1 game
+ *   counts SIDE APPEARANCES (a mirror adds 2), which is what the engine's own
+ *   fixtures emit and what the "appearances" labels read naturally as. A tag
+ *   game on a shared roster — where both sides routinely field the same
+ *   character — may instead count a PER-RECORD DEDUPED UNION, answering "how
+ *   many replays feature this character"; the sum-of-side-lengths gate would be
+ *   wrong there by construction (measured on the shipped tag game: 21,730
+ *   against an actual 19,563). Both are correct; they are different questions.
+ *   Each game states its unit in its own README and asserts it in emit.
+ * - WHICHEVER UNIT A GAME PICKS, IT USES THAT ONE EVERYWHERE. characterUsage,
+ *   byPatchUsage and playerCharacters share a denominator so the usage bars,
+ *   the per-patch timeline and the player tables agree. Mixing units makes
+ *   three panels disagree with no visible symptom.
  */
 export interface KnownStats extends Stats {
-  /** characterId → total side appearances, all time. */
+  /** characterId → total usage, all time, in the game's declared unit. */
   characterUsage?: Record<string, number>;
-  /** patch → characterId → side appearances (keys in timeline order). */
+  /** patch → characterId → usage, same unit (keys in timeline order). */
   byPatchUsage?: Record<string, Record<string, number>>;
-  /** "a|b" (sorted) → same-side pairing count. Tag games only. */
+  /** "a|b" (sorted) → same-side pairing count. Tag games only. Sides longer
+   *  than charactersPerSide are EXCLUDED here (naive C(n,2) fabricates pairs
+   *  that were never played) even though they count in characterUsage. */
   pairingUsage?: Record<string, number>;
-  /** playerId → characterId → side appearances. */
+  /** playerId → characterId → usage, in the same unit as characterUsage. */
   playerCharacters?: Record<string, Record<string, number>>;
   /** playerId → "a|b" (sorted) → same-side pairing count. Tag games only. */
   playerPairings?: Record<string, Record<string, number>>;

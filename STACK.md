@@ -384,6 +384,51 @@ SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lan
     checks, and by each game's e2e grouped-patch-facet block (fine-token deep link,
     mixed union, tri-state round-trip, era-keyed stats, chips == data-present). See
     README.md "Patch grouping (v0.6.0)" for the consumer contract.
+15. **Dedupe MUST key on the intake channel, never on the public source token.** Two
+    channels may deliberately share a `Replay.source` token — a new tournament channel
+    reusing an existing one avoids minting a public badge nobody asked for — and the
+    moment they do, a `SourceId`-keyed dedupe stops firing channel-priority between them
+    AND leaks override protection from one channel's hand corrections onto the other's
+    records. Carry the intake key on the record and key dedupe off that. Related and
+    equally silent: **extraction-origin overrides confer no dedupe priority.** Every
+    visually extracted record is a `sides` override, so a "hand-authored overrides win"
+    rule makes the extracted channel beat every duplicate and inverts declared channel
+    precedence — only hand-authored `sides` overrides protect. Both were caught in
+    review, not by a gate. See README.md "Sources, groups, and dedupe keys".
+16. **Side attribution MUST be read from the footage, never from title order.** Event
+    titles name the players in the wrong order often enough to be a data-integrity
+    problem, not an edge case: measured 37.7% on one game's event corpus, 12.8% on
+    another, 11.1% on a third, against 100% for HUD-handle attribution on the same
+    sample. Enrolling on title order would have credited over a third of one corpus to
+    the wrong player, and the error is invisible downstream — the record looks complete.
+    Title order survives only as a queue item's provisional arrangement a human confirms;
+    an unreadable handle region routes to review rather than falling back. Auto-accept
+    additionally requires the side to be `decided`: an undecided side is a coin-flip
+    dressed as a verdict, however confident the character read was. See README.md
+    "Extraction conventions".
+17. **The collapse guard and the freeze pattern are standard equipment, not incident
+    response.** Refuse to write when a channel loses >10% AND >20 of its committed
+    records (both thresholds required — a percentage alone punishes a small channel for
+    churn, an absolute alone misses a large one bleeding slowly), with an explicit
+    per-channel override flag, aborting BEFORE any write. Compare against whatever
+    actually reaches the site; raw is a fair proxy only when the game gate runs at fetch.
+    A channel that stopped publishing this game is FROZEN rather than pruned: fetch skips
+    it, parse carries its committed records forward byte-stable, and the carried count is
+    PINNED and hard-asserted every run — the committed data file is both source and
+    target of that carry, so one bad run poisons the next run's reference permanently and
+    silently. Editing the pin is the deliberate-prune mechanism and shows up in a diff.
+    Learned from a channel that rebranded to another game and unlisted its back
+    catalogue: a bare rebuild would have pruned a quarter of the archive. See README.md
+    "Channel lifecycle".
+18. **Game-marker gates are mandatory wherever a title grammar is shared across games.**
+    A publisher reusing one title format across two titles will eventually push the other
+    game's matches through your parser, and they parse CLEANLY — players, characters,
+    duration, everything — so nothing downstream flags them. One cron replaced part of an
+    archive with another game's matches and served it for ~24 hours. Gate on a marker the
+    other game cannot carry, and widen the gate to the description per-channel when the
+    title does not carry one (a first-party archive read 0/1,025 on the title gate and
+    1,025/1,025 on the description gate — the zero was the gate, not the data). See
+    README.md "Channel lifecycle".
 
 ---
 

@@ -1,8 +1,8 @@
 /**
  * The data-collection contract. Each game's pipeline emits these shapes to
  * `public/data/*.json`; the engine fetches them under the base path. A replay
- * has exactly two *sides*; each side is one player plus a *list* of characters
- * whose length equals `GameConfig.charactersPerSide`. Transcribed from PLAN.md §3.
+ * has exactly two *sides*; each side is one player plus a *list* of 1..N
+ * characters (see `Side.characters`). Transcribed from PLAN.md §3.
  */
 export interface Character {
   id: string;
@@ -28,7 +28,11 @@ export interface Side {
    *  charactersPerSide. Filtering, search, and display treat every listed
    *  player as on the side (utils/filterReplays.sidePlayers). */
   players?: string[];
-  characters: string[]; // Character.id[]; length === charactersPerSide
+  /** Character.id[], 1..N in first-appearance order. `charactersPerSide`
+   *  describes the game's simultaneous-character FORMAT and drives UI
+   *  affordances — it is not a length cap, and nothing validates it as one. A
+   *  tournament set whose player counter-picked lists every character used. */
+  characters: string[];
   rank?: string; // present iff the game has ranks
 }
 

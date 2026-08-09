@@ -869,6 +869,8 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   backfilled videos survive a fetch that never touches their channels. Like patch
   granularity, this convention lived only in sibling code; when it lands for SF6
   it should be written into the engine docs' new-game checklist the same way.
+  _(CLOSED 2026-08-09 — see "New-game checklist" §1 at the end of this doc, and
+  README "Sources, groups, and dedupe keys".)_
 - **Tournament backfill recon corrections (2026-07-31) — three of this doc's
   premises were wrong:** (1) the one-time-backfill-excluded-from-cron mechanism
   exists in NO sibling — it was only ever a PLAN.md aspiration; Tekken's
@@ -909,9 +911,11 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   overrides protect (replay-dupes.ts:87). Review UI's round-trip test caught a
   real h3 version-skew bug in `readBody` on day one. e2e now 118 assertions;
   positive controls ×3; quota ~1,880 units on the day, cron steady-state
-  ~1,320/day of 10k. Engine changes zero, shell changes zero. Open follow-up:
+  ~1,320/day of 10k. Engine changes zero, shell changes zero. ~~Open follow-up:
   write the sourceGroups/tournament convention into the engine docs' new-game
-  checklist (engine-repo edit, next engine session).
+  checklist (engine-repo edit, next engine session).~~ **Done 2026-08-09** —
+  "New-game checklist" below, README "Onboarding a new game", STACK §5 items
+  15–18.
 - **2026-08-03 expiry gates cleared (SF6, commit fe5bb3f)** — both fired on
   schedule and both were cleared by doing the work. **Yasmine** is the 31st
   character; accent **`#F49BDF` "eagle orchid"**, user-picked from four
@@ -1448,3 +1452,101 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   (Parts A docs-codification / B gates-hygiene incl. the smoke check / C
   product polish incl. legacy-201 with user eyeballs; font-template and -evo
   re-validation explicitly deferred).
+
+---
+
+## New-game checklist
+
+Everything the engine boundary does not cover. Each step names the failure it
+prevents, because every one of these was learned from a defect that shipped and
+every one of them fails silently. The prose lives in the engine docs — README
+"Onboarding a new game — the pipeline contract" is the consumer contract, STACK
+§5 items 14–18 are the standing MUSTs — and this is the order to do it in.
+
+Written 2026-08-09, closing the three forward-references this doc had been
+carrying to a checklist that did not exist.
+
+1. **Model the sources before writing a fetcher.**
+   List every channel, decide its `Replay.source` token, and group the tokens
+   into user-facing chips (`sourceGroups`, typically Online / Tournament). One
+   physical channel may emit several tokens — classify per video and send
+   ambiguous titles to the review queue, never to a guess. Every contributing
+   channel is an **ordinary daily channel**; the first run is the backfill.
+   _Failure: a channel you meant to backfill once quietly stops being fetched,
+   and nobody notices until its records go stale. The cron-preservation gate — a
+   simulated daily run proving untouched channels survive — is what catches it._
+
+2. **Decide the dedupe key at the same time, and make it the intake channel.**
+   Not the public source token, which two channels may deliberately share.
+   Hand-authored `sides` overrides protect a record from dedupe; extraction-origin
+   overrides do **not**.
+   _Failure: channel-priority silently never fires between two channels sharing a
+   token, and override protection leaks between them. Both look like working
+   dedupe._
+
+3. **Gate on a game marker before parsing anything.**
+   Mandatory wherever the publisher shares a title grammar across titles. Widen
+   the gate to the video description per-channel when titles carry no marker.
+   _Failure: the other game's matches parse cleanly — players, characters,
+   duration — and replace part of your archive. Observed live for ~24 hours. The
+   inverse is just as costly: a first-party archive read 0/1,025 on a title gate
+   and 1,025/1,025 on a description gate._
+
+4. **Build the patch table from the vendor's own version grammar.**
+   Eras open on balance overhauls, from an explicit hardcoded table, never
+   inferred from major version numbers. Nest patches under eras by release date.
+   Never invent a version to fill a sequence gap. Ship child granularity;
+   era-only requires a stated reason in the app's README.
+   _Failure: an era-only facet renders, filters, and passes every count
+   assertion. It simply cannot answer "which patch", and nobody notices until two
+   games are compared._
+
+5. **If characters come from footage, recon first.**
+   Re-derive the crop for this game (a ported crop reads 0/60 where the
+   grid-searched box reads 48/60). Derive each alias's edit budget from the
+   roster's own distance table — `min(lengthScaled, floor((minCrossDist−1)/2))`
+   — not from length alone. Treat blank frames as neutral. Require ≥2 frames for
+   union membership. Read side attribution from the HUD, never from title order
+   (measured 37.7% / 12.8% / 11.1% wrong across three corpora). Gate auto-accept
+   on `decided`.
+   _Failure: every one of these produces a complete-looking record with the wrong
+   data in it. Title order alone would have credited over a third of one corpus
+   to the wrong player._
+
+6. **Stand up the review queue before the first bulk import.**
+   Two item kinds: source-classification and character-completion. Pending items
+   never reach `replays.json`. Keep labeling blind — the server computes any
+   machine-vs-human comparison and discards the machine's answer.
+   _Failure: a contaminated label set is worth less than no labels, and you
+   cannot tell which is which afterwards._
+
+7. **Wire the collapse guard and the freeze pattern on day one.**
+   Refuse to write on a per-channel loss of >10% **and** >20 records, with an
+   explicit override flag, aborting before any write. Freeze rather than prune a
+   channel that stopped publishing this game; pin the carried count and
+   hard-assert it every run.
+   _Failure: the pipeline publishes the loss, and the next run treats the
+   collapsed count as the new normal. Without the pin, one bad carry poisons the
+   reference permanently._
+
+8. **Declare the stat unit, assert it in emit, and write it in the app README.**
+   Side appearances for a 1v1 game; a per-record deduped union is legitimate for
+   a tag game on a shared roster. Use the same denominator for `characterUsage`,
+   `byPatchUsage` and `playerCharacters`.
+   _Failure: the emit gate is copied from a sibling with different semantics and
+   throws on run one — or worse, does not throw, and three panels disagree with
+   no visible symptom._
+
+9. **Snapshot every data file before any git operation, and keep the snapshot
+   until the session closes.**
+   _Failure: one `git checkout -- data/` that was a directory too broad reverted
+   a migration, a set of hand labels, and a roster edit at once. The labels
+   survived because a snapshot existed; the one file missing from it was
+   recovered only because it happened to be deterministic._
+
+10. **Positive-control every gate you just built.**
+    Inject the failure each gate exists to catch and confirm it exits non-zero,
+    then confirm the clean run exits 0. Piped gates run under `set -o pipefail`
+    (STACK §5 item 11).
+    _Failure: a gate that cannot fail is indistinguishable from a gate that
+    passes, and you will trust it._
