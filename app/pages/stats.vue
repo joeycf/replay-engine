@@ -181,7 +181,10 @@ const tiles = computed(() => [
   ...(showDuo.value && topPair.value
     ? [
         {
-          label: 'Top pairing',
+          // `terms.side`, like the "Top {side} pairings" panel this tile sits
+          // above — a bare "Top pairing" read as a different statistic from the
+          // panel directly beneath it, over the same data.
+          label: `Top ${terms.side} pairing`,
           value: `${cname(topPair.value.a)} + ${cname(topPair.value.b)}`,
           accent: accentVar(topPair.value.b, 'var(--color-secondary)'),
         },

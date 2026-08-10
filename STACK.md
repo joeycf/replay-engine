@@ -859,3 +859,44 @@ bump and set `observability.insights`; a root-based consumer can ignore it.
   both SDKs resolve through the apex. Positive-controlled: reverting the engine
   to the bare module fails the 2XKO gate (31/32, exit 1) and passes with it.
   Third-party integrations need gates like every other contract surface.
+
+---
+
+## 17. v0.6.4 — maskable icons + a tile label that matches its own panel
+
+Two cosmetic fixes and one new gate. No config surface, so a consumer inherits
+both by bumping the pin and changing nothing.
+
+- **Maskable app icons.** `manifest.webmanifest` now declares
+  `icons/maskable-192.png` and `icons/maskable-512.png` at `purpose: 'maskable'`
+  alongside the two `any` entries. A maskable icon is cropped to a
+  platform-chosen shape (circle, squircle, teardrop), so it is a **different
+  asset**, not the same file relabelled: it needs an opaque ground and its
+  artwork inside the safe circle of radius 40% of the canvas. The favicons are
+  transparent and the mark's corner sits at radius 39.7 — exactly ON that
+  boundary — so declaring them maskable would have shipped a logo that bleeds
+  into the mask and gets composited over an arbitrary platform colour. The new
+  assets are the same mark flattened onto the manifest's own
+  `background_color` (`#0a0b0f`) and scaled to 83%, putting the corner at 33 of 40. They carry no alpha channel and are smaller than the transparent
+  originals (1.2 KB / 3.7 KB against 14 KB / 61 KB).
+- **Committed, not generated.** The engine has no image library and cannot grow
+  one for this: §5 item 5 means a `devDependency` is pruned from git-layer
+  consumers and a runtime `dependency` would push a ~30 MB native binary into
+  four installs for a build-time concern. The PNGs were rasterized offline in a
+  sibling that already carries `sharp` and committed to `public/icons/`, exactly
+  as the neutral fonts are. All four consumers inherit `public/` wholesale —
+  none ships an `icons/` dir — so this propagates with zero per-repo work.
+- **The stats tile agrees with its panel now.** `stats.vue`'s headline tile read
+  a bare `Top pairing` directly above a `StatPanel` titled
+  `` `Top ${terms.side} pairings` ``, so a 2XKO visitor saw "Top pairing" over
+  "Top team pairings" describing the same data. The tile interpolates
+  `terms.side` too. No new `GameConfig` key: a per-tile label knob was
+  considered and rejected as more surface than the one wrong string justified.
+  Inert for `charactersPerSide: 1` games, whose duo tile never renders.
+- **New gate (2XKO `e2e.ts`).** Nothing anywhere asserted the manifest's `icons`
+  array — not length, not `purpose`, not `src`, not that the referenced files
+  exist. A manifest is read only by the OS at install time, so a typo'd `src` or
+  an uncommitted asset shipped in total silence. The gate now requires ≥1
+  maskable entry, every `src` under the base, and every referenced file present
+  in the build. Positive-controlled by pointing one `src` at a missing file.
+  Base-correctness is additionally covered by `verify-subpath.mjs --artifacts`.

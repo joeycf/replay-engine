@@ -131,8 +131,10 @@ export default defineNuxtModule({
           display: 'standalone',
           background_color: game.manifest?.backgroundColor ?? '#0a0b0f',
           theme_color: game.manifest?.themeColor ?? '#17cfc8',
+          // Every src goes through joinURL(base, …) — an absolute path here
+          // escapes the subpath and the icon 404s on every game behind the
+          // shell. scripts/verify-subpath.mjs --artifacts is the gate.
           icons: [
-            // no dedicated maskable asset exists yet (flagged) — 'any' only
             {
               src: joinURL(base, '/icons/favicon-180.png'),
               sizes: '180x180',
@@ -144,6 +146,26 @@ export default defineNuxtModule({
               sizes: '512x512',
               type: 'image/png',
               purpose: 'any',
+            },
+            // MASKABLE variants (v0.6.4). Separate assets, not the same files
+            // relabelled: a maskable icon is cropped to a platform-chosen shape,
+            // so it needs an opaque ground and its artwork inside the safe
+            // circle (radius 40% of the canvas). The favicons are transparent
+            // and their mark sits exactly ON that boundary, so declaring them
+            // `maskable` would ship a logo that bleeds into the mask on Android.
+            // These are flattened onto the manifest's own background_color and
+            // scaled to 83%, putting the corner at radius 33 of 40.
+            {
+              src: joinURL(base, '/icons/maskable-192.png'),
+              sizes: '192x192',
+              type: 'image/png',
+              purpose: 'maskable',
+            },
+            {
+              src: joinURL(base, '/icons/maskable-512.png'),
+              sizes: '512x512',
+              type: 'image/png',
+              purpose: 'maskable',
             },
           ],
         };
