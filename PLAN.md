@@ -1452,6 +1452,46 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   (Parts A docs-codification / B gates-hygiene incl. the smoke check / C
   product polish incl. legacy-201 with user eyeballs; font-template and -evo
   re-validation explicitly deferred).
+- **Housekeeping batch plan approved (2026-08-08): eight contradictions, the
+  code won each time.** (1) **Legacy-201 is SF6, not 2XKO** — my prompt
+  misattributed it; LEGACY_SOURCES = SF6's three pre-tournament channels; 2XKO's
+  own report is tier-A 0. Scale: 201 pairs → 187 clusters → 196 drops if all
+  approved (22,918 → 22,722, −0.86%). (2) No deploy step exists to smoke-check
+  after — B1 becomes a poll-until-band-or-deadline against the apex, reusing
+  the collapse guard's band so both gates agree on "collapse." (3) fuse-gaps
+  blind spot is **56** records (24 proReplays + 32 highLevel), the summary
+  currently overcounts attribution (5,398 vs true 5,360), and half-attributed
+  gets its own `partial` bucket. (4) Radius-cap donor is Tekken (shared roster
+  module + window-free matchRead; 2XKO's alias-length scaling is unsound
+  without its windowing); SF6 effect honestly small (5/57 aliases). (5) The
+  fuse predicate is NOT one line: **35.4% of the corpus is `fusesUnordered`**
+  (CV couldn't attribute sides) — design: side-pin the 3,429 ordered, either-
+  slot fallback for the 1,931 unordered, and the "Fuse · either team"
+  label/note MUST change or it becomes a lie. (6) `dupeOf` is provenance
+  commentary, not schema. (7) No knob needed for the tile — stats.vue already
+  interpolates terms.side four lines below (**production shows "Top pairing"
+  above "Top team pairings" today**); one-line fix, v0.6.4 as a PATCH. (8)
+  Part A can't be strictly docs-only: README:122 + types/replay.ts:31 still
+  assert the disproved length===charactersPerSide. Also raised, not fixed:
+  2XKO's stats are internally inconsistent (playerCharacters undeduped vs
+  characterUsage deduped) and the engine UI labels "appearances"
+  unconditionally over 2XKO's deduped numbers incl. JSON-LD. B6's sharpened
+  argument: freezing proReplays broke the "survived-refresh ⇒ still-listed"
+  inference for exactly those 1,317 ids — the link-health script is the
+  replacement signal.
+- **Housekeeping Part A committed (a7fbebe, local — push held by user; no tag
+  cut, consumers unaffected on v0.6.3):** 362/15 across README (+185, the
+  six-section "Onboarding a new game" contract) / PLAN (+106, ten-step
+  checklist, each step naming the failure it prevents) / STACK (+45, MUSTs
+  15–18) / three type files (comment-only). Full battery green; the one
+  format:check red (vercel-observability.client.ts, pre-existing) correctly
+  deferred to B5. **Ninth code-win of the batch, found BY the act of writing
+  the docs:** README + types/game.ts documented 2XKO's source term as
+  'channel'; the shipped config says 'source', and git (93ee3ac) proves it was
+  deliberate — the filter consolidated to Online/Tournament, which are groups,
+  not channels. Docs corrected, config untouched. Precision-forcing
+  documentation is itself an audit. a7fbebe must push before/with the v0.6.4
+  tag in Part C (the VALIDATE_TAG flow handles the ordering naturally).
 
 ---
 
