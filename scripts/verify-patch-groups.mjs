@@ -1,8 +1,8 @@
 /**
  * PATCH-GROUPS UI GATE (GameConfig.patchGroups, v0.6.0) — built bundle.
  *
- * The default fixtures stay UNGROUPED (their untouched test-filters +
- * verify-phase2 runs are the byte-stability evidence for non-declaring apps).
+ * The default fixtures stay UNGROUPED (their untouched test-filters run is the
+ * byte-stability evidence for non-declaring apps).
  * This gate overlays the fixtures — app.config gains patchGroups, replays get
  * child/era/unknown tokens (verify-override.mjs file-swap model, restored in
  * `finally`) — generates, and click-drives the grouped facet: legacy parent

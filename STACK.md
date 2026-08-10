@@ -246,9 +246,8 @@ not sameness. Run it before cutting an engine tag and after adopting one.
 | `verify:replication`                     | The §1/§2 replication contract across every sibling consuming repo (see below)                                                        |
 | `fonts:update`                           | Refresh committed neutral fonts from `@fontsource-*`                                                                                  |
 | `scripts/fixtures-data.mjs`              | Derives fixture stats.json from replays (pipeline parity); `--1v1` emits the rank-ladder variant                                      |
-| `scripts/verify-phase2.mjs`              | Full ported-UI click-through (47 checks: filters/matchup/search/sort/modal/drawer/stats/404/SEO/network/reduced-motion/manifest)      |
-| `scripts/verify-browser.mjs`             | Phase-1 hydrated-client suite (counts, toggle clicks, theme/accent tokens)                                                            |
 | `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base; `--artifacts <output dir> [base]` gates BUILD placement (§15)       |
+| `scripts/verify-patch-groups.mjs`        | Grouped patch facet (v0.6.0) on an overlay build — deep links, tri-state, era-keyed stats                                             |
 | `scripts/verify-override.mjs`            | Theme-override gate on the BUILT fixture bundle, both directions (`:root` override wins / removal → umbrella) + raw-`@theme` tripwire |
 
 SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lands in
@@ -679,8 +678,8 @@ waiting to be noticed.
   "era · patch" for child tokens; `BrowseCard` stays era-compact.
 - **Verification**: `test:filters` (expand/collapse/tri-state/parity semantics) and
   the new `scripts/verify-patch-groups.mjs` — a verify-override-style overlay build
-  (fixtures stay ungrouped by default; the untouched `verify-phase2` run on the
-  default build is the byte-stability evidence). Default reproduces v0.5.5 output,
+  (fixtures stay ungrouped by default; `test:filters` on the default build is the
+  byte-stability evidence). Default reproduces v0.5.5 output,
   so the pin is a no-op until a game sets `patchGroups`.
 - **Consumer pattern (all three games)**: the app pipeline owns a released-patch
   table (Tekken and 2XKO: `data/patchBoundaries.json` validated by a per-app

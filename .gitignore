@@ -26,3 +26,7 @@ fixtures/.output
 
 # Local agent config
 .claude/
+
+# WSL/NTFS alternate-data-stream artifacts left by files copied from Windows
+# (a browser download drops PLAN.md:Zone.Identifier next to PLAN.md).
+*:Zone.Identifier

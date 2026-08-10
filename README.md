@@ -698,10 +698,22 @@ Browser-level verification (needs a local Chrome at
 `/usr/bin/google-chrome-stable` and a served build or dev server):
 
 ```bash
-node scripts/verify-phase2.mjs  http://localhost:4180        # full ported-UI click-through (47 checks)
-node scripts/verify-browser.mjs http://localhost:3000        # Phase-1 suite (counts, toggles, theme)
 node scripts/verify-subpath.mjs http://localhost:4174 /sub   # base-path resilience probe
+node scripts/verify-override.mjs                             # theme-override contract, both directions
+node scripts/verify-patch-groups.mjs                         # grouped patch facet (overlay build)
 ```
+
+> `verify-phase2.mjs` and `verify-browser.mjs` were **deleted in v0.6.4**. Both
+> were Phase-2 artifacts, wired to no npm script and no workflow, and both had
+> rotted against the code they checked — `verify-browser` selected a
+> `button[role="switch"]` that the co-occurrence toggle stopped being (it is
+> `[data-testid="co-occurrence-toggle"]` with `aria-pressed` now), so it
+> dereferenced null partway through, and both asserted an 8-replay fixture set
+> that has held 10 for several versions. Their coverage moved on: `test:filters`
+> and `test:registry` own the pure semantics, each game's `scripts/e2e.ts`
+> playwright suite owns the real click-through, and `verify-override` /
+> `verify-subpath` / `verify-patch-groups` own the built-bundle contracts. A gate
+> that cannot run is worse than no gate — it reads as coverage.
 
 The subpath probe also has a build-placement mode that needs no browser — point it
 at a generated output root and it asserts nothing escaped the base:

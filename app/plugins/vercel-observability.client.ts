@@ -54,10 +54,7 @@
 // Client-only (.client.ts): nothing enters the prerendered HTML, the scripts
 // attach in the browser. Both SDKs are dev-inert and no-op off Vercel.
 import { computeRoute, inject, pageview } from '@vercel/analytics';
-import {
-  computeRoute as computeVitalsRoute,
-  injectSpeedInsights,
-} from '@vercel/speed-insights';
+import { computeRoute as computeVitalsRoute, injectSpeedInsights } from '@vercel/speed-insights';
 import { withBase } from 'ufo';
 
 /** Served by whoever owns the domain. Verified live: 200 on the apex. */
