@@ -1492,6 +1492,50 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   not channels. Docs corrected, config untouched. Precision-forcing
   documentation is itself an audit. a7fbebe must push before/with the v0.6.4
   tag in Part C (the VALIDATE_TAG flow handles the ordering naturally).
+- **Housekeeping Part B complete (4 local commits: engine 7e4a8b6 +24/−413,
+  2xko efbf902, sf6 2e4dca4, tekken 467f0d6; shell already clean).** Every new
+  gate positive-controlled for real: B1 smoke check pass on attempt 1 (apex ==
+  committed: 2XKO 5,475 · SF6 22,948 · Tekken 14,736) with a **mismatched-slug
+  control printing "PRODUCTION IS SERVING A COLLAPSED ARCHIVE" at 76.1%** —
+  i.e. the control reproduced the actual incident's signature; B2 radius cap
+  proven by a **differential sweep of 9,488 single-edit perturbations: 0
+  loosened, 0 rerouted, 222 tightened** (strictly-stricter, empirically, not
+  argued); cookie preflight fails distinctly on all five hazards; B3 now
+  buckets 115 (59 zero + 56 partial), 0 of the 56 reachable before; B4 removes
+  413 lines with a README tombstone. **Two further code-wins:** the radius cap
+  binds on **48/57 aliases, not 4** (the earlier estimate measured Tekken's
+  more-generous ladder, not SF6's) — real work, not a special case, and the
+  shipped corpus loses nothing; and B1 in SF6 had to be sequenced BEFORE "Flag
+  due expiries", which is designed to go red and would otherwise prevent the
+  smoke check from ever running. **B6's first run is a genuine finding: 4/150
+  sampled frozen records (2.7%) are already gone** (oEmbed 403 + thumbnail 404,
+  serially re-checked against a live control) → ~35 of the 1,317 extrapolated;
+  retain-and-freeze holds at 97.3% alive but **the frozen archive is bleeding
+  slowly** — the anticipated hard-delete scenario, now measured. Considered
+  follow-ups (NOT scoped): periodic link-health cadence, and whether dead-link
+  records should be marked in the UI rather than silently linking out.
+- **Part C plan audited (2026-08-09) — approved, one addition required.** Five
+  fresh code-wins: (1) **C1's stale-raw trap** — local raw/ is 6 days old and
+  missing 101 committed records, so a bare `data:parse` would land 22,651
+  (looking like a plausible cleanup) while silently reverting six days of
+  intake, and **the collapse guard cannot catch it** (worst channel 0.94% vs
+  the 10% threshold) → sequence must start with `data:fetch`; (2) tier A
+  re-scanned read-only against today's data = **byte-identical 201 pairs**, so
+  the stale report was still true (only tiers B/C drifted); (3) **C2's real
+  blast radius is 611 records / 11.2%**, not 35.4% — side-pinning only changes
+  an answer when the slots DIFFER and the record is ordered, and 2,818 of 3,429
+  ordered records are same-fuse-both-slots; (4) the predicate **degrades
+  exactly to today's behaviour with no character selected** (`[].every` is
+  true), which is load-bearing for e2e (f1)/(f2) at 4,228/1,931; (5) `terms`
+  already carries `state: FilterState` — **zero engine work for C2**, and the
+  facet's docblock had pointed at it for three versions. Release stays
+  **v0.6.4 patch** (no knob ⇒ no new contract surface). `commit-and-push.sh`
+  can't be driven headlessly (bare `read -r -p`, EOF answers no) → invariants
+  replicated by hand, ordering unchanged. **Required addition: run
+  `verify:deployed` for 2XKO/SF6/Tekken BEFORE Step 0's pushes** to establish a
+  known-good production baseline — the batch's own lesson is that git-green ≠
+  production-green, and a pre-push baseline distinguishes "this release broke
+  it" from "it was already broken."
 
 ---
 
