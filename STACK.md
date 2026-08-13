@@ -900,3 +900,41 @@ both by bumping the pin and changing nothing.
   maskable entry, every `src` under the base, and every referenced file present
   in the build. Positive-controlled by pointing one `src` at a missing file.
   Base-correctness is additionally covered by `verify-subpath.mjs --artifacts`.
+
+---
+
+## 18. v0.7.0 — `charactersPerSide: 4`
+
+One permitted config value, one new gate. Minor rather than patch because the
+config surface accepts something it did not before; additive in every other
+sense, so the three live consumers bump the pin and change nothing.
+
+- **`GameConfig.charactersPerSide` is now `1 | 2 | 3 | 4`.** The first 4v4 tag
+  game onboarded and `4` did not typecheck. The set stays **closed** — widening
+  to `number` was considered and rejected: every runtime consumer either tests
+  `> 1` or divides by it, and an open type turns a typo'd `40` into a silently
+  wrong divisor instead of a type error. The set widens per real consumer, one
+  value at a time.
+- **It was already not a length cap.** `Side.characters` is documented `1..N`
+  and every one of the twelve runtime uses is a `> 1` boolean, a
+  `Math.max(1, …)` divisor, or a display string — the `length ===
+charactersPerSide` invariant survived only as prose, and the last four copies
+  of it were corrected in this release. Nothing validated it, so nothing
+  changes behaviourally at 4.
+- **Known limitation, recorded not fixed.** `useFeaturedPlayers.ts` and
+  `players/[id].vue` derive appearances as `sum / charactersPerSide`, which is
+  exact only when every side fields a full complement. A game whose sides are
+  partially known (characters recovered incrementally from text and footage)
+  under-counts the displayed match number proportionally. Ranking is unaffected
+  — it is monotone in `sum` — so this is a display approximation, and the
+  docblock already said "≈". Fixing it needs a real per-record denominator,
+  which is a contract change and does not belong in a widening release. The
+  consuming game pins the current behaviour with a Node-side recompute in its
+  own e2e suite.
+- **New gate: `scripts/verify-badge-density.mjs`.** `BrowseCard.vue` has had an
+  `n >= 4` badge-sizing branch since before any game used it, which means it
+  was never exercised. The gate overlays the fixtures at
+  `charactersPerSide: 4` with 4-, 3- and 1-length sides, builds, and asserts
+  eight badges render on a full card, the `VS` column stays centred, and
+  nothing overflows at 375px. Positive-controlled by asserting nine badges.
+  Fixtures are restored in a `finally`, matching `verify-override.mjs`.

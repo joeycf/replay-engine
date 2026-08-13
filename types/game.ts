@@ -34,7 +34,13 @@ export interface GameConfig {
   rightsHolder: string; // 'Bandai Namco Entertainment' → disclaimer
   baseURL: string; // '/tekken' or '/' (fed into app.baseURL)
   siteUrl: string; // canonical origin for SEO/OG/sitemap
-  charactersPerSide: 1 | 2 | 3; // 2XKO=2, Tekken=1 → validation + UI hints
+  /** The game's simultaneous-character FORMAT — Tōkon=4, 2XKO=2, Tekken/SF6=1.
+   *  Drives UI affordances and the co-occurrence gate; it is NOT a length cap,
+   *  and nothing validates it as one (see `Side.characters`, which is 1..N).
+   *  The set widens per real consumer and stays CLOSED — never `number`, so a
+   *  typo lands as a type error rather than a silently wrong divisor. Widened
+   *  to 4 in v0.7.0, when the first 4v4 tag game onboarded. */
+  charactersPerSide: 1 | 2 | 3 | 4;
   accents: Record<string, string>; // characterId → hex accent
   filters: {
     coOccurrence: boolean; // within-side duos ("same side"); tag fighters only

@@ -162,7 +162,7 @@ export default defineAppConfig({
     rightsHolder: 'Bandai Namco Entertainment', // → disclaimer
     baseURL: '/', //              → '/' now; '/tekken' at the shell phase
     siteUrl: 'https://replaydatabase.com',
-    charactersPerSide: 1, //      2XKO=2, Tekken=1
+    charactersPerSide: 1, //      Tōkon=4, 2XKO=2, Tekken=1 (closed set, v0.7.0)
     accents: { kazuya: '#8B1E1E', jin: '#1E3A8B' /* …roster */ },
     filters: { coOccurrence: false, rank: true },
     ranks: ['Beginner', '1st Dan', /* … */ 'God of Destruction'], // req. iff filters.rank
