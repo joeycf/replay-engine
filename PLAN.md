@@ -1780,3 +1780,25 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   five-channel variance question (five uploader pipelines, not one broadcast:
   framing, resolution, and UI LANGUAGE may differ per channel — JP-client
   captures would render katakana nameplates, the 2XKO split precedent ready).
+- **Crop-sweep plan audited (2026-08-14) — approved with two scope refinements.**
+  Opens by correcting its own recon ("framing is stable" was one VOD per channel
+  by eye — per-source until measured). **Best original find: highLevelReplays
+  contributes ZERO bench-queue records** (prose descriptions complete every
+  side) ⇒ **33 records / 66 sides of pixel-independent ground truth existing
+  today**, honest about limits (shares description-parser error; can't validate
+  side attribution), reserved for SCORING never tuning. The recon's key
+  discovery embedded: **the point nameplate is text and CYCLES as players tag**
+  — naming every fighter who enters — so temporal union substitutes for spatial
+  completeness, and portraits are only needed for a fighter who never enters.
+  Sharp tooling insight: hud-frames caps at 720p, so resolution variance
+  survives as PROVENANCE (downscale-from-1080 sharper than native-720),
+  showing in OCR confidence not geometry. Handle language ≠ UI language
+  (シルクちゃん over Latin plates — measured separately). Read rate scored over
+  HUD-bearing frames only ("reading a nameplate on a frame with no HUD is a
+  category error, not a miss"). Tesseract trigger pre-agreed; hard STOP at the
+  per-channel table. **Feedback attached:** (1) record where round 1 begins —
+  if t≈0, pre-match screens were TRIMMED, and the bench-surface conclusion must
+  say "not present in these uploads," never "does not exist"; (2) report
+  distinct-fighters-seen-per-side — it bounds how often the never-enters case
+  occurs, which is the data that sizes whether the portrait tier is needed at
+  all.
