@@ -179,7 +179,7 @@ export interface GameConfig {
   rightsHolder: string;          // 'Bandai Namco Entertainment' → disclaimer
   baseURL: string;               // '/tekken' or '/' (fed into app.baseURL)
   siteUrl: string;               // canonical origin for SEO/OG/sitemap
-  charactersPerSide: 1 | 2 | 3 | 4; // Tōkon=4, 2XKO=2, Tekken=1 → UI hints (v0.7.0)
+  charactersPerSide: 1 | 2 | 3;  // 2XKO=2, Tekken=1 → validation + UI hints
   accents: Record<string, string>;       // characterId → hex accent
   filters: {
     coOccurrence: boolean;       // within-side duos ("same side"); tag fighters only
@@ -210,7 +210,7 @@ export interface Player {
 
 export interface Side {
   player: string;                // Player.id
-  characters: string[];          // Character.id[]; 1..N, first-appearance order
+  characters: string[];          // Character.id[]; length === charactersPerSide
   rank?: string;                 // present iff the game has ranks
 }
 
@@ -621,178 +621,16 @@ polish. This is deliberately the reverse of "build the selector first."
 
 ---
 
-<!-- ============================================================
-     README:216 links here. This section was written in a7fbebe and
-     silently removed by 0fe4f34 ("Updated PLAN.md to current latest",
-     a wholesale hand-sync); recovered from d7dca0a:PLAN.md:1542-1636
-     on 2026-08-13 by its first consumer.
+## New-game checklist → `NEW-GAME-CHECKLIST.md`
 
-     HAND-SYNCS MUST MERGE, NOT REPLACE. If you are pasting a newer
-     PLAN.md over this file, diff first and preserve this section and
-     everything below the Phase-3 addendum. It sits here, between the
-     normative content and the append-only journal, so journal growth
-     can never push it off the end again.
+The ten-step checklist that used to live here is now its own file:
+[`NEW-GAME-CHECKLIST.md`](./NEW-GAME-CHECKLIST.md).
 
-     Proposed follow-up: move to NEW-GAME-CHECKLIST.md and leave a
-     one-line pointer, so a wholesale sync physically cannot clobber it.
-     ============================================================ -->
-
-## New-game checklist
-
-Everything the engine boundary does not cover. Each step names the failure it
-prevents, because every one of these was learned from a defect that shipped and
-every one of them fails silently. The prose lives in the engine docs — README
-"Onboarding a new game — the pipeline contract" is the consumer contract, STACK
-§5 items 14–18 are the standing MUSTs — and this is the order to do it in.
-
-Written 2026-08-09, closing the three forward-references this doc had been
-carrying to a checklist that did not exist.
-
-1. **Model the sources before writing a fetcher.**
-   List every channel, decide its `Replay.source` token, and group the tokens
-   into user-facing chips (`sourceGroups`, typically Online / Tournament). One
-   physical channel may emit several tokens — classify per video and send
-   ambiguous titles to the review queue, never to a guess. Every contributing
-   channel is an **ordinary daily channel**; the first run is the backfill.
-   _Failure: a channel you meant to backfill once quietly stops being fetched,
-   and nobody notices until its records go stale. The cron-preservation gate — a
-   simulated daily run proving untouched channels survive — is what catches it._
-
-2. **Decide the dedupe key at the same time, and make it the intake channel.**
-   Not the public source token, which two channels may deliberately share.
-   Hand-authored `sides` overrides protect a record from dedupe; extraction-origin
-   overrides do **not**.
-   _Failure: channel-priority silently never fires between two channels sharing a
-   token, and override protection leaks between them. Both look like working
-   dedupe._
-
-3. **Gate on a game marker before parsing anything.**
-   Mandatory wherever the publisher shares a title grammar across titles. Widen
-   the gate to the video description per-channel when titles carry no marker.
-   _Failure: the other game's matches parse cleanly — players, characters,
-   duration — and replace part of your archive. Observed live for ~24 hours. The
-   inverse is just as costly: a first-party archive read 0/1,025 on a title gate
-   and 1,025/1,025 on a description gate._
-
-4. **Build the patch table from the vendor's own version grammar.**
-   Eras open on balance overhauls, from an explicit hardcoded table, never
-   inferred from major version numbers. Nest patches under eras by release date.
-   Never invent a version to fill a sequence gap. Ship child granularity;
-   era-only requires a stated reason in the app's README.
-   _Failure: an era-only facet renders, filters, and passes every count
-   assertion. It simply cannot answer "which patch", and nobody notices until two
-   games are compared._
-
-5. **If characters come from footage, recon first.**
-   Re-derive the crop for this game (a ported crop reads 0/60 where the
-   grid-searched box reads 48/60). Derive each alias's edit budget from the
-   roster's own distance table — `min(lengthScaled, floor((minCrossDist−1)/2))`
-   — not from length alone. Treat blank frames as neutral. Require ≥2 frames for
-   union membership. Read side attribution from the HUD, never from title order
-   (measured 37.7% / 12.8% / 11.1% wrong across three corpora). Gate auto-accept
-   on `decided`.
-   _Failure: every one of these produces a complete-looking record with the wrong
-   data in it. Title order alone would have credited over a third of one corpus
-   to the wrong player._
-
-6. **Stand up the review queue before the first bulk import.**
-   Two item kinds: source-classification and character-completion. Pending items
-   never reach `replays.json`. Keep labeling blind — the server computes any
-   machine-vs-human comparison and discards the machine's answer.
-   _Failure: a contaminated label set is worth less than no labels, and you
-   cannot tell which is which afterwards._
-
-7. **Wire the collapse guard and the freeze pattern on day one.**
-   Refuse to write on a per-channel loss of >10% **and** >20 records, with an
-   explicit override flag, aborting before any write. Freeze rather than prune a
-   channel that stopped publishing this game; pin the carried count and
-   hard-assert it every run.
-   _Failure: the pipeline publishes the loss, and the next run treats the
-   collapsed count as the new normal. Without the pin, one bad carry poisons the
-   reference permanently._
-
-8. **Declare the stat unit, assert it in emit, and write it in the app README.**
-   Side appearances for a 1v1 game; a per-record deduped union is legitimate for
-   a tag game on a shared roster. Use the same denominator for `characterUsage`,
-   `byPatchUsage` and `playerCharacters`.
-   _Failure: the emit gate is copied from a sibling with different semantics and
-   throws on run one — or worse, does not throw, and three panels disagree with
-   no visible symptom._
-
-9. **Snapshot every data file before any git operation, and keep the snapshot
-   until the session closes.**
-   _Failure: one `git checkout -- data/` that was a directory too broad reverted
-   a migration, a set of hand labels, and a roster edit at once. The labels
-   survived because a snapshot existed; the one file missing from it was
-   recovered only because it happened to be deterministic._
-
-10. **Positive-control every gate you just built.**
-    Inject the failure each gate exists to catch and confirm it exits non-zero,
-    then confirm the clean run exits 0. Piped gates run under `set -o pipefail`
-    (STACK §5 item 11).
-    _Failure: a gate that cannot fail is indistinguishable from a gate that
-    passes, and you will trust it._
-
-### Amendments from the first consumer (Tōkon, 2026-08-13)
-
-The ten steps above are unchanged. These are the gaps Tōkon hit that the list
-did not cover — added here rather than edited in, so the 2026-08-09 original
-stays legible.
-
-**4b. When the vendor publishes no version string, the token is a date.**
-Step 4 assumes a version grammar exists. Tōkon's vendor publishes none — patches
-are date-titled posts on a storefront news hub ("Patch Update 8/10/2026"). Then
-the patch token IS the publication date, ISO-normalised for URL and sort
-stability; the fold rule is a date window; and every row records the channel it
-was announced on, because "never invent a version" needs somewhere to point when
-there is no version to copy. Validate `token === start`, `start >= launch`, and
-`start <= today` — a typo'd year silently mints an empty window that filters to
-nothing and asserts clean.
-
-**5b. Titles, descriptions, and footage are three tiers, not two.**
-Step 5 jumps from titles to footage. A real corpus can sit in between: Tōkon's
-titles carry 1–2 of 4 characters, and **30% of its descriptions carry the full
-per-side bench in prose**. A description parser is a genuine pipeline stage with
-its own hazards — align it to a side by handle correspondence first and
-character containment second, and **refuse when neither resolves**. Never align
-positionally: a channel whose title reverses its second slot would compound one
-order error with another. A tier that can be read from text is cheaper, more
-accurate, and more auditable than one read from pixels; look for it before
-building an extractor.
-
-**5c. Extract characters by span, never by splitting on a separator.**
-A separator regex is the obvious implementation and it is wrong on any roster
-with punctuated names: splitting on `[/-]` shreds `Spider-Man`, `Star-Lord` and
-`Ms. Marvel` into fragments that then fail to resolve — or worse, half-resolve.
-Match roster aliases longest-first as non-overlapping spans and treat separators
-as the gaps between them; one code path then handles `A/B`, `A, B`, `A- B` and
-`A and B` identically. Pair it with a **residue gate**: report the characters no
-span covered, with the literal text, so a DLC fighter or a new nickname surfaces
-as a counted line instead of silently vanishing.
-
-**8b. Declare the provenance unit alongside the stat unit.**
-With more than one character source, "how did this record get its characters" is
-unanswerable unless you record it per side at the time you decide. Carry the
-contributing tiers, the alignment method, and whether the tiers disagreed. Keep
-it on the substrate and out of the emitted contract — the report can then state
-how every record was sourced, and a regression in one tier is visible as a shift
-in the mix rather than as silence.
-
-**7b. The collapse guard is inert on a young corpus — say so.**
-`>10% AND >20 records` cannot fire for a channel with 20 records or fewer. Four
-of Tōkon's five channels launched under 35. Both thresholds are still correct
-and must stay; what the checklist owes is the honest note that the guard *sleeps*
-until roughly 200 records per channel, and that the post-deploy smoke check plus
-the freeze pin are the live protection until it wakes up. A guard believed to be
-watching, that structurally cannot fire, is the same failure as a gate that
-cannot fail.
-
-**10b. Launch is part of the checklist too.**
-Nothing above covers registering a fresh cron slot clear of the existing ones,
-flipping the umbrella entry in a single commit, or taking a post-deploy baseline
-for every *already-live* game before a release's pushes. Git-green is not
-production-green, and a release that breaks a sibling is indistinguishable from
-one that does not until something measures it.
+It was moved because it was deleted twice by wholesale hand-syncs of this
+document — once in `0fe4f34`, and again the day after it was restored, taking
+with it the comment that existed to warn against exactly that. A guard comment
+cannot survive the process it warns about, because the paste replaces the
+comment too. Syncing this file can no longer reach the checklist.
 
 ---
 
@@ -1825,3 +1663,110 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   **Decision 11 note:** sourcing official character art reverses the design
   brief's footer claim — matches the three siblings' convention (portraits
   under the fan disclaimer), and Gap 7 reconciles the copy before it ships.
+- **Phase A + Stage 1 complete (2026-08-13): engine v0.7.0 local (b3176b2),
+  Tōkon Stage 1 committed (c2649ce, 34 files), Phase C underway.** The widening
+  is provably inert (all four consumers typecheck clean; 5 fails / 4 passes;
+  badge gate fails at 9, passes at 8) — and the new gate's first catch is the
+  platform's own dormant code: **BrowseCard's `n >= 4` branch shipped four
+  minor versions unexercised** (now measured: 8 badges, VS 0.00 px off centre,
+  no 375 px overflow). Checklist restored by merge with the first consumer's
+  amendments as a separate dated subsection. **Empty-corpus proof passes**: 56
+  routes from zero replays, /tokon/health reads 4, `--color-primary` computes
+  #03a5fe in the built bundle, Bangers ships latin-ext (Ō covered), all 21
+  fighter routes prerender. Honest self-correction: the plan's "magenta is the
+  widest free window" was wrong (green-goblin→hulk is wider at 52.3°); magenta
+  stands on canonical-anchor grounds and the token says so. **Two open items:**
+  (1) engine push + v0.7.0 tag are the user's (push main FIRST, then tag —
+  unpushed tags break consumer installs); sibling pin bumps stage after. (2)
+  **Character art has no first-party manifest** (marvel.com 403s, PS page
+  text-only, Steam game-level only; per-character JPEGs exist on PS-Blog
+  flickr but = hand-curated third-party mapping). **Steer: generated
+  comic-register placeholder tiles** (accent ground + halftone + Bangers
+  name/initial, scripted from tokens.css — DLC-automatic, brief-consistent so
+  the Gap-7 footer claim stays true, kills the CDN fragility, and restores
+  characters.ts to FAIL-LOUD once tiles exist); official-art curation recorded
+  as optional later polish (paths already typed — slots in with no code
+  change).
+- **Art decision superseded (2026-08-13): the Marvel Database wiki IS the
+  manifest.** `Category:MARVEL_Tōkon:_Fighting_Souls/Images` uses two
+  machine-consistent filename grammars — posters keyed by fighter name
+  ("...Wolverine poster.jpg"), renders keyed by **comics identity +
+  Earth-358 + 001/002** ("Max Eisenhardt (Earth-358) ... character render
+  001.png") — the user's "two renders" literally. Bridge = a 21-entry
+  roster-id→comics-identity map, hand-authored once, committed as data.
+  Method: MediaWiki API (direct page fetch 402s for bots; api.php +
+  static.wikia originals are the route, plain UA; if blocked, user saves
+  pages and the script parses local HTML). Slots per the user: **poster →
+  imgSplash** (fighter screen), **wider-aspect render → imgPortrait**
+  (measured, recorded, SF6-style crop if the slot wants 3:4). webp + per-file
+  provenance (source file page, dimensions, pick reason). **Synthesis with
+  the placeholder steer: scraped art primary, generated comic-register tile
+  as per-fighter FALLBACK, then characters.ts returns to FAIL-LOUD** — every
+  fighter resolves via scrape or explicit placeholder, no silent gaps.
+  Coverage report must call out Champion (hidden fighter — wiki documents
+  spoilers, likely covered) and DLC (re-run the scraper; phoenix-cyclops art
+  will appear at announcement). Gap-7 footer copy reconciles to the
+  art-ships direction (decision 11 restored). Engine push + v0.7.0 tag
+  remain the user's outstanding two commands.
+- **Phase 8 revision audited (2026-08-13 evening): v0.7.0 pushed+tagged;
+  Phase C written; art pipeline designed from live API measurements.** The
+  recon block already earned its keep on the real fetch: a FOURTH title
+  grammar (replaysHub, ▰ suffix-only) and the shared-grammar hazard at scale
+  (hadoukenReplays: 729 uploads, 533 ▰-shaped across many games, ~36 Tōkon —
+  the marker gate guards a real 500-video pollution). Second mid-build
+  defect: app.config points ogImage at a nonexistent file — every shared
+  link 404s today → og.ts ships this phase. **Art, measured (api.php, plain
+  UA, 200 OK, 110 files):** 20 fighter posters uniform 1018×1440 (0.707,
+  none for Champion) · 41 renders 3174×3858–3697×4974 (0.74–0.82, 001/002
+  per subject) · filenames MUST be enumerated never constructed ("MARVEL
+  Tōkon" vs typo'd "MARVEl Tokon" splits 41/27; "character render 001" vs
+  bare "001") · the 21-entry bridge map written in full (champion ← Tryco
+  Slatterus; **phoenix-cyclops ← Scott Summers art already exists** — DLC =
+  re-run) · ~24 non-fighter subjects excluded by allow-list construction.
+  **The slotting INVERTED from the user's directive on the measurements:**
+  the "wider render" premise is false — both families are tall — and the
+  engine's slots decide: poster (uniform, ≈3:4) → imgPortrait so the roster
+  grid crops as one set; the 3–5 MP render → imgSplash because the hero's
+  ≈4.2:1 crop destroys a 1018-wide source. Champion: render fills portrait,
+  tile on failure; imgSplash emitted only when the file exists (the hero
+  <img> has no @error handler). **sharp CANNOT set Bangers — proven:
+  librsvg silently ignores @font-face and fontfile:, producing
+  byte-identical DejaVu output with no error** → tiles render in headless
+  Chrome (the shell's card-art-tokon.mjs precedent + inline woff2 data-URI),
+  spawning checklist gap 5d (assert the typeface actually rendered) and gap
+  11 (art provenance is data: source page, dimensions, pick reason per
+  file). FAIL-LOUD restores once all 21 resolve.
+- **Phase 8 pipeline + art landed (2026-08-13 night):** v0.7.0's remote tag
+  proven the way that matters — Tōkon's committed pin resolves from GitHub with
+  `ENGINE_PATH` unset and builds byte-equivalent to the local-engine build (the
+  Vercel path tested, not assumed). Four sibling pin bumps committed locally,
+  each verified against the real tag (clean install + generate + own suite: sf6
+  121 · tekken 95 · 2xko 32 · shell 47/0); production was AHEAD of local
+  checkouts → fast-forwarded before touching anything. **Art 21/21 from the wiki
+  manifest, Champion included** (Tryco Slatterus; transparent cutout composited
+  over his accent ground so he reads as part of the poster set). The
+  largest-render-by-pixel-count refinement paid twice: doctor-doom's 001 is
+  577×628 against a 4201×4372 sibling (~50× pixels), and Champion's 001 is a
+  1200×675 landscape banner that would have looked wrong in a 3:4 tile.
+  **A FIFTH grammar surfaced from the review queue — and it was wrong data, not
+  a gap:** Fighting Station X writes characters and handles in separate ▰
+  segments, satisfying the paren parser's SHAPE while producing records whose
+  player handles were fighter names (one acceptance would have minted a player
+  page called "Star Lord"). Fix recovered 26 real matches (127→153) and emptied
+  26 false review entries; new invariant asserts the player registry shares no
+  name with the roster. **Two of its own controls were wrong before they were
+  right, both caught by inspecting ARTIFACTS rather than exit codes:** the
+  collapse control truncated the newest fifth of a raw dump (which retains every
+  post-launch upload) so the guard stayed correctly silent while the control
+  reported ✓; and the emit controls call `emitGeneric`, which writes to `data/`
+  — a snapshot scoped only around the later parse controls let a run replace the
+  committed 153-record archive with one synthetic record and then faithfully
+  preserve the damage (checklist step 9, learned from the inside; snapshot now
+  wraps everything). Also caught: **the OG card shipped its wordmark in a serif
+  fallback while passing its own font guard** — `document.fonts.check()` returns
+  true for a family whose unicode-range doesn't cover the text, and total-width
+  comparison also passes because a half-loaded family draws a mixed string;
+  three attempts to write a guard that fails correctly. 8-badge card verified at
+  real density: 38 records, VS 0.00 px off centre at 1440, no 375 px overflow.
+  Remaining: e2e.ts · expiries.ts · verify-deployed.ts · cron + README → then
+  extraction (frame recon first) → launch.

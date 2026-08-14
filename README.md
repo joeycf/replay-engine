@@ -213,8 +213,8 @@ whole ladder; the data decides what shows.
 Everything above is the engine boundary: pin, data, config. This section is the
 other half — the conventions a game's **pipeline** has to honour. They are not
 enforced by the engine, they were each learned from a defect that shipped, and
-every one of them fails silently. `PLAN.md` "New-game checklist" walks them in
-order; this is the reference the checklist links to.
+every one of them fails silently. [`NEW-GAME-CHECKLIST.md`](./NEW-GAME-CHECKLIST.md)
+walks them in order; this is the reference the checklist links to.
 
 ### Sources, groups, and dedupe keys
 
