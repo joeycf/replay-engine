@@ -621,19 +621,6 @@ polish. This is deliberately the reverse of "build the selector first."
 
 ---
 
-## New-game checklist → `NEW-GAME-CHECKLIST.md`
-
-The ten-step checklist that used to live here is now its own file:
-[`NEW-GAME-CHECKLIST.md`](./NEW-GAME-CHECKLIST.md).
-
-It was moved because it was deleted twice by wholesale hand-syncs of this
-document — once in `0fe4f34`, and again the day after it was restored, taking
-with it the comment that existed to warn against exactly that. A guard comment
-cannot survive the process it warns about, because the paste replaces the
-comment too. Syncing this file can no longer reach the checklist.
-
----
-
 ## Addendum — Phase 3 as-built (engine v0.2.0 → v0.4.0, 2XKO live on the layer)
 
 Phase 3 + 3.5 completed and merged to production (replaydatabase.com now runs the thin app
@@ -1770,3 +1757,26 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   real density: 38 records, VS 0.00 px off centre at 1440, no 375 px overflow.
   Remaining: e2e.ts · expiries.ts · verify-deployed.ts · cron + README → then
   extraction (frame recon first) → launch.
+- **PHASE 8 COMPLETE (2026-08-14): MARVEL Tōkon live at replaydatabase.com/tokon
+  — four games on the platform.** verify:cutover 84/0 at the apex including the
+  full Tōkon proxy leg (insights under /tokon-insights to its OWN project,
+  #03a5fe through the rewrite, apex canonical, fighter pages rendering);
+  verify:deployed green ×4 (Tōkon 153→**163** after the first cron, SF6 22,965,
+  Tekken 14,799, 2XKO 5,517) — the flip disturbed nothing. **The first cron was
+  a REAL run, not a no-op**: 1m41s, ten new matches across all five channels,
+  every channel's parse rate held or improved, clean report (no residue, no
+  ACTION REQUIRED), bench queue grew to **123 sides — the extractor's worklist,
+  the honest measure of known-unknowns growing with the archive.** Two lessons
+  the session marked as worth more than the site: (1) **the checklist was
+  deleted TWICE** — the second time taking the guard comment warning against
+  exactly that — resolved structurally: it now lives in NEW-GAME-CHECKLIST.md
+  where a document sync cannot reach it; (2) three defects were visible only in
+  artifacts, never exit codes (fighter-names-as-handles, the serif social card,
+  the collapse control passing for the wrong reason) — "open the file, look at
+  the picture" is the transferable habit. Ecosystem: dataminers list five
+  possible future DLC fighters (the wiki-manifest + expiries pattern absorbs
+  them when real); @TokonReplays et al. keep uploading. Champion's design token
+  still owed. **Next: the extraction track's crop sweep** — with the new
+  five-channel variance question (five uploader pipelines, not one broadcast:
+  framing, resolution, and UI LANGUAGE may differ per channel — JP-client
+  captures would render katakana nameplates, the 2XKO split precedent ready).
