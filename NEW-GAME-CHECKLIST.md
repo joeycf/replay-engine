@@ -192,3 +192,87 @@ every count, and will only surface as something that looks parsed and is not.
 _Failure: one game's fifth title grammar put fighter names in the player field
 on 26 records; the counts, the schema and every gate were green, and accepting
 one would have minted a player page named after a character._
+
+### Amendments from the extraction track (Tōkon, 2026-08-16)
+
+**5f. A fold ported from a sibling must be re-derived against the new game's
+temporal structure — name every term and say why it survives.**
+The siblings separate real play from misreads by CONTIGUITY: a side's character
+is constant within a game, so a real segment is consecutive and noise is
+isolated. In a tag fighter the point character cycles by design and a genuine
+tag-in can occupy a single sampled frame, so that prior inverts. Working the
+arithmetic then found three more terms failing for the same reason: `min(1,
+frames/MIN)` is DEAD CODE behind its own membership gate (the factor is 1 for
+every member that survives — true in the sibling too); `1 - mean(dist)/3`
+converges to a constant set by the OCR error mix rather than to 1, so more
+evidence makes a middling score more certain; and `dropped ? conf/2` fires
+hardest on NEAR-COMPLETE reads, because the last character found is the one seen
+least. Port the SHAPE of the evidence — edit distance, min-over-members,
+first-appearance order, the prudence constant — and re-derive the rest.
+_Failure: a formula whose confidence falls as the answer gets more complete, so
+the auto-accept gate rewards under-reading._
+
+**5g. Noisy-OR assumes independent observations; burst frames are not
+independent.**
+Once you sample in bursts, the realistic phantom is the SAME misread twice one
+second apart — same fighter, same face, same crop, same background — not two
+independent errors. Combine within a burst at a discount and across bursts
+freely, and keep the discount as one named constant. At full independence the
+"genuine repeat" and "correlated phantom" cases are the same arithmetic and no
+choice of the other constants separates them.
+
+**5h. A measurement taken at recon density does not transfer to production
+density. State the sampler with the number.**
+Recon samples in dense windows; production spreads. A per-side "distinct
+identities seen" count measured on burst frames is an upper bound on what a
+spread sampler sees — 4.0 vs 3.0 median here — and quoting the first about the
+second silently oversells coverage.
+
+**5i. A hash compared as a `Number` is not a hash.**
+`BigInt(parseInt(h, 36))` on a 64-bit value silently drops everything past 53
+bits, so distinct images compare as near-identical and clusters UNDER-count.
+Compare bit strings, or exact BigInt.
+_Failure: the corrupted count landed exactly on the number the prior predicted,
+which is the most persuasive way to be wrong._
+
+**5j. The reader's alias set is not the parser's.**
+Prose aliases exist because uploaders abbreviate; a pixel reader sees only what
+the game renders. Feeding the prose table to the reader adds short mint targets
+and collapses the roster's own spacing — here the minimum cross-alias distance
+went from 4 to 3, forcing every decoding radius down to defend against strings
+the screen can never show.
+
+**5k. Human-readable is not machine-recoverable, and a sample that snapshots the
+thing under test goes stale exactly when you need it.**
+A human reads the plate in the whole frame; the reader gets a small crop. "93%
+of rejects are legible to a person" is not headroom, and fitting looser accept
+rules against those same labels recovered nothing. Second half: if the sample
+file caches what the reader answered at build time, and you then change the
+reader, scoring against that cache reports that nothing moved however much did.
+Read the current answer live.
+
+**6b. A labelling surface must display nothing authoritative, and no default may
+pass for an answer.**
+A page built so the MACHINE cannot whisper the answer can still leave the TITLE
+shouting it: every title here names two fighters per side, and 17 of 17 labels
+reproduced it exactly. Serve the artifact and a counter — no title, no
+description, no handles, no id — and address the artifact by opaque index so it
+cannot be looked up. Separately, every control must start at a sentinel that
+cannot be saved, or "not yet answered" is indistinguishable from the answer that
+happens to be the default.
+_Failure: a whole labelling session that measures the title parser instead of
+the thing under test._
+
+**10c. A control suite must not repair the condition it tests.**
+A suite that snapshots data and restores it in a `finally` also refreshes
+mtimes — so a guard keyed on mtime can never fire again after the first run.
+Observed as two controls failing on a stale checkout and every later run
+passing. A suite whose second run disagrees with its first is not a suite.
+
+**10d. Two thresholds for one decision will eventually disagree.**
+A band was accepted at a span of 6 and then rejected for spanning under 8, so
+any frame whose topmost band fell between them was discarded and the real
+content below it never examined. Use one constant once. When changing a
+threshold, prove the change is ADDITIVE across the whole corpus — count the
+items newly admitted AND the items whose answer changed, and require the second
+to be zero.
