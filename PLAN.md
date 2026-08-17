@@ -1802,3 +1802,119 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   distinct-fighters-seen-per-side — it bounds how often the never-enters case
   occurs, which is the data that sizes whether the portrait tier is needed at
   all.
+- **Crop sweep complete (2026-08-14): one box serves all five channels** (band
+  spread 0.006/0.001 ≈4px at 720p, right anchor ~19px, nobody letterboxes; the
+  1080p channel differs in sharpness not geometry). UI Latin on all ten —
+  katakana path not needed (handle language ≠ UI language, as separated). Bench
+  surface claim correctly scoped per refinement 1: round 1 at t≤2s on 9/10 —
+  uploaders TRIM pre-match screens; "no text list of all eight in these
+  uploads" is about the channels' editing, not the game. **Refinement 2 was
+  load-bearing: distinct plates per side median 4.0** (17/20 ≥3, 11/20 ≥4) —
+  tag-cycling exposes most of a team through the nameplate alone; the
+  never-enters portrait tail is ~3 sides in 20. **Tesseract READS the face: 65%
+  on HUD-bearing plates (39% exact + 26% ≤2 edits, 0% blank, 80 plates) — no
+  font-template hatch.** THE NEAR-MISS: the probe's first run printed "OCR
+  CANNOT READ THIS FACE" at 38% — it had sampled K.O. cards and ROUND banners,
+  scoring the sampler not the reader; **the plan's own pre-agreed
+  HUD-bearing-frames criterion caught its own probe's false verdict** (two more
+  measurement bugs died by artifact-inspection: the row detector latching the
+  handle row on short names like LOKI masquerading as framing variance; the
+  plate hash on raw greyscale tracking live background → ~25 "plates" for a
+  five-fighter side). Caveat owned: the left ink-start spread is detector
+  contamination from bench portraits — left plate needs a fixed anchor.
+  **Reader decisions: OCR primary; the fold re-derived for CYCLING (the
+  contiguity prior inverts — a real tag-in can be one sampled frame);
+  side-mapping anchored on the title-known fighter's plate appearances
+  (decided-gate on conflict); portrait tier DEFERRED with a written trigger;
+  score against the 66 free ground-truth sides FIRST, then a small blind
+  sample.**
+- **Reader plan audited (2026-08-14) — approved with both departures accepted.**
+  Three corrections first, one of which retracts a number I called load-bearing:
+  (1) **the distinct-plate hash compared as Number** — `BigInt(parseInt(h,36))`
+  truncates past 53 bits, destroyed low bits make hashes look CLOSER, distinct
+  plates UNDER-counted — and the poisoned "median 4.0" landed exactly on the
+  4-fighter prior ("precisely the coincidence to distrust"); (2) those counts
+  came from BURST frames (76–91% of HUD frames within 3s of another) — recon
+  density doesn't transfer to production sampling; distinct-plates-at-production
+  is UNMEASURED and decision #4's "~15% tail" pre-sizing is withdrawn (trigger
+  stands, queue supplies the number); (3) ground truth is 80 sides not 66 (+14
+  proReplays from a second channel, scored separately) and CAN validate side
+  attribution after all (benches differ in every record, mean 1.20 shared).
+  **The sibling fold is demolished by arithmetic**: min(1,frames/2) dead behind
+  its own gate; mean-distance converges to a constant not 1 (more evidence makes
+  a wrong-ish number more certain); min-over-4 structurally rewards
+  under-reading at fixed threshold; the dropped-penalty fires hardest on
+  near-complete sides; coverage inert exactly on complete unions. Re-derivation:
+  **noisy-OR member scores (monotone in evidence), min kept and now
+  well-behaved, Good–Turing saturation** (1 − f1/legible) for have-I-seen-enough,
+  completeness a separate field, run computed at ZERO weight; q(d)/MEMBER_MIN
+  fitted on ground truth never asserted. **Reader-only alias set** (the HUD
+  prints 21 canonical strings; the parser's 54 prose keys would gift the cap
+  cheap cross-transitions) → minCrossDist=4, caps 1×8/2×7/3×5/4×1.
+  **The sampler is what finds the 4th fighter**: 12×6s windows @1fps = 72
+  frames for the same request count as 12 singletons; band-cropped cache
+  (~500MB). **Attribution costs zero extra OCR** (side votes from reads already
+  taken; titleOk as a free per-record positive control; auto-accept = non-empty
+  ∧ conf ∧ decided ∧ titleOk). Feedback attached: within-burst reads are
+  CORRELATED — include the same-misread-twice-in-one-burst phantom in the
+  unit sequences, and if fitting shows it clearing MEMBER_MIN, count
+  membership evidence per distinct BURST. Checklist amendments 1–4 earned
+  (fold re-derivation mandatory; recon density ≠ production density; a hash
+  compared as Number is not a hash; reader aliases ≠ parser aliases).
+- **Reader steps 1–5 committed (2026-08-15 morning); 41-video ground-truth run
+  in progress.** The anchor caveat vindicated with a control (symmetric left
+  anchor +15pp exact, right plate byte-identical at 0.0pp drift — the harness
+  didn't move, the anchor did) — but the bigger win came from persisted reads
+  making failures READABLE: "JLOKI", "WOLVERINEN", "- BLADE" — right name, HUD
+  furniture glued to the ends; bounded end-trimming took the corpus 60%→87%
+  resolved and dissolved an apparent per-channel geometry failure (hadouken
+  left 17%→90%). "One box serves all five" survives; "clean crop ⇒ clean
+  whole-string read" did not. Two further corrections owed and paid: the
+  parseInt hash bug was real but small (burst median stays 4.0) — **the density
+  correction is the substantive one: spread-density median is 3.0, ≥4 falls to
+  8/20**; and the "Plan agent transposed the distribution" accusation retracted
+  — two different quantities (radius 8/5/7/1 vs effective cap 8/7/5/1), both
+  correct, now both documented. **The correlated-phantom feedback became a
+  theorem: BURST_INDEP cannot be 1** — at full independence the correlated
+  phantom and the genuine cross-burst repeat are the SAME EXPRESSION, so no
+  constants separate them; at 0.5 they split by 0.13 around the gate; four
+  structural constraints tie Q0/DECAY/MEMBER_MIN, 21/21 hand-built cases.
+  Smoke (2 videos): precision 100%, attribution margins 58–65, titleOk clean —
+  **recall 50%, with the point-vs-assist hypothesis raised: descriptions
+  describe TEAMS, nameplates describe who took POINT** — an assist-only fighter
+  may never appear on the plate at any sampling rate. If the 82-side run
+  confirms a semantic recall ceiling, the portrait tier reframes from
+  tail-optimization to the only automated route to true team completion (bench
+  portraits show all four regardless of point time) — still gated on the
+  written trigger. Incidental checklist amendment: assertRawIsFresh keys on
+  mtime and the control suite's restoreAll() launders the staleness it should
+  surface. VideoOverride gains a '//' provenance field.
+- **Step 6 — the reader is DONE and measured (2026-08-15, 228e20e): member
+  precision 99.5% (ONE invented member in 203), recall 61.6%, attribution
+  40/41 decided and 40/40 CORRECT (median |votes| 50; one margin-1 record, also
+  right), titleOk caught 3/41 free.** The point-vs-assist hypothesis is
+  CONFIRMED, and by exactly the right evidence: **saturation is statistically
+  identical on short sides (0.915) and complete ones (0.936)** — short sides are
+  not starved readers, they are readers that ran out of things to find. Of 328
+  bench slots: 202 found, 8 seen-and-dropped, **118 (36%) never appear on a
+  nameplate at all** — descriptions state the team SELECTED, the plate states
+  who took POINT, and an assist-only fighter is invisible at any sampling rate.
+  Recall ceiling ~64%; denser sampling buys 2.4%, so the sampler is closed.
+  **AUTO_ACCEPT fitted to 0.75, overriding my 0.90 default with a genuinely new
+  finding: a high threshold ANTI-SELECTS FOR COMPLETENESS** — both-sides-exact
+  goes 17.1% → 0.0% from 0.01 → 0.90, because a side at confidence 1.00 is
+  typically ONE member witnessed many times, and a one-member union is never
+  right about a four-fighter bench. Precision is already carried by MEMBER_MIN
+  (the noisy-OR redesign moved it to the per-member gate), so the side-level
+  threshold buys nothing above 0.75 and costs 39 points of coverage. **The
+  portrait-tier trigger has FIRED by 13×** (~131 short sides/week against a
+  ~10/week trigger; queue already 131 records / 262 sides) — and the 36% figure
+  makes portraits the ONLY route to that third of the data. Known gap, not
+  silent: 4 sides across 3 videos returned literally nothing (two read ZERO ids
+  across 59–71 HUD frames where the reader averages 87%) — undiagnosed, routes
+  to review correctly. **Champion CONFIRMED by Claude Design at the same
+  #EC51C9** with better-documented reasoning (the gold ΔL escape provably
+  breaks: below iron-man → AA ≤4.0:1, above → lands on wolverine L .62);
+  PROVISIONAL comes off. WARNING: the design file was built from the ORIGINAL
+  handoff and still says `--char-danger-x` — cherry-pick the Champion line, do
+  NOT wholesale-replace.
