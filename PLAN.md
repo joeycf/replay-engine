@@ -1918,3 +1918,81 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   PROVISIONAL comes off. WARNING: the design file was built from the ORIGINAL
   handoff and still says `--char-danger-x` — cherry-pick the Champion line, do
   NOT wholesale-replace.
+- **Step 7 + drain shipped and pushed (2026-08-17):** 84/131 records resolved
+  from footage + 47 → review; after rebase + fresh cron: **211 replays · 422
+  sides · mean 2.22-of-4 · complete 135/422 · provenance title 148 /
+  description 106 / footage 168 · bench queue 160.** The rebase's decisive
+  check: footage HELD at 168 across a six-derived-file conflict resolved by
+  regenerate-from-inputs (overrides.json, the only non-derived file, never
+  conflicted) — the pattern paying a third time. Two corrections owed and paid:
+  the "median 3-of-4" projection was too generous (queue delivered median 2 —
+  ground truth was longer videos from prose-description channels); the ETA
+  cost model (per-video cost nearly fixed → 11h not 3h). Engine push carried
+  the eight checklist amendments; PLAN.md hand-sync is now SAFE by
+  construction (checklist in NEW-GAME-CHECKLIST.md — the structural fix
+  working). Permission layer correctly blocked all five session push attempts;
+  user pushed. **Next session issued: the portrait tier** —
+  prompt-tokon-portrait-tier.md: Step-0 recon on the ALREADY-CACHED band crops
+  (geometry, sprite-stability vs recolor variance, tag-state signal,
+  occlusion, 720p legibility, the four zero-read sides' strips) with a hard
+  STOP; templates built FROM THE CORPUS (135 complete + 82 ground-truth sides
+  = labeled crops; coverage explicit, absent-class refusal, DLC auto-covered);
+  **the test set pre-exists** (recall on the 118 never-on-plate slots,
+  precision cross-check on the 202 plate-confirmed, disagreement is a
+  measurement); gate fitted with the anti-selection lesson applied; additive
+  integration (provenance tier `portrait`, complete-separate-from-confidence,
+  in-place improvement), drain re-run delta reported.
+- **Portrait tier Step 0 complete (2026-08-17): the corner shows ALL FOUR
+  fighters every HUD frame** — one large unframed bust (point) + three
+  45°-rotated diamond cells in a 2×2 lattice (center (80,73) on 1280×720, cells
+  at ±36 on each diagonal axis, mirror symmetry to 0.003) — so the 36% is fully
+  reachable in principle and the ceiling is AVAILABILITY, not visibility.
+  **Bust reader already strong** (87% ≤7 bits within-video; 12.9/14.3
+  same-fighter cross-channel vs ~29 different; t=12 → 55.8% recall @ 0.01%
+  false-accept) → user's call: calibration + cross-check ONLY (nameplate
+  already IDs point). Icons identifiable at 720p → no 1080p re-downloads;
+  **free calibration set: 19/21 fighters labeled from an 8-frame sample**;
+  template coverage 21/21 in ≥1 complete side (thinnest peni-parker 3).
+  **The assist diamonds' limiter is availability, proven by falsifying the
+  session's own framing**: the user chose de-rotate-and-refit on a
+  neighbour-leakage theory; de-rotation (elegant diagonal-substitution
+  sampling, no sharp round-trip) bought 36→44.8% but the score is FLAT across
+  ±6 px offsets (hypothesis dead) and smaller cells trade discrimination for
+  stability — while tightening the presence cut lifts agreement MONOTONICALLY
+  (p50 → 72/71/62%, mean 13.4→9.7 bits): "governed by whether the cell is
+  drawn and unobstructed, not by how well it's cropped." Same shape the
+  pipeline already solves (presence gate + noisy-OR over 60–190 frames;
+  MEMBER_MIN/BURST_INDEP fitted and waiting). Two self-corrections paid: the
+  occlusion instrument was invalid (the lattice-center box holds four cells'
+  match-varying corners — its medians are NOT occlusion rates, and weren't
+  reported as such); **the four zero-read sides aren't reproducible — the
+  drain never persisted per-video reads** → the drain gains persistence this
+  session. Geometry settled; d=22 refit provisional, to be refit AFTER the
+  presence gate (the earlier fit was availability-confounded).
+- **Portrait tier Step 1 did NOT clear the bar (2026-08-18) — reported straight
+  rather than pushed into meaningless Step 2 tables.** Top-3 recall 46.9%,
+  all-three-right 5.6%, and that is an UPPER BOUND (templates saw the sides they
+  scored). Three findings and two corrections: **(1) the right corner's ART is
+  mirrored, not just its position** — L-R unflipped measured 29.14 bits, i.e.
+  the different-fighter level, so every cross-side pair in the transfer and
+  identity tests had been noise; fixed, all crops canonicalised to left.
+  **(2) The transfer hypothesis (my #3) is DEAD, killed by a pixel-blind
+  popularity control**: nearest bust template hits the correct 3-of-21 16.7% vs
+  the control's 36.7% — without that control, 25.9% against a naive "chance
+  14.3%" would have read as a positive result. Bust art is not diamond art.
+  **(3) The dim/lit watch item became the binding constraint**: median luminance
+  gap 100/255 between a frame's brightest and dimmest cell, and the bright cell
+  MOVES (44/20/36%) — three fighters × two render states ≈ 6 groups per side;
+  state-splitting lifts top-3 cluster coverage 61%→78%. Colour tested as a
+  control and rejected on the bust where truth is known (gap 8.42 vs greyscale
+  14.23) — fuses.ts hue-voting does not transfer to 31×31 px. **The diagnosis:
+  the hash separates fine (same-fighter ~12 bits vs different ~29); the TEMPLATE
+  LIBRARY is the weak link** — co-occurrence labelled 271 groups covering only
+  16/21 fighters (peni-parker, captain-america, ms-marvel, wolverine absent),
+  trained on a set structurally capped at ~82 description-derived sides. "The
+  constraint is information, not arithmetic." Correction owed and paid: Step 0's
+  "no 1080p justified" was established on the BUST; the diamonds are ~31×31
+  effective px and 1080p would give ~47×47 (2.25×), so that conclusion never
+  covered them. Sharpenings #1/#2 (fit gate end-to-end, refit d) correctly
+  deferred — both are downstream of a reader good enough to have an end-to-end
+  number.
