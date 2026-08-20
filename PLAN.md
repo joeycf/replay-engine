@@ -1996,3 +1996,53 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   covered them. Sharpenings #1/#2 (fit gate end-to-end, refit d) correctly
   deferred — both are downstream of a reader good enough to have an end-to-end
   number.
+- **Portrait arc CLOSED (2026-08-19): the stopping rule fired and the human
+  path shipped — Tōkon now 255 replays · 510 sides · 437 complete (85.7%) ·
+  6 oversize represented as mid-set team changes · bench queue 37 · review 5.**
+  Complete went 32% → 85.7% via the labelling bootstrap + the unblocked drain
+  (50 zero-slots drained; attribution by elimination; "keep both" replacing
+  "force" so a title-witnessed fighter is never dropped to satisfy a check).
+  The remaining 37 are the honest hard tail (plate could neither place nor
+  read) — pending and the site says so: complete or visibly pending, never
+  invented, achieved at scale. The session's through-line, kept verbatim:
+  "almost every defect this session was found by the human using the tool,
+  not by the machine testing it… which is the same conclusion the portrait
+  tier reached about the reader itself." Also shipped: **the deploy
+  fingerprint** — verify-deployed now compares count + complete-side total +
+  a content hash; it had been reporting success against a build missing 227
+  sides, and on the very next push only the HASH caught a real difference
+  (the field added expecting to carry signal carried none — the third
+  instrument in this project to be improved by its own failure);
+  /dev/disagreements cross-tier check (0 across 278; four off-bench readings
+  resolved — two reassigned, two appended as team changes); a slow-build
+  correctly classified by the deploy gate as NOT a collapse (15-record
+  shortfall inside the band, under the absolute floor — the guard quiet by
+  design). Throwaway spike committed WITH a header because its value is the
+  negative result ("just crop where the handle is" looks right and isn't —
+  one command now demonstrates it). Everything pushed, trees clean.
+- **Changelog plan audited (2026-08-19/20): Step 1 arrived COMPLETE — 25
+  entries, every date git-verified, my anchor list overruled in EIGHT places.**
+  The two best corrections target my own suggestions: "~70% lighter" appears in
+  no repo — the real figure is 31.14→7.10 MB (77.2%), so the entry quotes
+  megabytes; and Tōkon's "85.7% complete" is a MOVING number (it already fell
+  as new sides arrived) — omitted per the honest-numbers rule I wrote, applied
+  against me. Date corrections: Tekken 07-16; one-home 07-17 (shell bootstrap +
+  both cutovers in ONE day); SF6 07-25 00:39; Evo SF6 08-04 single-day;
+  preservation 08-07. **Historical find: 2XKO reached replaydatabase.com
+  standalone on 07-04, thirteen days before the shell existed — and the first
+  commit is 07-01: the entire platform is SEVEN WEEKS old.** Pre-platform era
+  included as entries #23–25. Build catches: **`crawlLinks: false` is
+  load-bearing** (crawling would emit hollow /2xko/* HTML shadowing the edge
+  rewrites, breaking all four games) so the route needs an explicit prerender
+  seed — a footer link alone would silently never generate the page;
+  erasable-syntax TS so the .mjs validator imports under Node 24 type
+  stripping (with a tested fallback); badges match on **slug not id**
+  (tekken8/tekken); the shell's FIRST component override (SiteFooter,
+  engine-copied, width-checked at 320/360/380); sitemap-pages lands
+  automatically from the actual prerender list; verify-shell gains canonical
+  checking (new capability); the NEW-GAME-CHECKLIST amendment correctly
+  redirected to the shell README's own "Adding a game" list (the checklist is
+  pipeline-scoped and engine-repo = out of scope). **User's editorial note
+  folded in: bodies expand 1–2 → 2–4 sentences, extra sentences CONCRETE
+  (frozen number / what-it-means / mechanism in plain words), revised table
+  shown before Step 2 builds.**
