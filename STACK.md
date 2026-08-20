@@ -938,3 +938,37 @@ charactersPerSide` invariant survived only as prose, and the last four copies
   eight badges render on a full card, the `VS` column stays centred, and
   nothing overflows at 375px. Positive-controlled by asserting nine badges.
   Fixtures are restored in a `finally`, matching `verify-override.mjs`.
+
+## 19. v0.7.1 — the platform changelog in the shared footer
+
+One link, added to `SiteFooter.vue`. Patch rather than minor: no contract
+surface moves, no config field appears, and an app on the older pin keeps
+building and simply renders the footer it already had.
+
+- **`SiteFooter` links to the apex changelog.** `/changelog` is a single
+  platform-wide page owned by the shell, and it was previously reachable only
+  from the shell's own three routes — a visitor deep in a game had no way to it
+  except back through the selector. The footer is the one piece of chrome every
+  app on the platform shares, so the link belongs there rather than in five
+  places.
+- **Absolute, and a plain `<a>`, deliberately.** A `NuxtLink to="/changelog"`
+  inside a game resolves against that game's base and points at
+  `/2xko/changelog`, which does not exist; a root-relative `href="/changelog"`
+  is right through the apex proxy but 404s on the game's own `*.vercel.app`
+  host, which stays reachable by design. Building it from `useSiteOrigin()`
+  lands on the apex from every host — the same host-independent stance
+  `useSiteMeta` already takes for canonicals, and the same reason
+  `verify-cutover.mjs` hardcodes its `APEX` const.
+- **Derived, not configured.** A `GameConfig.changelogUrl?: string` was
+  considered and rejected as machinery: every app on this platform already sets
+  `siteUrl` to the apex, so the field would be the same literal five times and
+  a fifth thing to forget when onboarding. The Buy Me a Coffee URL in the same
+  component sets the precedent.
+- **Cost, recorded.** A shell PREVIEW deployment's footer link points at
+  production — as its canonicals already do. The link is not the surface you
+  test a preview with.
+- **It replaced a shell-side override.** The shell carried its own
+  `app/components/SiteFooter.vue` for one release to add this link without an
+  engine change; that copy is deleted in the same sweep that bumps the pin.
+  Five near-identical footers were the alternative, and nothing detects that
+  kind of drift.
