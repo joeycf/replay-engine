@@ -2046,3 +2046,18 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   folded in: bodies expand 1–2 → 2–4 sentences, extra sentences CONCRETE
   (frozen number / what-it-means / mechanism in plain words), revised table
   shown before Step 2 builds.**
+- **Changelog table revised and approved (2026-08-20):** all 25 bodies expanded
+  under the 2–4-sentence concrete-only rule — every addition a frozen number, a
+  visitor consequence, or a mechanism in plain words (#24 ships the platform's
+  ethic as public copy: "where it couldn't tell, the match says so instead of
+  guessing"; #21's "all 742 indexed URLs redirect permanently"; #14's "the
+  replay file alone had been downloading five times over"; #10's 1,022
+  recovered-by-description). **The honest-numbers rule caught its author a
+  THIRD time:** my suggested #6 copy ("the videos still play today") was
+  already stale — the session checked before publishing my words and found the
+  B6 bleed (4 of 150 sampled videos gone) — decision: PUBLISH the bleed,
+  reframed as the reason preservation matters ("some videos have since
+  vanished entirely… which is exactly why the records remain either way").
+  #15's unverifiable rank claim dropped for the verifiable
+  pre-written-tables fact. Steps 2–3 running in auto; push staged for the
+  user, then verify:cutover + screenshots.
