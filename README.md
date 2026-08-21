@@ -58,11 +58,11 @@ export default defineNuxtConfig({
   // clones the layer with NO node_modules, and the engine's runtime deps
   // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
   // Phase-3 remote-layer check).
-  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.6.4', { install: true }]],
+  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.8.0', { install: true }]],
 });
 ```
 
-`v0.6.4` is the current platform-wide pin.
+`v0.8.0` is the current platform-wide pin.
 
 **Local co-development** (editing the engine while building a game): keep a local
 checkout next to your app and set `ENGINE_PATH` in the app's `.env`:
@@ -613,6 +613,42 @@ prerendered route list, `robots.txt`, `manifest.webmanifest` from `GameConfig`
 404 (`404.html` ← the prerendered `/not-found` page, content-checked). The SEO
 plugin injects the icon set + manifest link + theme-color head tags, all through
 `withBase()`.
+
+## The `/dev` tool index (v0.8.0)
+
+Games carry their own hand-curation and diagnostic pages at `app/pages/dev/*.vue`.
+The engine ships the **index** for them at `app/pages/dev/index.vue`, so every
+consuming app gets `/dev` for free and a **Dev** nav entry alongside it — both
+compiled out of production builds by `import.meta.dev`.
+
+The index reads the merged route table, so it needs no per-game registration. A
+dev page opts in by describing itself:
+
+```ts
+definePageMeta({
+  devTool: {
+    title: 'Source review',
+    category: 'Curation', // Curation · Diagnostic · Authoring sort first, in that order
+    description: 'Adjudicate the review queue from sampled HUD frames.',
+    writes: 'data/overrides.json', // optional
+  },
+});
+```
+
+A page with no `devTool` block still lists — under **Other**, wearing a "no
+description yet" note. That is the nudge, not a failure mode.
+
+**MUST: every value stays a plain quoted literal.** The build extracts the block
+from the AST (`experimental.extraPageMetaExtractionKeys: ['devTool']`, set in the
+engine's `nuxt.config.ts` and inherited through the layer). Only `Literal`,
+array, and object nodes serialize — a variable, an imported constant, or a
+backtick string drops the key with **no error**, and the tool then shows up
+wearing the fallback copy. If you see that note on a page that clearly has a
+description, this is why.
+
+A consuming app needs `nitro.prerender.ignore: ['/dev']` for the whole prefix
+(all four games already carry it) — nitro matches it as a prefix, so it covers
+the bare `/dev` index too.
 
 ## Analytics endpoints (v0.6.3) — required when the app runs behind the shell
 
