@@ -972,3 +972,49 @@ building and simply renders the footer it already had.
   engine change; that copy is deleted in the same sweep that bumps the pin.
   Five near-identical footers were the alternative, and nothing detects that
   kind of drift.
+
+---
+
+## 20. v0.8.0 — the `/dev` tool index
+
+Every game carries hand-curation and diagnostic pages at `app/pages/dev/*.vue` —
+eleven of them across the four repos when this landed — and `/dev` itself 404ed
+through the catch-all. The only inventory anywhere was a markdown table in 2XKO's
+README; Tekken and Tōkon documented theirs nowhere. Additive: a new engine page,
+one nav entry, and one `experimental` key. An app on an older pin keeps building
+and simply has no index.
+
+- **The index lives in the engine, the descriptions live in the pages.**
+  `app/pages/dev/index.vue` reads `useRouter().getRoutes()`, keeps everything
+  under `/dev/`, and renders `route.meta.devTool` grouped by category. That is
+  the whole mechanism — no registry, no per-game list, and nothing to keep in
+  sync when a tool is added, renamed, or deleted. It is the natural home
+  regardless: each game's `app/pages/` contains **only** `dev/`, so every other
+  route they serve is already inherited from here.
+- **`experimental.extraPageMetaExtractionKeys: ['devTool']` is load-bearing, and
+  its absence fails silently.** Nuxt does not carry custom `definePageMeta` keys
+  into the route records: with `scanPageMeta` at its default (`'after-resolve'`)
+  `normalizeRoutes` runs with `overrideMeta: true` and keeps only
+  `name`/`path`/`props`/`alias`/`redirect`/`middleware`. Without the key the
+  index still renders — every tool just wears the "no description yet" fallback,
+  which is the symptom to recognise. Verified through the layer merge: the key
+  is set once here and the extraction works in a consuming app.
+- **Only plain literals extract.** The extractor (`isSerializable`) walks the AST
+  and serializes `Literal`, `ArrayExpression`, and `ObjectExpression` nodes —
+  nested objects of strings are fine, which is why `devTool` can be one object
+  rather than four flattened keys. A `TemplateLiteral` is **not** a `Literal`, so
+  a backtick string drops the key with no error. Same for a variable or an
+  imported constant.
+- **A page with no `devTool` block still lists**, under **Other**, with a note
+  saying so. An index that silently omits what it doesn't understand is worse
+  than one that shows a gap.
+- **The nav entry is `import.meta.dev`-gated, not just unlinked.** `default.vue`
+  spreads `{ label: 'Dev', to: '/dev' }` into `nav` only in dev, so a production
+  build contains no crawlable link to `/dev` at all — the existing contract
+  (guard + `prerender.ignore` + nothing links there) is preserved rather than
+  traded away for the convenience.
+- **No `prerender.ignore` change was needed.** All four games already set
+  `ignore: ['/dev']` and nitro matches it as a prefix, so the bare index is
+  covered. The shell inherits the route too but sets `crawlLinks: false` with an
+  explicit route list, so it is never prerendered there either — it renders an
+  empty state, as does the `fixtures` app.

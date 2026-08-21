@@ -132,6 +132,22 @@ export default defineNuxtConfig({
     '@engine': fileURLToPath(new URL('.', import.meta.url)).replace(/\/$/, ''),
   },
 
+  // ---- /dev tool index (app/pages/dev/index.vue) ---------------------------
+  // The index enumerates useRouter().getRoutes() and reads each dev page's
+  // `definePageMeta({ devTool: { ... } })`. Nuxt does NOT carry custom meta keys
+  // into the route records on its own: with scanPageMeta at its default
+  // ('after-resolve') normalizeRoutes runs with overrideMeta:true and keeps only
+  // name/path/props/alias/redirect/middleware, so `devTool` would silently
+  // arrive undefined. Naming it here is the supported way to extract it.
+  //
+  // MUST: every devTool value stays a plain quoted literal. Extraction runs over
+  // the AST and only serializes Literal / Array / Object nodes — a variable, an
+  // import, or a backtick string drops the key with no error, and the tool then
+  // shows up on the index wearing the "no description" fallback.
+  experimental: {
+    extraPageMetaExtractionKeys: ['devTool'],
+  },
+
   typescript: {
     // Typecheck is run explicitly via `npm run typecheck` (vue-tsc), not inline.
     typeCheck: false,

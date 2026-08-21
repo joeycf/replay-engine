@@ -104,6 +104,10 @@ const nav = [
   { label: 'Stats', to: '/stats' },
   { label: capWord(terms.characters), to: terms.charactersBase },
   { label: 'Players', to: '/players' },
+  // The /dev tool index, reachable without typing the URL. `import.meta.dev`
+  // constant-folds to false in a production build, so the entry — and with it
+  // the only crawlable link to /dev — is absent from the shipped output.
+  ...(import.meta.dev ? [{ label: 'Dev', to: '/dev' }] : []),
 ];
 
 const isActive = (to: string) =>

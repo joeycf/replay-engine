@@ -263,6 +263,17 @@ happens to be the default.
 _Failure: a whole labelling session that measures the title parser instead of
 the thing under test._
 
+**6c. Every dev page declares itself on the `/dev` index (v0.8.0).**
+The engine ships `app/pages/dev/index.vue`; your app ships the tools. Give each
+one a `definePageMeta({ devTool: { title, category, description, writes } })`
+block and it lists itself — nothing to register. Values MUST be plain quoted
+literals: the build extracts the block from the AST, and a backtick string or a
+variable drops the key with no error, leaving the tool on the index wearing the
+"no description yet" fallback. Set `nitro.prerender.ignore: ['/dev']` in the
+app's `nuxt.config.ts` so the whole prefix stays out of the static output.
+_Failure: a curation surface nobody but its author can find, which is how three
+Tōkon pages shipped without the `import.meta.dev` guard the other seven had._
+
 **10c. A control suite must not repair the condition it tests.**
 A suite that snapshots data and restores it in a `finally` also refreshes
 mtimes — so a guard keyed on mtime can never fire again after the first run.
