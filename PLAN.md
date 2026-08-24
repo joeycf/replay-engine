@@ -2089,3 +2089,35 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   control asserts BOTH directions**: WryZaaMayl8 absent from every 2XKO
   artifact AND in tokon replays; a 2XKO title present in 2XKO AND absent from
   Tōkon — one day's crons, two gates, four assertions.
+- **Tōkon channel add shipped + an unrelated live defect found and fixed
+  (2026-08-23, a8e3035 + the channel commit, unpushed).** The planned work was
+  the occasion; the find was `BRACKET_TAIL_RE` stripping only full-width 【】
+  while hadoukenReplays publishes the tail BOTH ways — 53 titles 【MARVEL
+  TŌKON: Fighting Souls】 and 17 ASCII [...] — and the grammar catalogue atop
+  parse.ts documenting only the 【】 variant is what made a one-family regex
+  look complete. **The defect was worse than first reported: it deleted records,
+  not just dirtied handles.** The tail is 31 chars, so any handle ≥10 crossed
+  the 40-char bad-handle refusal and the whole record was binned — the corpus
+  sat on BOTH sides of that edge (longest surviving junk handle 39 of 40), so
+  short names minted junk players and long names vanished silently. Results:
+  records 327→**330** (the 3 bad-handle misses are back), players 281→**275**,
+  bracket-bearing handles 12→**0**, bad-handle misses 3→**0**; seven junk ids
+  merged into people already in the corpus (diaphone 20→23, naire, skinhoff,
+  sunfaded, bazzoka, rock, tokon), five became clean new ids; only
+  hadoukenReplays moved (58→61) and no channel lost a record. **players.json
+  is fully derived in this repo, so it healed on reparse with NO hand edit** —
+  the architectural contrast with 2XKO, where a committed seed entry was
+  structurally unreachable by the pruner. Control positive-controlled by
+  reverting the regex: exactly 2 of 4 new controls fail (specific, not
+  incidentally green) and the ASCII fixture fails as **"(record absent)"** —
+  demonstrating the deletion directly rather than the dirty handle; e2e gained
+  the sibling of the fighter-name assertion (no player handle contains a
+  bracket), a class that previously had no test that could see it. Two
+  self-corrections: "16 players" was wrong in both directions — **a grep on
+  ^tokon missed `to-kon-player` because the macron splits the slug** (the NFC
+  lesson resurfacing in slugs); real picture 17 suspects, 12 this bug, and the
+  other 5 are uploader-typed handles the parser read CORRECTLY (three
+  corroborated by their own descriptions) → they stay, now surfaced in a new
+  report.md section on the same surface-never-rewrite contract as the residue
+  block. Deliberately left: an iterative tail strip (zero 【…】👊 titles in
+  6,132 — wait for an example) and the 40-char cap, which behaved correctly.
