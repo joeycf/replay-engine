@@ -2061,3 +2061,31 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   #15's unverifiable rank claim dropped for the verifiable
   pre-written-tables fact. Steps 2–3 running in auto; push staged for the
   user, then verify:cutover + screenshots.
+- **FGC Replays Hub → Tōkon plan audited (2026-08-23) — approved, auto; four
+  exceedances over my directive.** (1) **The mechanism-divergence table refuses
+  to port 2XKO's shape** — Tōkon's gate is scope-only (`tokonSignal`; TOKON_RE
+  is global), runs at PARSE (raw/ holds everything by design), and has a second
+  line of defence 2XKO lacked: `OTHER_GAME_RE`, title-only, already listing
+  2XKO — same lesson, different correct implementation per repo. (2) **Measured
+  honesty about scope**: reconstructed the ungated 2,517-record corpus and ran
+  the real gate — both scopes agree TODAY (1 kept / 2,516 other-game; the
+  dual-game boilerplate is on exactly 1 of 2,517 descriptions), and 'title' is
+  chosen on FORWARD risk with the reason stated: when the boilerplate spreads,
+  titleOrDescription would match TOKON_RE on 2,516 foreign records and rest
+  their rejection on the both-markers branch — "leaning on one gate to catch
+  another's over-reach is not a design." (3) **Naming-collision catch**:
+  `fgcReplaysHub` because `replaysHub` is TAKEN by the unrelated "Tōkon Replays
+  Hub." (4) **The bench-deferral discipline**: the channel states full
+  four-per-side benches in prose and ALL 8 resolve against the roster — and the
+  plan REFUSES a fourth DescriptionBench grammar authored against one sample
+  (checklist 5e: a wrong bench shape doesn't fail loudly, it completes sides
+  with fabricated fighters) — revisit when the variant can validate against its
+  own rejects. Parse dry-run already done at plan time (both champions resolve,
+  empty residue, correct sides; both handles already exist → no player minted)
+  with the architectural note: 2XKO's PREFIX keys on the game name (hence the
+  junk player), Tōkon's core() cuts on ▰ POSITION. Precedence last, evidence-
+  backed (Hook/Supernoon/Hikari already in-corpus; a character-identical
+  Supernoon bench exists on highLevelReplays). **The cross-repo positive
+  control asserts BOTH directions**: WryZaaMayl8 absent from every 2XKO
+  artifact AND in tokon replays; a 2XKO title present in 2XKO AND absent from
+  Tōkon — one day's crons, two gates, four assertions.
