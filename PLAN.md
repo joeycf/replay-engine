@@ -2121,3 +2121,37 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   report.md section on the same surface-never-rewrite contract as the residue
   block. Deliberately left: an iterative tail strip (zero 【…】👊 titles in
   6,132 — wait for an example) and the 40-char cap, which behaved correctly.
+- **Tōkon completeness plan audited (2026-08-24) — approved; my ordering
+  corrected twice by measurement.** Verdict PROVEN not asserted: replayed every
+  commit 1a40c5d→db50148 diffing per record per side — **zero records lost a
+  fighter at any commit**; the bracket fix and fgcReplaysHub add each cost 0.
+  Accumulation only: 85.7% (437/510) → **71.5% (479/670)**, ~2.8pp/day, last
+  extract 08-20. Side sizes are BIMODAL — 189 at 1, 2 at 2, **0 at 3**, 473 at
+  4, 6 oversize — and per tier title 191/**0%** · description 169/100% ·
+  footage 32/100% · human 278/100%: nothing completes incrementally, so the gap
+  IS the title tier. **Correction 1 — my "cheapest first" free tier barely
+  exists**: fightingStationX has ZERO 4-name descriptions, replaysHub is
+  one-fighter-per-side by construction, and hadoukenReplays' apparent 4+ names
+  are **hashtag soup** (#IronMan #CaptainAmerica…, identical boilerplate on
+  every upload — the exact fabrication trap channels.ts:96 warns about, which a
+  naive count-roster-names heuristic would have turned into fabricated benches
+  on every record). Real pool: fgcReplaysHub's 6 sides. **Correction 2 —
+  extraction does NOT produce complete sides**: side-exact is 15.9%, mean
+  footage union 2.23 of 4, and 136 of 278 human sides had a footage read first
+  — the drain is the PREREQUISITE for the human pass (it downloads the frames
+  /dev/bench-review needs), not an alternative to it; only 17 of 96 queue
+  records have frames. **Step 0 hazard, third of its class**: local raw/ is
+  stale (the 08-24 cron committed data/ from CI), cannot reproduce 5 committed
+  ids, and a bare data:parse would silently shed them 335→330 with the collapse
+  guard structurally unable to fire at 1–2/channel → data:fetch FIRST, always,
+  and Step 5's catchup script makes the ordering impossible to get wrong.
+  Step 1 fixes a FALSE ACTION REQUIRED (LEADERBOARD_RE misses reversed
+  `Ranked #N`; characters resolved correctly in every case) while refusing to
+  absorb genuine alias gaps — `P. Parker` is ambiguous between Peni and Peter
+  and must keep surfacing. Step 3 uses `--dry --uncached` so the drain cannot
+  race the labelling UI over overrides.json's whole-file read-modify-write.
+  **Step 6's finding is bigger than the badge question: fighter pages filter on
+  `characters.includes(id)`, so a fighter on an unread bench is ABSENT FROM ITS
+  OWN PAGE, and usage (Σ characters.length) presents "appearances known" as
+  "appearances" — undercounting across 191 sides.** No emit change needed;
+  engine knob policy, separate proposal, after the drain changes its magnitude.
