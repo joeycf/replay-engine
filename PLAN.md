@@ -2155,3 +2155,37 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   OWN PAGE, and usage (Σ characters.length) presents "appearances known" as
   "appearances" — undercounting across 191 sides.** No emit change needed;
   engine knob policy, separate proposal, after the drain changes its magnitude.
+- **Tōkon completeness recovery COMPLETE and live (2026-08-26): 764/764 sides
+  = 100.0%** (from 479/670 · 71.5% at the 08-24 close) — sides at one fighter
+  **189 → 0**, title tier 191 → 0, unread usage slots 621 (21.8%) → 0, bench
+  queue 96 → 0, review queue 11 → 2 (both explained). Pushed
+  2f54c83..92162ac (nine commits — three from the review-queue work plus six
+  still local from the labelling session); production verified 382 replays ·
+  764 complete sides · digest d5cb2b8543e0, with two stale polls before the
+  match (the documented case: a single fetch would have called a 6-record
+  shortfall a collapse). e2e 73/0. **The through-line: four bugs that all
+  failed the same way — silently, in the direction that HIDES WORK** — the rank
+  alarm crying wolf (so a real DLC fighter wouldn't be heard), the worklist
+  hiding every record OCR couldn't read (the ones most needing a human),
+  contradictory attribution hiding a side and shielding a mis-attribution for
+  eight days, and the **union slip** publishing sixteen appearances for an
+  eight-fighter match while every downstream check waved it through because
+  oversize sides are legal. "None was in the pipeline. None had a gate. Each
+  surfaced only because a number didn't reconcile." The union-slip guard ships
+  in **both halves** — save-time refusal in bench-review.post.ts AND a
+  report.md backstop listing any already in the data (the backstop is what
+  found these two; "a save-time check alone would have caught neither") — with
+  the load-bearing negative control that a 4-fighter MIRROR match is legal and
+  present (SPLYxPgwT5o), so identity alone must never fire; the signature is
+  identity AND oversize. Side appearances 3080 → 3064; oversize 11 → 7.
+  **The stopping rule vindicated: the reader's 36% blind spot bounded the
+  MACHINE, never the human's eyes on the portrait cluster — which is why the
+  tail went to zero instead of stalling near 190.** Two gaps disclosed
+  unprompted: the e2e run that was planned and not executed (red on main since
+  2f54c83; fixed, with a DEADPOOL allowlist keeping the fifth-grammar assertion
+  at full strength and the exception carrying its evidence), and an HTTP-layer
+  coverage gap — both new guards' predicates are gate-controlled but the
+  endpoint wiring isn't, because an empty bench queue left no live item to
+  drive a save against. **Steady state named: ~19 records / ~25 one-of-four
+  sides per day; report.md shows the slip tomorrow, the nudge fires at 40,
+  data:catchup walks it back. "100% is a moment."**
