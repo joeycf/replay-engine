@@ -31,5 +31,12 @@ export default defineAppConfig({
       { id: 'ch-vault', name: 'The Vault' },
     ],
     manifest: { themeColor: '#e0563b', backgroundColor: '#0a0b0f' },
+    // Fixture character ids are fictional, so these point at real SF6 entries
+    // purely so dev renders BOTH branches of the ComboForge band: aegis/bolt
+    // deep-link, cinder (explicit null) falls back to the game hub.
+    comboforge: {
+      gameId: 'sf6',
+      characters: { aegis: 'ryu', bolt: 'ken', cinder: null },
+    },
   } satisfies GameConfig,
 });

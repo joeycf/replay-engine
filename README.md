@@ -203,6 +203,17 @@ export default defineAppConfig({
     // vertical up so the head isn't cropped. Keep X ~70% to hold the subject
     // right of the name/stat overlay.
     // heroFocus: '70% 4%',
+    // Optional ComboForge cross-link (additive, v0.11.0). Adds a partner band
+    // to every character page, deep-linking that character's combos. `gameId`
+    // is COMBOFORGE'S id, which is not always ours (our 'tokon' is their
+    // 'marveltokon'). `characters` maps our id to their id SUFFIX — the part
+    // after `${gameId}-` — and has three states: absent = derive it (our id
+    // with '_' → '-'), a string = use that suffix, `null` = they don't carry
+    // this character, so the band falls back to their game hub instead of
+    // emitting a dead deep link. Build the map with
+    // `npm run verify:comboforge -- --suggest --game=<their id> <repo>` and
+    // gate it with a bare `npm run verify:comboforge`.
+    // comboforge: { gameId: 'sf6', characters: { aki: 'a-k-i', mai: 'mai-shiranui' } },
   } satisfies GameConfig,
 });
 ```
@@ -700,6 +711,46 @@ It is served from its own origin, so Vercel's baked per-project endpoint already
 resolves, and keeping it preserves the ad-blocker resistance that the stable
 `/_vercel/…` path lacks. The shell and the fixtures app are in this case; only a
 subpath build is rewired.
+
+## ComboForge cross-link (v0.11.0)
+
+ComboForge (https://comboforge.gg) is a combo database that covers every game on
+this platform, and it already links **to** us — its bundle carries a partner
+registry mapping its game ids to our sites. This is the return link: a partner
+band on `/characters/:id`, deep-linked to that character's combos.
+
+Opt in with `GameConfig.comboforge` (see the `app.config.ts` example above).
+Omit it and nothing renders — the whole row, padding included, disappears.
+
+**Their ids are not yours.** The game id diverges (`tokon` → `marveltokon`) and
+their character ids are `${gameId}-${suffix}` where the suffix is the character's
+FULL name kebab-cased: `sf6-a-k-i`, `tekken8-marshall-law`,
+`tekken8-alisa-bosconovitch`. Only 2XKO and Tōkon map cleanly; SF6 needs 8
+overrides and Tekken 24 plus 6 characters ComboForge does not carry.
+
+```bash
+# bootstrap a map for a repo that has no block yet
+npm run verify:comboforge -- --suggest --game=tekken8 ../tekken-replay-database
+# then gate every configured repo against the live rosters
+npm run verify:comboforge
+```
+
+The gate is network-dependent, so it is **not** part of `typecheck` — run it by
+hand before a release, like `verify:override` and `verify:subpath`. It checks all
+three directions: the game id exists, every deep link resolves, and every `null`
+is _still_ absent upstream (so a gap gets promoted to a real link the release
+after ComboForge adds that character, instead of rotting as a hub fallback).
+
+**The one sanctioned raw-hex component.** `ComboForgePanel.vue` carries
+ComboForge's orange and their Impact wordmark as literal values in a
+`<style scoped>` block, against the rule stated in the theme contract below. A
+partner's wordmark has to look the same on all four game sites, so those values
+must **not** be theme tokens a game's `theme.css` could retint. The chassis
+around them — surface, border, corner cut, type scale — is all semantic tokens,
+as normal. Do not treat this as precedent for anything but a third party's own
+brand.
+
+---
 
 ## Versioning
 

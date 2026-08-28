@@ -157,6 +157,18 @@
       </section>
     </div>
 
+    <!-- COMBOFORGE CROSS-LINK (the whole row goes away when the game has none,
+         so a non-participating game keeps its exact spacing) -->
+    <div
+      v-if="comboforge.enabled"
+      class="px-4 pb-5 md:px-7"
+    >
+      <ComboForgePanel
+        :character-id="character.id"
+        :character-name="character.name"
+      />
+    </div>
+
     <!-- GAME-PANEL EXTENSION SLOT (per-character game analytics, Phase 3) -->
     <div class="px-4 md:px-7">
       <GameCharacterPanels :character-id="character.id" />
@@ -241,6 +253,10 @@ const firstPatch = computed(() =>
   patches.value.find((p) => (stats.value.byPatchUsage?.[p]?.[character.id] ?? 0) > 0),
 );
 
+// ComboForge partner band — the handle is read here too, so the page can drop
+// the whole row (and its padding) on a game that declares no cross-link.
+const comboforge = useComboForge();
+
 const showDuo = computed(() => game.charactersPerSide > 1);
 const teammates = computed(() => pairsFor(character.id).slice(0, 5));
 
@@ -312,6 +328,8 @@ useJsonLd([
     url: abs(terms.characterPath(character.id)),
     description: `${usage.value.value.toLocaleString('en-US')} competitive ${game.name} replay appearances featuring ${character.name} (all-time usage rank #${usage.value.rank}).`,
     isPartOf: { '@type': 'WebSite', name: useBrandName(), url: abs('/') },
+    // the partner combo page for this character, so crawlers see the pair
+    ...(comboforge.enabled ? { relatedLink: comboforge.targetFor(character.id)!.href } : {}),
   },
 ]);
 </script>

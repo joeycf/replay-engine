@@ -138,4 +138,22 @@ export interface GameConfig {
     metaTimelineTopN?: number;
     metaTimelineFullWidth?: boolean;
   };
+  /** ComboForge cross-link on character pages (additive, v0.11.0). Absent → no
+   *  band renders, which is the engine default and any game they don't cover.
+   *
+   *  `gameId` is COMBOFORGE'S id, not ours — they diverge (our 'tokon' is their
+   *  'marveltokon'). Check it against https://comboforge.gg/api/games.
+   *
+   *  `characters` maps our character id to their character-id SUFFIX — the part
+   *  after `${gameId}-`. Three states:
+   *    • absent key  → derived: our id with '_' → '-'  (all of 2XKO and Tōkon)
+   *    • string      → that suffix                     (SF6 'aki' → 'a-k-i')
+   *    • null        → ComboForge does not carry this character; the band falls
+   *                    back to the game hub rather than emit a dead deep link
+   *  Build and gate the map with `npm run verify:comboforge` (--suggest prints
+   *  a paste-ready block; a bare run checks every id against the live API). */
+  comboforge?: {
+    gameId: string;
+    characters?: Record<string, string | null>;
+  };
 }

@@ -2314,3 +2314,33 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   commit 6, held at ratchet 0 meanwhile with per-source floors protecting the
   95%) · data:player-dupes over the +302 registry (the /players/v 86-record
   slug the named suspect).**
+- **ComboForge cross-link SHIPPED to the engine (v0.11.0, 2026-08-28): a partner
+  band on every character page, deep-linked to that character's combos.** The
+  link already ran one way — ComboForge's bundle carries a `replaydatabase.com`
+  partner registry mapping its game ids to our sites — and nothing pointed back.
+  **The whole design turns on one measurement made before writing any code:**
+  their public API (`/api/games`, `/api/games/<id>/characters`) diffed against
+  our four `characters.json` files. A naive `${gameId}-${ourId}` would have
+  worked for 2XKO (15/15) and Tōkon (21/21) and silently emitted dead links for
+  8 of SF6 and 30 of Tekken, because their ids carry the FULL name
+  (`sf6-a-k-i`, `tekken8-marshall-law`) and their game id for Tōkon is
+  `marveltokon`. So the config maps our id → their suffix, three states, and
+  `null` (they don't carry this one) falls back to their game hub rather than
+  emitting a 404 deep link — which is also why the lookup is `in` and not a
+  truthiness check. **Both rosters move and neither drift direction is visible**
+  (a character we add emits a nonexistent id; a character *they* add stays
+  pinned to our hub fallback forever) — both render as a normal-looking link —
+  so `verify:comboforge` reads the live rosters and checks all three directions,
+  with `--suggest` bootstrapping a map from names + aliases + `extra['full
+  name']` (23 of Tekken's 24 overrides unaided; `leo` needed a hand entry
+  because our aliases carry no surname). **One deliberate design leak:**
+  `ComboForgePanel.vue` holds `#f97316` and the Impact stack as literals in
+  `<style scoped>` — §4b's rule exists so a game can re-skin the engine, and a
+  partner's wordmark is exactly the thing that must NOT re-skin. Scoped to a
+  third party's own brand; not precedent. **Found while building:** the empty
+  component still left its wrapper's `pb-5` on every non-participating game's
+  character page, so the page `v-if`s the whole row on `useComboForge().enabled`
+  rather than relying on the component rendering nothing. **Remaining: tag
+  v0.11.0, then the four app-side configs + pin bumps — sf6, tekken, tokon
+  (all still on v0.9.0, so they also take v0.10.0), 2XKO last (v0.10.0 already,
+  but its tree is mid-ingest).**

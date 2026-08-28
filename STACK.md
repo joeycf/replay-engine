@@ -1074,3 +1074,52 @@ older pin keeps building and behaves exactly as before.
   overlay corpus of two segments sharing one video plus one whole-video record —
   the last of these is the control that the pre-v0.10.0 path is byte-identical —
   and `--expect-start 999` must fail.
+
+## 22. v0.11.0 — the ComboForge cross-link
+
+ComboForge (https://comboforge.gg) is a combo database covering all four games
+this platform ships, and it has linked **to** us for a while — its bundle carries
+a partner registry mapping its game ids to our sites. Nothing pointed back. A
+character page now carries a partner band deep-linked to that character's combos,
+opt-in per game via the additive `GameConfig.comboforge`.
+
+- **Their ids are not ours, and no rule derives them.** The game id diverges
+  (`tokon` → `marveltokon`) and their character ids are `${gameId}-${suffix}`
+  where the suffix is the FULL name kebab-cased — `sf6-a-k-i`,
+  `tekken8-marshall-law`, `tekken8-alisa-bosconovitch`. Measured against the live
+  rosters: 2XKO 15/15 and Tōkon 21/21 derive cleanly, SF6 needs 8 overrides,
+  Tekken 24 plus 6 characters they do not carry at all. So the config maps
+  our id → their SUFFIX, with three states: absent (derive, `_` → `-`), a string
+  (use it), `null` (they don't have this one).
+- **`null` is a real state, not an absence, so the lookup uses `in`.** A
+  truthiness check would collapse "ComboForge doesn't carry Anna" into "derive a
+  suffix for Anna" and emit `tekken8-anna`, which 404s into an empty result page.
+  The null branch renders the band against the game hub instead — the visitor
+  still gets somewhere useful, and the config states the gap out loud.
+- **The gate exists because both rosters move and neither failure is visible.**
+  A character we add emits a derived id that isn't over there; a character _they_
+  add stays pinned to our hub fallback forever. Both render as a perfectly normal
+  link. `npm run verify:comboforge` reads their public API
+  (`/api/games`, `/api/games/<id>/characters`) and checks the game id, every deep
+  link, and every `null` still being absent. Network-dependent, so it is manual
+  like `verify:override` and `verify:subpath`, not part of `typecheck`.
+  `--suggest --game=<their id>` bootstraps a map by matching our `name` /
+  `extra.aliases` / `extra['full name']` against their names — it got 23 of
+  Tekken's 24 overrides unaided; only `leo` needed a hand entry, because our
+  aliases carry no surname and theirs is "Leo Kliesen".
+- **`ComboForgePanel.vue` is the one component allowed a raw hex and a literal
+  font family**, against §5's theme contract and PLAN §4b. A partner's wordmark
+  must render identically on all four sites, so `#f97316` and the Impact stack
+  live in its `<style scoped>` block rather than becoming theme tokens a game's
+  `theme.css` could retint. Everything around them — surface, border, `cut-bl-md`,
+  the type scale — stays semantic. This is scoped to a third party's own brand
+  and is not precedent for anything else.
+- **The page drops the whole row, not just the band.** `ComboForgePanel` renders
+  nothing when unconfigured, but its wrapper div still owned `pb-5`, which would
+  have added dead space to every character page on a game that never opts in. The
+  page reads `useComboForge().enabled` and `v-if`s the row.
+- **Their logo ships local, resized.** `public/partners/comboforge.webp` is their
+  `combo-icon.png` at 80×80 (4.5 KB, down from 376 KB). Hotlinking it would have
+  put a cross-origin request and a runtime dependency on every character page.
+  The URL goes through `useAssetUrl()` — engine `public/` merges into each app,
+  but the shell serves games under a subpath.

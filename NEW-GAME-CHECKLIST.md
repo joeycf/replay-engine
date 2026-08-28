@@ -108,6 +108,18 @@ carrying to a checklist that did not exist.
     _Failure: a gate that cannot fail is indistinguishable from a gate that
     passes, and you will trust it._
 
+11. **If ComboForge carries the game, wire the cross-link and never hand-write
+    the id map.**
+    `npm run verify:comboforge -- --suggest --game=<their id> <repo>` in the
+    engine builds the `GameConfig.comboforge` block from their live roster; paste
+    it, hand-fix whatever `--suggest` dropped into the null list, then run a bare
+    `npm run verify:comboforge` to gate it. Their character ids carry the FULL
+    name (`sf6-a-k-i`, `tekken8-marshall-law`) and their game id is not always
+    ours (`tokon` → `marveltokon`).
+    _Failure: `${gameId}-${ourId}` looks right on the two games where it happens
+    to work and emits dead links on the other two — a link to an empty result
+    page renders exactly like a link to a full one._
+
 ### Amendments from the first consumer (Tōkon, 2026-08-13)
 
 The ten steps above are unchanged. These are the gaps Tōkon hit that the list
