@@ -2189,3 +2189,65 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   drive a save against. **Steady state named: ~19 records / ~25 one-of-four
   sides per day; report.md shows the slip tomorrow, the nudge fires at 40,
   data:catchup walks it back. "100% is a moment."**
+- **Previous session closed (2026-08-27 morning): Tōkon gained sourceGroups
+  (Online/Tournament) + MarvelTokonYT's CEO/EVO footage as a Tournament
+  source** — pushed 793e8bf (24 files), 421 records incl. 18 tournament
+  matches; the straight-to-main call was right for a main-only repo whose cron
+  rewrites data/ from origin nightly. Two opens: the bench-conflict invariant
+  (7LQbkltIzso, 2 red e2e assertions — MY RULING: it belongs in the
+  REVIEW-queue: a conflict is by definition not consistent, and bench-queue is
+  reserved for consistent-but-incomplete; that's the two-queue design's own
+  line) and eight split player identities archive-wide (SonicFox, BlueSkyGuy…)
+  — queued as its own redirect-preserving migration session. **New arc opened:
+  Replay Theater ingestion (2XKO first)** — prompt-2xko-replay-theater.md
+  issued. My own recon: the site is a client-rendered SPA (empty HTML shell;
+  meta self-describes as "Match Replay Database" ⇒ match-granular, likely
+  timestamps into longform VODs). The prompt's central fork: **multiple
+  matches per videoId breaks id=videoId** — candidate `${videoId}@${start}`
+  with the blast radius mapped (dedupe signature, legacy params, review
+  surfaces, e2e, everywhere id is assumed to BE a YouTube id) vs a
+  zero-schema-risk per-VOD v1; **timestamped playback is an engine knob**
+  (Replay.startSeconds + modal ?start= — propose, never work around). New
+  source TYPE (external curated index, not a channel): curation trust is
+  SAMPLED (~10 entries against pixels, their error rate a number not an
+  assumption), game-per-entry verified (their ?game= filter is a query
+  someone else controls — the ▰ precedent), intake `replayTheater` → shared
+  'tournament' source with dedupe keyed on INTAKE (the Tekken lesson),
+  local-first refresh posture (a third-party API doesn't enter the cron on
+  day one), and attribution etiquette to a fellow fan project surfaced as a
+  first-class deliverable.
+- **Replay Theater prompt amended (user constraint): existing YouTube ids win,
+  by ignoring.** Predicate made precise as KNOWN-ANYWHERE, not merely
+  in-records — active records, the frozen proReplays carry, overrides
+  exclusions (wrong-game, dupeOf drops) all block re-entry, so an id the repo
+  once ruled OUT can't return through a side door. Ignores are counted in
+  report.md, never silent. Two consequences stated: RT's segmentation of VODs
+  we already hold whole is forgone (existing wins; Phase 0.4 now just
+  quantifies the ignore-list and that forgone set), and same-match-under-a-
+  different-id stays the standing report-only dupes territory. One new
+  invariant ships with the rule: **parse hard-fails on duplicate id across
+  intakes** (naming both) — cross-source id collision was structurally
+  impossible before an index-type source existed; now asserted, with a
+  synthetic-collision positive control.
+- **Identity migration + hardening session closed (2026-08-27 night, all six
+  repos in sync):** the eight flagged split identities grew into **122 split
+  player profiles collapsed across two games** — one canonical spelling per
+  player across all four games, every retired URL 308-redirecting THROUGH the
+  shell (the one locally-untestable assumption, verified live: sonic-fox →
+  sonicfox et al.), cross-game consistency proven (Snake Eyez identical in
+  three games under three different ids; Mystic untouched as designed).
+  **The highest-value find wasn't on any list: Tekken's pipeline was quietly
+  destructive** — a routine `data:parse` on a stale local raw/ deleted 373
+  records and REPORTED SUCCESS, with the collapse guard unable to catch it by
+  design. The stale-raw class has now fired or nearly fired in THREE of four
+  repos (2XKO prevented, Tōkon prevented at 5 records, Tekken FIRED locally at
+  373 — recovered). Tekken now refuses stale dumps and gained data:catchup
+  (fetch+parse as one command; --allow-stale returns to something used once,
+  deliberately). **Follow-up noted: SF6 + 2XKO should inherit refuse-stale +
+  catchup** — the 2XKO half can ride the Replay Theater session as a one-line
+  rider. Gates caught three pre-existing LIVE bugs the moment they existed
+  (empty player id in tokon; a 2XKO Evo record linking to a nonexistent player
+  page; data:emit throwing on its own contract in two repos). By-design note
+  recorded: players.json stores each game's own spelling and the engine
+  overrides at render — emitted JSON and rendered page disagree deliberately.
+  **Board: the Replay Theater arc starts now** — prompt ready as amended.
