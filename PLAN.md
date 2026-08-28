@@ -2251,3 +2251,66 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   recorded: players.json stores each game's own spelling and the engine
   overrides at render — emitted JSON and rendered page disagree deliberately.
   **Board: the Replay Theater arc starts now** — prompt ready as amended.
+- **Replay Theater plan audited (2026-08-28) — approved, auto. Recon of
+  exceptional quality; four contradictions, all correct; the engine reordered
+  to prerequisite.** Catalogue: 3,547 total / **899 tagged over 75 VODs**
+  (median 16 sets/VOD, set-level proven by gap analysis — zero gaps under
+  180s) / 65 events / 11 uploading channels / one VOD already private.
+  **Ignore-if-known costs 10 matches and zero segmentation** (all ten are
+  1-match Frosty Faustings VODs in manual-videos) → 889 enter. **Trust
+  measured three ways**: RT's timestamps ARE the uploaders' chapter markers
+  (97.3% within 30s, median offset 0; the 23 outliers are RT being FINER than
+  section-header chapters); against hand-validated Evo data 6/7 exact and the
+  seventh is a SCHEMA gap not an error (**RT caps 2XKO at 2 champions/side —
+  cannot express within-set counter-picks**); pixels BLOCKED (googlevideo 403,
+  stale cookies) → the full-res 10-entry spot-check is a GATE on B3, not
+  waived. The /addmatches source read caught **463 malformed URLs**
+  (`youtu.be/<id>&t=Ns` — string-concatenated; naive parse yields a corrupt
+  id). Contradictions: the stale-guard rider is moot (2XKO is the guard's
+  ORIGIN; real work = add RT ids to its exclusion, positive-controlled by
+  REMOVING them and watching it fire); 2XKO has no intake/source split
+  (source IS the key; replayTheater = its own token in the tournament group);
+  **the engine knob is a prerequisite** (without startSeconds all 889 open a
+  3-hour VOD at 0:00 — engine v0.10.0 first, additive videoId?/startSeconds?,
+  the LiteYouTube reset-watch bug pre-caught, start NEVER in the URL, the
+  @-in-?v= round-trip decided by test with ~ as fallback); **local-first
+  breaks the cron unless carried** → `localFirst: true` reusing the frozen
+  carry-and-pin path with the pin in committed `data/source-pins.json`
+  (grows, so no hand-edited constant). Fuse floor becomes **per-source and
+  RATCHETING** (self-retiring exemption; whole-corpus 86.15% day one; the
+  do-not-lower principle preserved in shape). publishedAt = the VOD's, never
+  +offset (would cross day-grained patch boundaries). durationSec:0 makes RT
+  invisible to replay-dupes → a zero-duration tier-C report-only section so
+  the 7 known Evo cross-id overlaps surface. 293 new players at
+  featured:false (third-party transcription tier); the `/players/v` slug (86
+  records) flagged as an identity watch item. Etiquette resolved: **the RT
+  operator is a collaborator** — no attribution surface needed; raise the
+  2-champion cap + missing rounds at source. Open: the badge string
+  ('Tournament VODs' vs 'Replay Theater') = the user's word; first action =
+  cookie refresh (gates the pixel check → gates commit 4; B5 backfill last).
+- **Replay Theater SHIPPED (2026-08-28, staged both repos, nothing pushed):
+  engine v0.10.0 (2 commits + tag) and 888 records over 74 VODs / 64 events —
+  2XKO 5,638 → 6,526, Tournament group 31 → 919.** The @ separator asserted
+  round-tripping unencoded (~ fallback unneeded); a folded engine fix: absent
+  viewCount coerced to "0 views" while durationSec hid properly — same-optional-
+  field-different-treatment. **Three found-by-running:** (1) the carry fix went
+  deeper than planned — the two carry paths rejoined the pipeline at different
+  points, so the same record obeyed DIFFERENT merge rules depending on whether
+  raw/ existed; carrying and rebuilding are now byte-identical (carry-path
+  equivalence, proven by diff); (2) **nuxt generate fixtures broken in the
+  engine since v0.8.0** — the fixtures app was the one consumer missing
+  prerender.ignore:['/dev'], silently taking verify-badges, verify-patch-groups
+  AND verify-subpath down: three gates reading as coverage for two minor
+  versions (running-but-hollow — worse than absent); fixed own-commit, the
+  v0.8.0 STACK note corrected; (3) **the blocked pixel spot-check completed via
+  a different instrument** — direct downloads 403 but EMBEDS play in-browser:
+  seven records played at their offsets, broadcast HUD read, all seven
+  confirming RT exactly ("STG BLAIZZY" over Vi/Ahri; "Solidjoker (Yasuo/Thresh)
+  vs Morning" at 9:30 of 2:23:50). Dupes audit's silent skip of zero-duration
+  records made visible (report-only signature pass; the 7 Evo overlaps
+  surface). Badge shipped as "Tournament VODs" (one string if the user prefers
+  crediting Replay Theater by name). **Remaining: push (engine main→tag, then
+  2xko ×4) · cookie refresh (the forgotten step — gates the fuse backfill,
+  commit 6, held at ratchet 0 meanwhile with per-source floors protecting the
+  95%) · data:player-dupes over the +302 registry (the /players/v 86-record
+  slug the named suspect).**
