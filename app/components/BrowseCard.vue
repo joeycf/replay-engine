@@ -123,7 +123,12 @@
       <div
         class="mt-2.5 flex items-center justify-between border-t border-border-subtle pt-2.5 font-mono text-[10px] text-text-muted"
       >
-        <span>{{ formatViews(replay.views ?? 0) }} views</span>
+        <!-- absent views are HIDDEN, not rendered as "0 views" (v0.10.0). The
+             field is optional and `durationSec` has always been hidden when
+             absent; coercing this one to 0 asserted a fact instead. A record
+             that is a SEGMENT of a video has no view count of its own — the
+             VOD's belongs to the VOD, not to each set cut out of it. -->
+        <span>{{ replay.views == null ? '' : `${formatViews(replay.views)} views` }}</span>
         <span>{{ relativeDate(replay.date) }}</span>
       </div>
     </div>
@@ -155,12 +160,16 @@ const isFeatured = (s?: Side) => !!s && sidePlayers(s).some((id) => playerById(i
 const left = computed<Side | undefined>(() => props.replay.sides[0]);
 const right = computed<Side | undefined>(() => props.replay.sides[1]);
 
-// Replay.id is a YouTube id per the contract — derive the thumb when the
-// pipeline didn't publish one; @error hides a dead image (fixtures) and the
-// striped placeholder stands.
+// Derive the thumb when the pipeline didn't publish one. Keyed on
+// `videoId ?? id` (v0.10.0), NOT on `id`: a record can be a segment of a
+// longer video, and deriving from a composite id yields a 404 that @error
+// hides behind the striped placeholder — a silent failure that reads as a
+// design choice. @error still covers the genuinely-dead case (fixtures).
 const thumbFailed = ref(false);
 const thumb = computed(
-  () => props.replay.thumb ?? `https://i.ytimg.com/vi/${props.replay.id}/hqdefault.jpg`,
+  () =>
+    props.replay.thumb ??
+    `https://i.ytimg.com/vi/${props.replay.videoId ?? props.replay.id}/hqdefault.jpg`,
 );
 
 // patchGroups (v0.6.0): cards stay era-compact — a child token renders as its

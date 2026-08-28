@@ -65,17 +65,31 @@
 // Lite-YouTube facade: thumbnail + play button first; the youtube-nocookie
 // iframe is injected only on click, with the BrandSpinner as the pending
 // indicator until the embed document loads. Grid cards never render this.
-const props = defineProps<{ videoId: string; thumbnail?: string | null; title?: string }>();
+const props = defineProps<{
+  videoId: string;
+  thumbnail?: string | null;
+  title?: string;
+  /** Start offset in seconds (additive, v0.10.0) — for records that are a
+   *  SEGMENT of a longer video. Absent/0 ⇒ play from the top. */
+  start?: number | null;
+}>();
 
 const playing = ref(false);
 const loaded = ref(false);
 
 const embedSrc = computed(
-  () => `https://www.youtube-nocookie.com/embed/${props.videoId}?autoplay=1&rel=0`,
+  () =>
+    `https://www.youtube-nocookie.com/embed/${props.videoId}?autoplay=1&rel=0` +
+    (props.start ? `&start=${Math.floor(props.start)}` : ''),
 );
 
+// RESET ON `start` TOO, not just `videoId` (v0.10.0). Several records can share
+// one videoId once a source indexes matches inside a longform VOD, so swapping
+// between two of them leaves videoId UNCHANGED — a videoId-only watcher would
+// keep the mounted iframe, and the viewer would sit at the previous match's
+// offset believing they were watching the one they clicked.
 watch(
-  () => props.videoId,
+  () => [props.videoId, props.start],
   () => {
     playing.value = false;
     loaded.value = false;

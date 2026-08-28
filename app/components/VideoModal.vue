@@ -64,7 +64,8 @@
 
           <template v-if="replay">
             <LiteYouTube
-              :video-id="replay.id"
+              :video-id="videoIdOf(replay)"
+              :start="replay.startSeconds"
               :thumbnail="thumbOf(replay)"
               :title="replay.title"
             />
@@ -482,15 +483,27 @@ const metaLine = computed(() => {
     ...(sideA.value?.rank ? [sideA.value.rank] : []),
     ...((r.durationSec ?? 0) > 0 ? [formatDuration(r.durationSec!)] : []),
     relativeDate(r.date),
-    `${formatViews(r.views ?? 0)} views`,
+    // hidden when absent, like durationSec above — see BrowseCard (v0.10.0)
+    ...(r.views == null ? [] : [`${formatViews(r.views)} views`]),
   ]
     .filter(Boolean)
     .join(' · ');
 });
-const youtubeUrl = computed(() =>
-  openId.value ? `https://www.youtube.com/watch?v=${openId.value}` : '#',
-);
-const thumbOf = (r: Replay) => r.thumb ?? `https://i.ytimg.com/vi/${r.id}/hqdefault.jpg`;
+// v0.10.0: every YouTube-shaped URL resolves `videoId ?? id`, because `id` is
+// only the video id for sources that publish one record per video.
+const videoIdOf = (r: Replay) => r.videoId ?? r.id;
+// Reads the RECORD, not `openId` (the raw ?v= value) — a composite id is not a
+// video id, and the offset lives on the record. `start` is deliberately kept out
+// of the URL: useVideoModal.query() and useFilters.clearAll() both pass unknown
+// params through verbatim, so a bare ?start= would outlive close(), survive a
+// swap() into a different video, and survive Clear all.
+const youtubeUrl = computed(() => {
+  const r = replay.value;
+  if (!r) return '#';
+  const t = r.startSeconds ? `&t=${Math.floor(r.startSeconds)}s` : '';
+  return `https://www.youtube.com/watch?v=${videoIdOf(r)}${t}`;
+});
+const thumbOf = (r: Replay) => r.thumb ?? `https://i.ytimg.com/vi/${videoIdOf(r)}/hqdefault.jpg`;
 
 watch(
   isOpen,

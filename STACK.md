@@ -1016,5 +1016,61 @@ and simply has no index.
 - **No `prerender.ignore` change was needed.** All four games already set
   `ignore: ['/dev']` and nitro matches it as a prefix, so the bare index is
   covered. The shell inherits the route too but sets `crawlLinks: false` with an
-  explicit route list, so it is never prerendered there either — it renders an
-  empty state, as does the `fixtures` app.
+  explicit route list, so it is never prerendered there either.
+- **CORRECTION (v0.10.0).** The sentence above originally ended "— it renders an
+  empty state, as does the `fixtures` app." The shell part is right; the
+  `fixtures` part was not. The fixtures app was the one consumer that did _not_
+  set `ignore: ['/dev']`, so from this release onward `npx nuxt generate
+fixtures` exited on a prerender error — which silently took every browser gate
+  that builds first (`verify-badges`, `verify-patch-groups`, `verify-subpath`)
+  down with it, for two minor versions. Fixed in v0.10.0 by giving
+  `fixtures/nuxt.config.ts` the same line every real app carries. The lesson is
+  the one already written down here: a gate that cannot run reads as coverage.
+
+## 21. v0.10.0 — a record can be a SLICE of a video
+
+`Replay.id` was documented as `// youtube id` and four places interpolated it
+straight into a YouTube URL: the embed, the watch link, and two derived
+thumbnails. That held for as long as every source published one record per
+video. 2XKO's Replay Theater intake is the first that does not — it indexes
+**matches inside longform tournament VODs**, 889 records over 65 videos, a median
+of 16 records sharing one video id. Two additive optional fields; an app on an
+older pin keeps building and behaves exactly as before.
+
+- **`videoId` is what makes the composite id safe, and it is the field that
+  removes a SILENT failure.** Records are keyed `${videoId}@${startSeconds}`,
+  because the id must distinguish sixteen records that share a video. Every
+  YouTube-shaped URL now resolves `videoId ?? id`. Without that field the two
+  thumbnail derivations build `i.ytimg.com/vi/<id>@<start>/…`, which 404s — and
+  `@error` hides a dead thumbnail behind the striped placeholder, so the failure
+  renders as a design choice. An emitter _could_ dodge it by always publishing an
+  explicit `thumb`, which is exactly the kind of unwritten obligation that gets
+  forgotten once.
+- **`startSeconds` is deliberately NOT a URL param.** `useVideoModal.query()`
+  copies every query key except `v` through unchanged, and `useFilters.clearAll()`
+  names the keys it clears — so a bare `?start=` would outlive `close()`, survive
+  a `swap()` into a _different_ video, and survive Clear all. It rides the record
+  instead. `?v=` stays the whole of the modal's open state.
+- **`@` round-trips through `?v=` unencoded** — asserted, not assumed. `byId()`
+  is plain string equality over `replays.json`, so an encode/decode asymmetry
+  would not throw; the modal would just never open. `verify-segment-records.mjs`
+  proves the round trip on the built bundle. Had it failed, the fallback was `~`
+  (RFC 3986 unreserved, and outside YouTube's `[A-Za-z0-9_-]` id alphabet).
+- **`LiteYouTube` had to start watching `start`, and this is the subtle one.**
+  The facade resets `playing`/`loaded` when its props change, but it watched
+  `videoId` alone — and `videoId` is **unchanged** between two segments of one
+  VOD. Clicking a related tile for another set of the same stream would leave the
+  mounted iframe exactly where it was, so the viewer would sit at the previous
+  match's offset believing they were watching the one they clicked. Nothing
+  errors; the wrong footage just plays.
+- **An absent `views` is now hidden rather than printed as "0 views".** It was
+  the one optional field on `Replay` that got coerced instead of skipped —
+  `durationSec` has always been hidden when absent, and the inconsistency only
+  became visible when a source arrived with no view counts at all. A segment has
+  none of its own: the VOD's belongs to the VOD, and stamping it on all sixteen
+  sets cut from it would report one number sixteen times. Emitters that publish
+  a real count are unaffected.
+- **The gate carries its own control.** `npm run verify:segments` builds an
+  overlay corpus of two segments sharing one video plus one whole-video record —
+  the last of these is the control that the pre-v0.10.0 path is byte-identical —
+  and `--expect-start 999` must fail.

@@ -1,6 +1,6 @@
 {
   "name": "replay-engine",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "private": true,
   "type": "module",
   "description": "Shared, base-path-aware Nuxt 4 layer (design system + data contract) for the Replay Database multi-game platform. Consumed via `extends`; never deployed on its own.",
@@ -16,6 +16,7 @@
     "test:identity": "node --experimental-strip-types scripts/test-identity.mjs",
     "verify:replication": "node scripts/verify-replication.mjs",
     "verify:badges": "node scripts/verify-badge-density.mjs",
+    "verify:segments": "node scripts/verify-segment-records.mjs",
     "typecheck": "nuxt prepare && nuxt typecheck && nuxt typecheck fixtures",
     "lint": "nuxt prepare && eslint .",
     "lint:fix": "nuxt prepare && eslint . --fix",
