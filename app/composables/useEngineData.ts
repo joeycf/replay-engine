@@ -5,6 +5,7 @@ import {
   getProvidedPlayers,
   getProvidedStats,
 } from '../utils/registryStore';
+import { canonicalPlayerHandle } from '../utils/playerIdentity';
 
 /**
  * Base-path-safe absolute URL for a file the game publishes to public/data.
@@ -88,6 +89,28 @@ function fetchedRegistry<T extends { id: string }>(key: string, file: string): R
 }
 
 /**
+ * The cross-game spelling table, applied at the ONE point every consumer shares.
+ *
+ * Both branches of usePlayers below, deliberately: the provided path is what
+ * ships, and the client-fetch fallback would otherwise render a different
+ * spelling for the same person depending on how the page got its data.
+ *
+ * Applied HERE rather than in provideRegistries because this is the read API —
+ * the fetch fallback never passes through the store at all — and because
+ * everything downstream reads it: the player page, the search index
+ * (filterReplays builds its handle map from this same list), the typeahead, the
+ * filter chips, the OG titles, the breadcrumbs. One place, so what is searched
+ * cannot drift from what is shown.
+ *
+ * Ids are never touched. See utils/playerIdentity.ts for why that is a
+ * structural guarantee rather than a convention.
+ */
+function withSharedSpelling(p: Player): Player {
+  const shared = canonicalPlayerHandle(p.handle);
+  return shared && shared !== p.handle ? { ...p, handle: shared } : p;
+}
+
+/**
  * Character registry — provided-first (see utils/registryStore.ts), falling
  * back to a client fetch of /data/characters.json when nothing was provided.
  */
@@ -108,14 +131,23 @@ export function useCharacters(): RegistryHandle<Character> {
 export function usePlayers(): RegistryHandle<Player> {
   const provided = getProvidedPlayers();
   if (provided) {
+    const list = provided.list.map(withSharedSpelling);
+    const byId = new Map(list.map((p) => [p.id, p]));
     return {
-      list: shallowRef(provided.list),
-      byId: (id: string) => provided.byId.get(id),
+      list: shallowRef(list),
+      byId: (id: string) => byId.get(id),
       pending: ref(false),
       provided: true,
     };
   }
-  return fetchedRegistry<Player>('players', 'players.json');
+  const fetched = fetchedRegistry<Player>('players', 'players.json');
+  const list = computed(() => (fetched.list.value ?? []).map(withSharedSpelling));
+  return {
+    list: list as Ref<Player[]>,
+    byId: (id: string) => list.value.find((p) => p.id === id),
+    pending: fetched.pending,
+    provided: false,
+  };
 }
 
 /** Aggregate stats — provided-first, client-fetch fallback. */

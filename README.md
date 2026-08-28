@@ -136,6 +136,20 @@ Contract essentials (full definitions in `types/`):
 - `Character.extra` / `Player.extra` are free-form bags the engine renders as a
   generic key/value strip but does not reason about — with ONE well-known key:
   `aliases: string[]` feeds search matching and the two-letter badge initials.
+- **`Player.handle` is overridden for players who appear in more than one game.**
+  `app/utils/playerIdentity.ts` carries a small curated table and `usePlayers()`
+  applies it, so `F.Champ` / `FChamp` / `FCHAMP` render one way everywhere.
+  Measured across the four games: 152 players appear in two or more, 21 in three
+  or more, 77 spelled differently between them — each pipeline is right about its
+  own corpus and they disagree with each other, which only the shared layer can
+  settle. This is the engine's only DATA, in a layer that is otherwise pure code;
+  it earns the exception by being the one thing no single game can know.
+  It is display-only and cannot rename anyone: an entry's `display` must
+  normalise back to its own key (asserted at load and in `npm run test:identity`),
+  so the worst a wrong match can do is restyle the same letters. Ids, URLs and
+  every game's `data/players.json` are untouched, and handles that are common
+  words — `Mystic`, `Shine`, `Cloud` — are listed as `unverified` and never
+  applied, because three players picking the same word is the ordinary case.
 - `stats.json` follows `KnownStats` (types/stats.ts): well-known optional keys
   (`characterUsage`, `byPatchUsage`, `pairingUsage`, `playerCharacters`,
   `playerPairings`, `totals.byPatch`) — every panel hides when its key is
