@@ -2314,65 +2314,45 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   commit 6, held at ratchet 0 meanwhile with per-source floors protecting the
   95%) · data:player-dupes over the +302 registry (the /players/v 86-record
   slug the named suspect).**
-- **ComboForge cross-link SHIPPED to the engine (v0.11.0, 2026-08-28): a partner
-  band on every character page, deep-linked to that character's combos.** The
-  link already ran one way — ComboForge's bundle carries a `replaydatabase.com`
-  partner registry mapping its game ids to our sites — and nothing pointed back.
-  **The whole design turns on one measurement made before writing any code:**
-  their public API (`/api/games`, `/api/games/<id>/characters`) diffed against
-  our four `characters.json` files. A naive `${gameId}-${ourId}` would have
-  worked for 2XKO (15/15) and Tōkon (21/21) and silently emitted dead links for
-  8 of SF6 and 30 of Tekken, because their ids carry the FULL name
-  (`sf6-a-k-i`, `tekken8-marshall-law`) and their game id for Tōkon is
-  `marveltokon`. So the config maps our id → their suffix, three states, and
-  `null` (they don't carry this one) falls back to their game hub rather than
-  emitting a 404 deep link — which is also why the lookup is `in` and not a
-  truthiness check. **Both rosters move and neither drift direction is visible**
-  (a character we add emits a nonexistent id; a character *they* add stays
-  pinned to our hub fallback forever) — both render as a normal-looking link —
-  so `verify:comboforge` reads the live rosters and checks all three directions,
-  with `--suggest` bootstrapping a map from names + aliases + `extra['full
-  name']` (23 of Tekken's 24 overrides unaided; `leo` needed a hand entry
-  because our aliases carry no surname). **One deliberate design leak:**
-  `ComboForgePanel.vue` holds `#f97316` and the Impact stack as literals in
-  `<style scoped>` — §4b's rule exists so a game can re-skin the engine, and a
-  partner's wordmark is exactly the thing that must NOT re-skin. Scoped to a
-  third party's own brand; not precedent. **Found while building:** the empty
-  component still left its wrapper's `pb-5` on every non-participating game's
-  character page, so the page `v-if`s the whole row on `useComboForge().enabled`
-  rather than relying on the component rendering nothing. **Remaining: tag
-  v0.11.0, then the four app-side configs + pin bumps — sf6, tekken, tokon
-  (all still on v0.9.0, so they also take v0.10.0), 2XKO last (v0.10.0 already,
-  but its tree is mid-ingest).**
-- **ComboForge nav item + the leaving-site dialog SHIPPED to the engine (v0.12.0,
-  2026-08-28): the second half of a partnership ComboForge had already built its
-  side of.** Reading their bundle first is what shaped this: their nav carries a
-  `Game Replays` item pointing at replaydatabase.com, flagged `external`, wired to
-  a "You're leaving ComboForge" dialog whose handler ignores modified clicks. So
-  this is not a new idea to design but an existing one to mirror, and mirroring it
-  is what makes the two sites read as one arrangement rather than two takes.
-  **The load-bearing decision is that the link stays a link** — interception is a
-  `@click` on a real `<a href>`, never a `<button>` — because three things ride on
-  the href and none of them would report a regression: the URL stays in the
-  prerendered HTML for crawlers, "copy link address" keeps working, and
-  cmd/ctrl/middle-click reach the browser. A dialog that owned the navigation
-  would screenshot identically and be wrong three ways. **The gate moved with the
-  surface, per the standing rule:** `verify-subpath.mjs` asserted every
-  `header nav a` href starts with the base, which an absolute partner URL fails —
-  it now splits internal (still base-prefixed) from absolute (must be a registered
-  partner), so it gained coverage instead of being loosened, and the tempting dodge
-  (move the link outside `<nav>`) would have put primary navigation outside its
-  landmark. **Measured rather than assumed:** the header's fifth item is absorbed
-  by the SearchBox's flex-shrink (768px: search 299→223px; 900px+: untouched; row
-  overflow 0 everywhere), and the modified-click passthrough was verified in a
-  browser (ctrl+click opens a real second tab, no dialog). **Found while running:**
-  `npm run verify:subpath` already fails two checks on main — the browse-grid
-  assertion and `/_vercel/*` analytics escaping the base, the latter obsoleted by
-  v0.6.3's observability decision — confirmed by stashing and re-running against
-  the pre-change build, so it is rot, not this change. That is a third gate reading
-  as coverage while hollow; it wants the v0.6.4 treatment (fix or delete).
-  **Deliberately NOT done:** extracting a shared `useOverlay` from the now-three
-  copies of the overlay lifecycle — right cleanup, wrong change to fold into a nav
-  link. **Remaining: tag v0.12.0, re-pin the four apps + shell (all still unpushed
-  at v0.11.0, so they deploy once), amend the unpushed changelog entry to cover the
-  nav link, then the deploy.**
+- **ComboForge partnership SHIPPED both halves (2026-08-28, staged): engine
+  v0.11.0 (character band, tag pushed by user) + v0.12.0 (Combos nav item +
+  LeavingSiteDialog, 01a7cf4, tag LOCAL only)** — all six repos at exactly one
+  unpushed commit (sf6 5dc606f · tekken 44515ee · tokon 379c11f · 2xko ac9d7a1 ·
+  shell e51b1d1). The v0.11.0 band is VERIFIED LIVE on all four games including
+  the two riskiest cases (Anna → tekken8 hub fallback, Tōkon → marveltokon).
+  Audit highlights: **the design mirrors ComboForge's own shipped half** (their
+  nav carries "Game Replays" → replaydatabase.com, external-flagged, with the
+  same modified-click-passthrough dialog — read from their bundle before
+  designing); **the load-bearing decision: THE LINK STAYS A LINK** (@click on a
+  real <a href>, never a button — URL survives prerender for crawlers,
+  copy-link works, ctrl+click verified opening a real tab with no dialog);
+  **verify-subpath EXTENDED not loosened** (internal hrefs base-prefixed,
+  absolute must be registered partner origin, positive-controlled with
+  example.com/leak); header budget MEASURED (SearchBox flex-shrink absorbs the
+  5th item, 0 overflow); 20 dialog behaviours browser-verified; four e2e
+  suites green (129/106/89/43) with each new assertion broken to prove
+  failure; changelog entry AMENDED not duplicated (one feature to a visitor).
+  **Found-by-running: verify:subpath already fails 2 checks on main pre-change**
+  (browse-grid + /_vercel/* escaping base, obsoleted by v0.6.3) — the THIRD
+  hollow gate, wants the v0.6.4 fix-or-delete treatment. Deliberately deferred:
+  useOverlay extraction from the three overlay-lifecycle copies (STACK §23).
+  **Next: push order = engine main → tag v0.12.0 → four games → shell LAST.**
+- **Replay Theater next-game prompt issued (2026-08-29):**
+  prompt-replay-theater-next-game.md — a PORT prompt, deliberately thin
+  because the machinery shipped with 2XKO and engine v0.10.0+ is live
+  everywhere (no engine work expected). Phase 0 measures ALL THREE candidates
+  (tekken8/sf6/tokon on RT: tagged counts · events · VODs · date range ·
+  overlap vs each repo's known-anywhere set · the schema-cap question — RT
+  capped 2XKO at 2 champions/side; harmless for 1v1, but for Tōkon it decides
+  whether RT records arrive complete or as true-partial bench feed) then
+  STOPS for the user's pick. Port rules: **this repo's model wins over 2XKO's
+  shape** (source/intake per each repo's own groups model — the fgcReplaysHub
+  mirror lesson), scars port intact (malformed youtu.be&t URLs, composite
+  ids, publishedAt never +offset, duplicate-id hard-fail), localFirst carry +
+  source-pins.json ports with the byte-identical proof, **trust re-measured
+  per game** (chapter comparison + embed pixel spot-check gating the records
+  commit — 97.3% is 2XKO's number, not RT's), fuse machinery explicitly does
+  NOT port (2XKO-only; don't invent a ratchet with no subject),
+  zero-duration tier-C dupes visibility ports everywhere. Board otherwise
+  unchanged: v0.12.0 push round · verify:subpath hollow pair ·
+  data:player-dupes over the +302.
