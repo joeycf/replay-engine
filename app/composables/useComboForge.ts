@@ -25,6 +25,10 @@ export interface ComboForgeTarget {
 export interface ComboForgeHandle {
   /** true when the current game declares a ComboForge game id */
   enabled: boolean;
+  /** this game's combo list on ComboForge; null when the game isn't on it.
+   *  The nav item's target, and the fallback a character with no page over
+   *  there falls back to (additive, v0.12.0). */
+  hubHref: string | null;
   /** null when this game isn't on ComboForge at all */
   targetFor: (characterId: string) => ComboForgeTarget | null;
 }
@@ -32,12 +36,13 @@ export interface ComboForgeHandle {
 export function useComboForge(): ComboForgeHandle {
   const cf = useGame().comboforge;
   const gameId = cf?.gameId;
-  if (!gameId) return { enabled: false, targetFor: () => null };
+  if (!gameId) return { enabled: false, hubHref: null, targetFor: () => null };
 
   const hub = `${COMBOFORGE_ORIGIN}/browse?gameId=${encodeURIComponent(gameId)}`;
 
   return {
     enabled: true,
+    hubHref: hub,
     targetFor: (characterId: string): ComboForgeTarget => {
       const map = cf.characters ?? {};
       // `in`, not a truthiness check: an explicit null (not on ComboForge) has

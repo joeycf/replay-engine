@@ -4,5 +4,6 @@
  * nuxt.config.ts, which is layer-safe — see PLAN.md §11 on cross-layer aliases).
  */
 export type { GameConfig, PatchGroup, PatchGroupChild } from './game';
+export type { PartnerSite } from './partner';
 export type { Character, Player, Side, Replay, Stats } from './replay';
 export type { KnownStats } from './stats';

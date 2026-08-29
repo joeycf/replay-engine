@@ -2344,3 +2344,35 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   v0.11.0, then the four app-side configs + pin bumps — sf6, tekken, tokon
   (all still on v0.9.0, so they also take v0.10.0), 2XKO last (v0.10.0 already,
   but its tree is mid-ingest).**
+- **ComboForge nav item + the leaving-site dialog SHIPPED to the engine (v0.12.0,
+  2026-08-28): the second half of a partnership ComboForge had already built its
+  side of.** Reading their bundle first is what shaped this: their nav carries a
+  `Game Replays` item pointing at replaydatabase.com, flagged `external`, wired to
+  a "You're leaving ComboForge" dialog whose handler ignores modified clicks. So
+  this is not a new idea to design but an existing one to mirror, and mirroring it
+  is what makes the two sites read as one arrangement rather than two takes.
+  **The load-bearing decision is that the link stays a link** — interception is a
+  `@click` on a real `<a href>`, never a `<button>` — because three things ride on
+  the href and none of them would report a regression: the URL stays in the
+  prerendered HTML for crawlers, "copy link address" keeps working, and
+  cmd/ctrl/middle-click reach the browser. A dialog that owned the navigation
+  would screenshot identically and be wrong three ways. **The gate moved with the
+  surface, per the standing rule:** `verify-subpath.mjs` asserted every
+  `header nav a` href starts with the base, which an absolute partner URL fails —
+  it now splits internal (still base-prefixed) from absolute (must be a registered
+  partner), so it gained coverage instead of being loosened, and the tempting dodge
+  (move the link outside `<nav>`) would have put primary navigation outside its
+  landmark. **Measured rather than assumed:** the header's fifth item is absorbed
+  by the SearchBox's flex-shrink (768px: search 299→223px; 900px+: untouched; row
+  overflow 0 everywhere), and the modified-click passthrough was verified in a
+  browser (ctrl+click opens a real second tab, no dialog). **Found while running:**
+  `npm run verify:subpath` already fails two checks on main — the browse-grid
+  assertion and `/_vercel/*` analytics escaping the base, the latter obsoleted by
+  v0.6.3's observability decision — confirmed by stashing and re-running against
+  the pre-change build, so it is rot, not this change. That is a third gate reading
+  as coverage while hollow; it wants the v0.6.4 treatment (fix or delete).
+  **Deliberately NOT done:** extracting a shared `useOverlay` from the now-three
+  copies of the overlay lifecycle — right cleanup, wrong change to fold into a nav
+  link. **Remaining: tag v0.12.0, re-pin the four apps + shell (all still unpushed
+  at v0.11.0, so they deploy once), amend the unpushed changelog entry to cover the
+  nav link, then the deploy.**

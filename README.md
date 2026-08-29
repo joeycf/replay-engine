@@ -750,6 +750,58 @@ around them — surface, border, corner cut, type scale — is all semantic toke
 as normal. Do not treat this as precedent for anything but a third party's own
 brand.
 
+**Where the links are** (v0.12.0). Two per game, both driven by the same
+`comboforge` block: the character band, and a **`Combos ↗` nav item** right of
+Players, pointing at that game's combo list. Both are real `<a href>` elements —
+see the dialog section below for why that matters.
+
+---
+
+## Partner links and the leaving-site dialog (v0.12.0)
+
+A partner link opens an interstitial first: _you're leaving Replay Database_, with
+**Stay here** and **Continue to <partner> ↗**. `LeavingSiteDialog.vue` is mounted
+once in `app/layouts/default.vue`, so a link anywhere on the page needs a click
+handler, not chrome of its own.
+
+**Adding a collaboration is two lines.** Add the site to `PARTNERS` in
+[`app/utils/partners.ts`](./app/utils/partners.ts):
+
+```ts
+export const PARTNERS = {
+  comboforge: { name: 'ComboForge', blurb: 'is our partner combo database.' },
+  // name + blurb read as one sentence: "<name> <blurb>"
+} as const satisfies Record<string, PartnerSite>;
+```
+
+…then hand the link the `confirm` handler, keeping the `href` exactly as it was:
+
+```vue
+<a
+  :href="href"
+  target="_blank"
+  rel="noopener noreferrer"
+  @click="confirmExternal($event, href, PARTNERS.yoursite)"
+>
+```
+
+Three things this contract depends on:
+
+- **The `href` stays on the `<a>`.** Interception is a click handler, never a
+  `<button>`. That keeps the URL in the prerendered HTML for crawlers, keeps
+  "copy link address" working, and lets modified clicks through. Replacing the
+  href with a handler would break all three and nothing would report it.
+- **Only a plain left click is intercepted.** cmd/ctrl/shift/alt and middle-click
+  already mean "open this your way", so they reach the browser untouched. This
+  mirrors ComboForge's own dialog, which does the same on their side of the link.
+- **It is partner-only, by design.** The YouTube watch links and the Buy Me a
+  Coffee link stay plain — interrupting someone who just clicked "Watch on
+  YouTube" is friction, not care.
+
+`verify-subpath.mjs` knows about partner origins: internal nav hrefs must be
+base-prefixed, absolute ones must be a registered partner. A hard-coded absolute
+_internal_ URL in the nav — the bug that gate exists to catch — still fails.
+
 ---
 
 ## Versioning

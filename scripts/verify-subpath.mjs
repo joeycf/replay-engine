@@ -136,13 +136,26 @@ check(
     .join(', ') || 'none',
 );
 
-// Nav links must be base-prefixed (NuxtLink + router base).
+// Nav links must be base-prefixed (NuxtLink + router base). Since v0.12.0 the
+// nav can also carry PARTNER links, which are absolute by nature — so the check
+// splits rather than loosens: every internal href must still be base-prefixed,
+// and every absolute one must be a partner origin. A hard-coded absolute
+// INTERNAL url — the bug this gate exists to catch — still fails, because it
+// would not be on the partner list.
+const PARTNER_ORIGINS = ['https://comboforge.gg'];
 const hrefs = await page.$$eval('header nav a', (as) => as.map((a) => a.getAttribute('href')));
+const absolute = hrefs.filter((h) => /^[a-z]+:/i.test(h));
+const internal = hrefs.filter((h) => !/^[a-z]+:/i.test(h));
 check(
   `nav links prefixed with ${BASE}`,
-  hrefs.length > 0 &&
-    hrefs.every((h) => h.startsWith(`${BASE}/`) || h === BASE || h === `${BASE}/`),
-  hrefs.join(' '),
+  internal.length > 0 &&
+    internal.every((h) => h.startsWith(`${BASE}/`) || h === BASE || h === `${BASE}/`),
+  internal.join(' '),
+);
+check(
+  'absolute nav links are known partner origins',
+  absolute.every((h) => PARTNER_ORIGINS.some((o) => h.startsWith(`${o}/`))),
+  absolute.join(' ') || 'none',
 );
 
 // Data-driven 404s (fixture art intentionally missing) are fine; data/font 404s are not.

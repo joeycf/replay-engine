@@ -16,19 +16,39 @@
           class="hidden gap-[22px] font-ui text-[14px] font-semibold md:flex"
           aria-label="Primary"
         >
-          <NuxtLink
+          <template
             v-for="item in nav"
-            :key="item.to"
-            :to="item.to"
-            class="relative py-1 transition-colors duration-normal"
-            :class="isActive(item.to) ? 'text-text' : 'text-text-muted hover:text-text-secondary'"
+            :key="item.to ?? item.href"
           >
-            {{ item.label }}
-            <span
-              v-if="isActive(item.to)"
-              class="absolute inset-x-0 -bottom-[19px] h-0.5 bg-primary"
-            />
-          </NuxtLink>
+            <!-- partner link: a real <a> so the URL is in the prerendered HTML;
+                 the dialog is a click handler, not a replacement for the href -->
+            <a
+              v-if="item.href"
+              :href="item.href"
+              target="_blank"
+              rel="noopener noreferrer"
+              :aria-label="`${item.label} on ${item.partner!.name} (opens in a new tab)`"
+              data-testid="nav-combos"
+              class="relative py-1 text-text-muted transition-colors duration-normal hover:text-text-secondary"
+              @click="confirmExternal($event, item.href, item.partner!)"
+            >
+              {{ item.label }} ↗
+            </a>
+            <NuxtLink
+              v-else
+              :to="item.to!"
+              class="relative py-1 transition-colors duration-normal"
+              :class="
+                isActive(item.to!) ? 'text-text' : 'text-text-muted hover:text-text-secondary'
+              "
+            >
+              {{ item.label }}
+              <span
+                v-if="isActive(item.to!)"
+                class="absolute inset-x-0 -bottom-[19px] h-0.5 bg-primary"
+              />
+            </NuxtLink>
+          </template>
         </nav>
 
         <!-- search everywhere: live on Browse, submit→/?q= elsewhere -->
@@ -67,15 +87,30 @@
         class="flex gap-5 overflow-x-auto px-4 pb-2.5 font-ui text-[13px] font-semibold md:hidden"
         aria-label="Primary mobile"
       >
-        <NuxtLink
+        <template
           v-for="item in nav"
-          :key="item.to"
-          :to="item.to"
-          class="whitespace-nowrap"
-          :class="isActive(item.to) ? 'text-text' : 'text-text-muted'"
+          :key="item.to ?? item.href"
         >
-          {{ item.label }}
-        </NuxtLink>
+          <a
+            v-if="item.href"
+            :href="item.href"
+            target="_blank"
+            rel="noopener noreferrer"
+            :aria-label="`${item.label} on ${item.partner!.name} (opens in a new tab)`"
+            class="whitespace-nowrap text-text-muted"
+            @click="confirmExternal($event, item.href, item.partner!)"
+          >
+            {{ item.label }} ↗
+          </a>
+          <NuxtLink
+            v-else
+            :to="item.to!"
+            class="whitespace-nowrap"
+            :class="isActive(item.to!) ? 'text-text' : 'text-text-muted'"
+          >
+            {{ item.label }}
+          </NuxtLink>
+        </template>
       </nav>
     </header>
 
@@ -87,10 +122,17 @@
     </main>
 
     <SiteFooter />
+
+    <!-- One mount for every partner link on the page — the nav's is on every
+         route, so this belongs in the layout rather than per page. -->
+    <ClientOnly>
+      <LeavingSiteDialog />
+    </ClientOnly>
   </div>
 </template>
 
 <script setup lang="ts">
+import type { PartnerSite } from '@engine/types';
 // The app shell — port of the shipped layout, config-driven: skip link,
 // sticky header (BrandWordmark + primary nav + global SearchBox + mobile
 // Filters button with the active-filter count badge), mobile nav row, footer
@@ -99,11 +141,21 @@ const route = useRoute();
 const drawerOpen = useState('filter-drawer-open', () => false);
 const terms = useGameTerms();
 
-const nav = [
+const comboforge = useComboForge();
+const { confirm: confirmExternal } = useExternalLink();
+
+/** Internal routes carry `to`; a partner link carries `href` + `partner` and
+ *  renders as a plain <a> (additive, v0.12.0). Exactly one of the two is set. */
+const nav: { label: string; to?: string; href?: string; partner?: PartnerSite }[] = [
   { label: 'Browse', to: '/' },
   { label: 'Stats', to: '/stats' },
   { label: capWord(terms.characters), to: terms.charactersBase },
   { label: 'Players', to: '/players' },
+  // ComboForge's combo list for THIS game. Absent unless the game declares a
+  // comboforge block, so a game they don't cover never shows a dead nav item.
+  ...(comboforge.enabled
+    ? [{ label: 'Combos', href: comboforge.hubHref!, partner: PARTNERS.comboforge }]
+    : []),
   // The /dev tool index, reachable without typing the URL. `import.meta.dev`
   // constant-folds to false in a production build, so the entry — and with it
   // the only crawlable link to /dev — is absent from the shipped output.

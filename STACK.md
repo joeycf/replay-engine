@@ -1123,3 +1123,51 @@ opt-in per game via the additive `GameConfig.comboforge`.
   put a cross-origin request and a runtime dependency on every character page.
   The URL goes through `useAssetUrl()` — engine `public/` merges into each app,
   but the shell serves games under a subpath.
+
+## 23. v0.12.0 — a Combos nav item, and the leaving-site dialog
+
+v0.11.0 put a ComboForge band on character pages. This adds the second half of a
+partnership ComboForge already built its side of: their nav carries a
+`Game Replays` item pointing at replaydatabase.com, flagged `external`, and
+clicking it opens a leaving-site dialog. Ours now mirrors it — a `Combos ↗` nav
+item per game, and the same interstitial on every partner link.
+
+- **The link stays a link, and that is the whole contract.** Interception is a
+  `@click` on a real `<a href target="_blank">`, never a `<button>`. Three things
+  ride on it and none would report a regression: the outbound URL stays in the
+  prerendered HTML for crawlers, "copy link address" keeps working, and the
+  modified-click gestures below reach the browser. A dialog that owned the
+  navigation would look identical in a screenshot and be wrong in all three ways.
+- **Only a plain left click opens it.** cmd/ctrl/shift/alt and middle-click
+  already mean "open this your way", so `useExternalLink().confirm()` returns
+  early and lets the browser do it — matching ComboForge's `confirmNavigation`
+  exactly, so both sides of the partnership behave the same. Verified in a
+  browser rather than assumed: ctrl+click opens a real second tab and shows no
+  dialog.
+- **The registry is a platform constant, not GameConfig.** A partner's name and
+  blurb read the same on all four sites; only the URL varies, and the partner's
+  own composable already owns that (`useComboForge().hubHref`). Putting it in
+  `GameConfig` would have meant four copies of one string, drifting.
+- **`verify-subpath.mjs` was extended in the same phase, not loosened.** Its nav
+  check asserted every `header nav a` href starts with the base, which an absolute
+  partner URL fails. It now splits: internal hrefs must still be base-prefixed,
+  absolute ones must be a registered partner origin. A hard-coded absolute
+  INTERNAL url — the bug the gate exists to catch — still fails, and the gate
+  gained coverage rather than losing it. Moving the link outside `<nav>` would
+  have dodged the failure and put primary navigation outside its landmark.
+- **The dialog mounts in the layout, a first.** Both existing overlays mount per
+  page because their triggers are page content; this one's trigger is the nav, so
+  it is on every route. The shell overrides `layouts/default.vue` and therefore
+  does not mount it — correct today (it has no partner links) and noted in that
+  file so a link added there later is not silently un-gated.
+- **`useOverlay` is NOT extracted, deliberately.** `VideoModal`, `FilterDrawer`
+  and now `LeavingSiteDialog` share the same watch → lock/unlock + Esc listener +
+  `onBeforeUnmount` block; three copies is the point at which extraction is
+  obviously right. It is still the wrong change to fold into shipping a nav link,
+  because it means editing two shipped overlays to do it. Left as the named next
+  cleanup.
+- **Header budget was measured, not estimated.** The desktop nav is
+  `hidden md:flex` beside a `w-[340px] ml-auto` SearchBox whose flex-shrink is
+  unset, so the search absorbs the fifth item instead of overflowing: at 768px it
+  goes 299 → 223px, at 820px 340 → 275px, and from 900px up it is untouched. Row
+  overflow is 0 at every width.

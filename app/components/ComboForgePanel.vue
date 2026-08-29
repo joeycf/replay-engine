@@ -7,6 +7,7 @@
     :aria-label="`${headline} on ComboForge (opens in a new tab)`"
     data-testid="comboforge-link"
     class="cf group flex items-center gap-3.5 border border-l-2 border-border-subtle bg-surface px-4 py-3.5 transition-colors duration-normal md:gap-4 md:px-5"
+    @click="confirmExternal($event, target.href, PARTNERS.comboforge)"
   >
     <img
       :src="mark"
@@ -56,6 +57,9 @@ const props = defineProps<{ characterId: string; characterName: string }>();
 const game = useGame();
 const { targetFor } = useComboForge();
 const target = computed(() => targetFor(props.characterId));
+
+// Same interstitial as the nav's Combos link — every partner link gets it.
+const { confirm: confirmExternal } = useExternalLink();
 
 /** Character combos when ComboForge carries them, the game's otherwise. */
 const headline = computed(() =>
