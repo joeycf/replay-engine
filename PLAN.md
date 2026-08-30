@@ -2356,3 +2356,30 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   zero-duration tier-C dupes visibility ports everywhere. Board otherwise
   unchanged: v0.12.0 push round · verify:subpath hollow pair ·
   data:player-dupes over the +302.
+- **Tekken + Tōkon RT ports COMPLETE, merged, deployed, verified live
+  (2026-08-30, user-directed merges in-session): Tekken 15,413 replays · 317
+  segments (pin 317, e2e 141/0) · Tōkon 523 replays · 44 segments (pin 44,
+  e2e 127/0) · SF6 deliberately untouched per Phase 0's numbers.** Rebases
+  clean (-X theirs on generated files then full re-fetch — regenerate never
+  merge); gates re-run against the rebased tree; carry proof byte-identical;
+  parse-twice determinism on Tekken; all 116 Tekken redirects intact.
+  verify:deployed passed both with the poll-then-match pattern, and Tōkon's
+  CONTENT HASH moved (fccaf82f7a9f) — "the right build, not a coincidental
+  count." Live replays.json checks: watch links resolve to the real VOD at
+  the real offset (To2ljev9_l8&t=1159s); 58 Tekken offset-zero segments emit
+  videoId with no startSeconds — the falsy-zero case behaving as designed.
+  Branches deleted, both repos single-main in sync. **Two pre-existing opens
+  flagged for the user:** (1) **Doc. Doom** — third "Doc. Doom" title crossed
+  the surfacing threshold; report.md ACTION REQUIRED (can't distinguish
+  abbreviation from new fighter — the block's designed question). MY CALL:
+  add the alias — unlike P. Parker (ambiguous Peni/Peter), "Doc. Doom" has
+  exactly one referent on the roster; one line recovers three short sides.
+  B.Panther / G. Goblin stay unabsorbed until they cross thresholds. (2)
+  **Tōkon's stale-guard 24h slack** let a day-old-dump parse write 435 over a
+  committed 455 mid-session (git-restored) — the Tekken-373 class INSIDE
+  tolerance. Recommended fix: predicate on raw-vs-newest-committed-data
+  recency (the exact relationship that produced 435<455), not wall-clock age;
+  rides any next Tōkon session with a positive control. Also: the untracked
+  /export transcript in Tekken's repo root (kept out of commits by explicit
+  paths) — bin it. Changelog entries for the RT ingestion (three games,
+  frozen numbers) suggested to the user as an editorial add.
