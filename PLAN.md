@@ -2383,3 +2383,125 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   /export transcript in Tekken's repo root (kept out of commits by explicit
   paths) — bin it. Changelog entries for the RT ingestion (three games,
   frozen numbers) suggested to the user as an editorial add.
+- **RT changelog entries live (2026-08-30, shell 78664de): 30 entries served,
+  front door "What's new 30 Aug", verify:changelog + verify-shell 60/0 — and
+  the adversarial proofread found THREE FALSE CLAIMS in the first drafts,
+  including copy descended from my suggested text.** Tekken's "cut from 62
+  event streams uploaded whole": neither half survived (31 of 62 videos under
+  20 min; four events post per-match; 32 videos hold a single set at offset 0
+  — for those the record IS the upload) → now "most" + the frozen 285 that
+  genuinely share a video; Combo Breaker cut from the name list (2 sets = an
+  8-min clip on a competitor's channel — next to CEOtaku it promised coverage
+  the batch doesn't hold). Tōkon's "most sides cannot manage until the footage
+  has been read" was a MOVING share rounded into a word AND mechanically wrong
+  (293 sides completed from description text, not footage); title lost "join"
+  (reserved for launches). "26/63 events" were TAG counts (CEOtaku = two tags,
+  EVO = three) → "brackets". Two visitor-protecting additions: Tekken's 317
+  are ALL Season 1 (vanish under a current-patch filter — named); 18 of
+  Tōkon's 44 are a pre-release beta bracket (named with the era label).
+  ParagOnline measured personally after two lenses disagreed (224, not 244).
+  **Found in passing: verify-shell's drift constants were two entries stale —
+  FIVE checks failing on main since 20 Aug** — fixed with the commit body
+  saying so explicitly. The honest-numbers rule has now caught its authors on
+  both sides of this collaboration.
+- **SF6 RT port prompt issued (2026-08-30):** prompt-sf6-replay-theater.md —
+  the fourth and final port, thrice-proven machinery, SF6's model wins over
+  the references. Phase 0 RE-measures (SF6 was skipped once on the numbers;
+  report current vs skip-time, then a short STOP — even a small catalog may
+  be worth four-game completeness, the user's call with the count in front of
+  them). SF6-specific: the CPT-archive overlap measured (likely disjoint —
+  per-match uploads vs longforms), the 26-fighter exact-alias table, and
+  **season/era honesty** (the Tekken changelog lesson: report how RT sets
+  distribute across seasons — old-season clusters vanish under a
+  current-patch filter and the entry must say so). **Rider: SF6 is the LAST
+  repo without the stale-raw guard — built with the sharper predicate the
+  Tōkon incident earned** (refuse when raw is older than the newest committed
+  data, not a wall-clock window; positive-controlled both ways; Tōkon's own
+  tightening noted as a follow-up, not touched from here). Changelog entry
+  ships THROUGH the adversarial proofread — now part of how entries ship.
+- **SF6 RT Phase 0 (2026-08-30 night): 15,501 RT entries · 1,191 tagged over
+  82 events / 97 VODs → after gates 1,065 records over 86 VODs** (35 collapse:
+  one event double-submitted under two tag spellings; 91 skipped-as-known =
+  7.6%, because SF6 tracks the CPT archive — 8 VODs already ruled on, 3
+  fetched-never-parsed). **Best data quality of the four games**: 100%
+  character resolution, zero residue against the 31-fighter table (the
+  prompt's "26" was stale — Years 3/4 landed; code wins), zero dead VODs,
+  chapter agreement 95.2% within 30s / 91.9% exact / 99.7% handle agreement.
+  The deciding finding: **S1 79.9% · S2 19.2% · S3 0.8% · S4 0** — tagged data
+  stops 2026-04-13; invisible under a current-patch filter. But the EXISTING
+  SF6 corpus is S1 6,225 · S2 8,025 · S3 9,574 · S4 475 — the batch matches the
+  archive's own shape; it's +54% to the Tournament group (1,956 → 3,021), the
+  corpus SF6 is weakest at, and the untagged feed is live to today so tags may
+  resume. MY CALL: **ship both** (Tekken precedent: ship AND say so in the
+  changelog). Corrections the session made to my prompt: the "sharper
+  predicate" I named was Tōkon's MIDDLE stage — Tōkon already iterated
+  age-window → mtime → DATA-ONLY (newestCommitted.publishedAt vs newestInDump,
+  per intake); the rider ports the data-only form, and the follow-up belongs
+  to Tekken and 2XKO (still on mtime), not Tōkon. Skip-time was 11 hours ago
+  (SF6 measured this morning as the Tekken/Tōkon positive control), not
+  months. Rider unconditional: raw/ is 20 days stale and a bare parse drops
+  325 records and exits 0 — a live positive control in the working tree.
+  409 new players (+21%) → player-dupes after.
+- **SF6 RT plan audited (2026-08-30) — approved, auto; NINE corrections to my
+  prompt, all right, the most correction-dense plan yet.** The important
+  ones: SF6's verify:deployed is COUNT-ONLY (no content hash — my prompt
+  asserted one; the live replays.json segment check covers content);
+  data:player-dupes does NOT exist in SF6 (2XKO/Tōkon have it) → ported as
+  deliverable 3, landing BEFORE the records "so the audit exists to be run
+  over the +409 the moment they arrive, rather than being written after the
+  fact to justify them"; **"join" is not a rule** — checked lib/changelog.ts
+  and the validator: it's the dominant verb in data rows including both RT
+  precedents; the Tōkon session's "reserved for launches" was a preference,
+  followed anyway because the voice is the author's, and flagged because the
+  file is the contract. SF6-model divergences honoured (six): no aggregate
+  source token → mint 'replayTheater'; no MatchVideo.intake → key on channel;
+  NO patchVersion on the substrate (derives from publishedAt — do not add);
+  org-prefix stripping deliberately absent (README: porting it would FRAGMENT
+  real players) → strip only RT's SPONSOR| looped; **collapse guard stays
+  ARMED with no exclusion** (parsed-vs-committed, carried counts as parsed —
+  stronger than 2XKO's exclusion); no round field. The 35 collisions collapse
+  deterministically in the fetcher (composite id, tag spelling that sorts
+  first — independent of page order), the assert NOT loosened, and COUNTED in
+  report.md ("a silent collapse is indistinguishable from a parser that lost
+  35 records"). Pre-caught: `...(v.startSeconds ? … : {})` alone would strip
+  videoId from the 33 offset-zero records — guarded independently; the
+  report's byChannel map would score every composite id as no-channel (row
+  reads 0) — counted explicitly; vote handle casing from the ASSEMBLED
+  record or carry≠rebuild; the workflow git-add + testCronGuard file array
+  (Tōkon's 436ae9f scar). Rider = Tōkon's DATA-ONLY predicate as a pure
+  importable function with five controls incl. "age alone must not fire"
+  (mtime backdated a year → passes) and "a deletion stays legal"; the live
+  failing case already sits in the tree (raw/ 08-10 vs data 08-30 → 325
+  dropped, exit 0). Changelog: the Tekken check RUN — 17 single-set-at-zero
+  VODs, 1,044/1,065 (98.0%) share a video, the share in the sentence.
+  Follow-ups queued: Tekken + 2XKO still on the mtime predicate (paired
+  micro-session); the user's word on "join".
+- **SF6 RT port COMPLETE (2026-08-31 02:02 UTC): six commits across two repos
+  (sf6 ×5 + shell changelog), staged, nothing pushed.** +1,065 theater records
+  (+10 routine, 0 removed) over 86 VODs / 77 brackets; the 91 skipped-as-known
+  were predicted precisely (83 Capcom Fighters + 8 Evo). **The rider's failure
+  was live and RUN to confirm**: a bare data:parse on the 20-day-old raw/ wrote
+  22,909 over 23,234 and exited 0 (restored); the collapse guard blind at 1.5%
+  vs a 10% floor. The data-only predicate justified by today's own dumps: the
+  evoEvents dump is NEWER than superFighters' yet reads fresh where
+  superFighters reads stale — no clock-based test ranks those correctly. Ten
+  controls fired, one BY ACCIDENT: removing the index exemption tripped the
+  duplicate-id gate on 1,056 real collisions, exit 1, nothing written.
+  **The adversarial proofread killed FOUR false claims — and the fourth has
+  retroactive reach: these are MATCHES, not sets** — 1.8% counter-pick rate vs
+  21.0% for the 81 committed Evo sets (12×), and RT's own API says "matches";
+  the records commit was amended too. FOLLOW-UP: apply the counter-pick-rate
+  test to Tekken's and Tōkon's RT intakes — their changelog entries say "sets"
+  (2XKO's gap analysis stands as set-level evidence; the others were never
+  tested) and must be corrected if wrong. Also killed: "weeklies" (no cadence
+  stated anywhere), "27/17 instalments" (highest number ≠ count; 25 and 14),
+  "86 event streams" (Tekken's exact first-draft error). **Two for the user
+  before pushing:** (1) the pixel check is HALF done — 7 records verified
+  against the API (deepest 10:06:44 into a 10:42:19 stream, all public and
+  embeddable) but the session cannot read a broadcast HUD → the human plays
+  them in the modal; gates the push. (2) data:player-dupes 400 → 946, nothing
+  merged; two shapes: leet spellings (Linz/L1nz) and non-pipe sponsor prefixes
+  (Liquid Nephew, Fire Hurricane) → identity-migration machinery. Changelog
+  dated 2026-08-31 UTC — move it if pushed on another day (validator can't
+  catch "too early"). Queued: Tekken+2XKO mtime→data-only; SF6 deploy-check
+  content hash.
