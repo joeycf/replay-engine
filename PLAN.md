@@ -2505,3 +2505,29 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   dated 2026-08-31 UTC — move it if pushed on another day (validator can't
   catch "too early"). Queued: Tekken+2XKO mtime→data-only; SF6 deploy-check
   content hash.
+- **SF6 RT LIVE (2026-08-30 23:39): six commits pushed, remotes clean (a
+  pre-correction branch deleted from GitHub entirely), first UNATTENDED
+  exercise of the carry path at 07:17 UTC — glance at the refresh commit.**
+  The "join" rule: unwritten anywhere; the session offers a two-line
+  changelog.ts header addition if the user wants it written (or "join" is
+  simply allowed — the two RT rows already use it). Queued: Tekken + 2XKO on
+  the forgeable mtime predicate (a session each).
+- **New arc issued: RT in every cron + RT as a second witness** —
+  prompt-replay-theater-cron-crosscheck.md, cross-repo from the base dir.
+  Posture change justified (history + measured trust + collaborator); made
+  SAFE by two rules: **add-only** (RT can only add; vanished entries counted
+  never removed; the pin only grows) and **the cron never depends on RT
+  succeeding** (RT step last; on any failure carry and stay green; dead-host
+  positive control). Incremental fetch with a stop-at-known-ids cursor — the
+  request budget per game is a Phase 0 deliverable (SF6's full pull is 311
+  pages; four full pulls daily to a collaborator's API is not a design) plus
+  a drafted courtesy note to the operator. **Track B's value is decided by
+  the ∩ measurement INCLUDING RT's untagged online entries** (out of ingestion
+  scope by design, but likely the same channel uploads we parse — the first
+  continuous accuracy metric of our own parsers against an independent
+  curator). Rules: agreement is a published metric; disagreement routes to
+  review with both claims, never overwrites; resolution ONLY on agreement
+  with provenance `theater-confirmed`; RT never outranks a confident parse
+  or a human override; Tōkon bench completion only where RT carries benches
+  and agrees. Riders: Tekken/2XKO → data-only predicate; the sets-vs-matches
+  counter-pick test on Tekken/Tōkon RT with changelog amendments if wrong.
