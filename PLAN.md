@@ -2618,3 +2618,53 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   first cron (cursor moves only with real change; index table; cross-check
   block static until --full; yellow fetch + green run = designed failure;
   pins never decrease). Cadence: a hand --full sweep periodically.
+- **Second Witness PUSHED (2026-09-01 22:23): all six repos 0/0 clean; suites
+  179+178+141+52+60 all green; the user synced PLAN.md into the engine.** The
+  push was not routine. Three repos rejected non-fast-forward (the 08-31 cron
+  had committed refreshes); the rebase LINE-MERGED two JSON arrays into a
+  videos.json that was internally consistent and passed every gate — "which is
+  exactly why I didn't trust it": pipelines re-run end to end so what shipped
+  is what the code produces (24,339 / 15,465 / 6,558 / 540). **Then the worst
+  failure shape of the arc, self-inflicted and caught by reading the
+  regeneration log: the session's own churn-verification harness wrote
+  synthetic cursor values (900002) through the real parse path, restored raw/
+  but NOT data/ — three repos committed with a cursor a quarter-million ids
+  past the catalogue's end, Tōkon already pushed.** A forward-only cursor can
+  never heal; every page reads as already-seen; the cron stays green while the
+  intake silently never ingests again. Fix: a free invariant (the fetcher
+  already reads page 1 — a cursor above page 1's highest id is impossible →
+  refuse, both numbers named), controlled both ways live; cursors reset to
+  what each sweep saw; SF6's repaired cursor immediately ingested the 15
+  entries the poisoned one would have skipped. LESSON (checklist step 9, data/
+  edition): a harness writing through real paths restores EVERYTHING it
+  touched, and every monotone cursor/pin gets a plausibility bound against
+  the thing it indexes. First unattended cron = tomorrow's refresh commit.
+- **Patch-table refresh Phase 0 (2026-09-02) — approved with three riders.
+  Two of four tables stale: Tekken 96 DAYS (3.02.01 / Bob, 08-19 — 258 records
+  folded into 3.01) and Tōkon TWO patches (08-21, 08-28 — 53% of what the site
+  labels "current patch" is actually newer).** 2XKO and SF6 verified current
+  against vendor sources (SF6's Cargo API = zero drift; the 08-11 server-side
+  maintenance correctly not a row; 2XKO's 1.3.1 is future, 09-08). **The
+  finding: Tōkon went stale DESPITE an automated checker** — the vendor changed
+  its title format ("Patch Update 8/10/2026" → "Patch Update - 21 August
+  2026"), the regex silently skipped unmatched titles, `missing` stayed empty,
+  and `data:patch-check` exited 0 "table is current" with two patches missing
+  — the sampler-scored-instead-of-the-reader class again. Fix: parse both
+  formats AND make an unparseable "Patch Update" title a HARD failure naming
+  the title; positive control first (must fail against the pre-edit table).
+  Fold verification predicted read-only and exact: Tekken 1752 → 1494 + 258;
+  Tōkon 425 → 199 + 165 + 61. Tekken's e2e hardcoded a two-child S3 →
+  rewritten to derive children from the boundary table (computed, grows with
+  the catalogue). Honest control: Tekken has NO future-date guard (a typo'd
+  year mints an empty bucket) — rider: add it, own commit. Roster: Bob already
+  rediscovered live; Phoenix Cyclops expiry due 10-01; SF6 UNRELEASED at rest;
+  **2XKO Lux + Samira revealed at Evo with no expiry mechanism; and Riot ends
+  2XKO active development December 2026** (servers stay, content unlocked in
+  September) — the platform's first game will plateau into a legacy archive.
+  Cadence: Tōkon weekly sets the floor. Corrections owned: no
+  `verify-patch-groups` script exists in any app (the engine's is orphaned and
+  never asserted a real table); "wavu is bot-walled" was a false saved note
+  (fetches fine at /t/). Queued: **patch-check for every game** — Tōkon-style
+  vendor checkers where a machine-readable source exists (SF6 Cargo API, wavu,
+  Riot's tag page) + a cadence warning per repo keyed to each game's median
+  gap, so a stale table pages instead of waiting for a manual pass.
