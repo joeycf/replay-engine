@@ -2531,3 +2531,90 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   or a human override; Tōkon bench completion only where RT carries benches
   and agrees. Riders: Tekken/2XKO → data-only predicate; the sets-vs-matches
   counter-pick test on Tekken/Tōkon RT with changelog amendments if wrong.
+- **Cron + witness plan audited (2026-08-31) — approved with three feedback
+  items; Phase 0 reshaped Track B and promoted two riders to prerequisites.**
+  API: no since/limit/sort params (all silently ignored) but deterministic
+  newest-first ordering verified across page boundaries → stop-at-known-ids
+  cursor = **3 pages/game/day, 12 requests platform-wide (50× down from 619)**,
+  bounded at 10 pages; limitation stated (ordering by VIDEO date, late
+  submissions of old VODs land deep — delayed not lost under add-only; a
+  hand --fresh sweep reconciles). A SQL LIKE wildcard leak (tag=%25) found
+  and explicitly NOT depended on. **The witness's reach: ~19,800 head-to-head
+  comparisons — 44% of SF6, 46.5% of Tekken, 43% of 2XKO — almost all RT's
+  untagged rows, 1:1 with whole videos.** But the RESOLVER's reach is ~2 rows
+  (every low-confidence surface has ≈zero RT overlap; Tōkon's bench queue,
+  the named target, has ZERO) → Track B = metric + routing, no resolver
+  ("machinery for nothing"). Agreement 99.9/99.2/98.6/94.6% raw → after
+  carving ~1,600 FALSE disagreements (bison/mbison aliases; **RT writes "King"
+  for Armor King — 318 rows, proven on a King-vs-Armor-King match**; the 2-
+  and 4-character caps) → **~19 genuine disagreements platform-wide**, each
+  likely a real parser bug; "cannot witness" as a third outcome. **The
+  witness paid before it existed: 245 phantom `tekken-8-*` player ids over
+  623 sides — "Tekken 8" leaking from titles into the handle slot, 245
+  spurious live player pages.** Prerequisites (not riders): Tekken/2XKO's
+  mtime predicate takes max over ALL dumps incl. the RT path → a cron RT
+  fetch now-stamps it and DISARMS the stale-raw guard for every other intake
+  ("the cron move weaponises the predicate"); 2XKO never stages
+  source-pins.json → green until the first RT outage, then red forever.
+  Add-only justified by measurement: one VOD going private removes every
+  segment cut from it — SF6's largest holds 57, Tōkon's 18 (40.9%) — passing
+  both collapse arms silently with the pin overwritten downward. Also: port
+  SF6's deterministic collapse to the three others WIDENING sameMatch to the
+  full character tuple (SF6's p1/p2 compare would discard different
+  multi-character records); a record floor (a renamed upstream label zeroes
+  the dump → red in three repos, silent in Tōkon); localFirst →
+  cronFetchedWithCarry across ~50 sites incl. report prose that becomes
+  false; 2XKO FUSE_BACKFILL re-opened with a dated number (breaks at +47
+  otherwise), floor not lowered; Tekken gets a testCronGuard. **Correction
+  owned: no carry-vs-rebuild byte-identity PROOF exists in any repo** — it
+  was demonstrated once by diff, never gated; two divergences already exist
+  (report.md by branch; Tōkon's byIdForQueue empty on carry) — building it
+  is part of the work. Sets-vs-matches: Tekken 2.5% vs 22.2% (8.9×) =
+  matches; Tōkon and 2XKO have zero test power under RT's caps → all three
+  entries amended on RT's own vocabulary with untested status in the
+  comment. Courtesy note dropped by the plan on technical grounds —
+  RECOMMENDED SENT ANYWAY (relationship, not permission; carries the Armor
+  King + cap findings, fixable at source). Feedback: send the note; record
+  BOTH evidences in 2XKO's comment (the 223s gap analysis vs RT's
+  vocabulary); fix Tōkon's `complete` (length===4 misreads legitimate >4
+  union sides as incomplete → >= charactersPerSide).
+- **The Second Witness SHIPPED (2026-09-01): 19 commits across five repos,
+  staged not pushed; engine untouched.** RT in all four crons on the cursor
+  (12 requests/day, was 619); **19,850 records / 39,700 sides witnessed; 18
+  real disagreements** after the derived blind-spot carve-out (an id qualifies
+  only when no string resolves to it AND the catalogue substitutes one other
+  id on ≥10 sides at ≥90% — derived from data, not declared; Armor King →
+  "king" 332/333). Several survivors indict the WITNESS: submitters recorded
+  who the player IS, not who they played (Itazan→Zangief, Mago→Cammy). Nine
+  findings — six pre-existing, three introduced-and-caught: (1) the 245
+  phantom `tekken-8-*` players = SEG_RE missing 💥 (the brand delimiter telly/
+  ranked use); (2) **retiring them created 245 hard 404s** on prerendered
+  sitemap URLs while `redirects.ts --check` PASSED — the ledger only knew
+  identity merges; guard extended, mapping positional (only 66/245 are bare
+  tekken-8-); (3) the mtime disarm demonstrated live (touch the RT dump →
+  three-intake guard goes silent); (4) unstaged cron outputs in 2XKO and
+  Tekken (with a comment claiming otherwise; Tekken had no cron guard);
+  (5) a Tōkon witness 98% SF6 rows from the partial-cache era → witness now
+  behind the per-entry game gate everywhere; (6) **a cursor that never
+  advanced** (keyed on rebuilt records — the common carry path never
+  persisted it); (7) **a deploy every morning forever** (report.md rendered
+  the cursor window → always a diff → daily commit+deploy) → full sweeps are
+  the only thing that measures/writes; (8) 2XKO videos.json reordered daily
+  (no global sort; deltas merged in front); (9) Tōkon complete >=4 fixed.
+  Rules CONTROLLED: a 57-record private VOD passes the collapse guard silently
+  (4.9%) → add-only keeps 1,065; pin asked down → exit 1 names shortfall;
+  **carry vs rebuild videos.json BYTE-IDENTICAL — the proof now exists**;
+  dead host → fetch 1 / parse 0 / 24,309 intact; empty and malformed dumps
+  carry (2XKO's bare JSON.parse had taken the whole parse down); 7+8
+  stale-raw controls; cursor-only suppression ×3; two cursor mornings
+  byte-identical; two negative controls. **Repo won: contested rows do NOT
+  go in the review queue** (a gate asserts queued = withheld; these are
+  published) → own artifact with the mirror gate. Sets-vs-matches: Tekken
+  2.5% vs 22.2% = matches; all three rows amended; **2XKO's 223s gap analysis
+  refuted properly — SF6's min gap is 74s with 42 pairs under 180s and SF6 is
+  proven matches; a large minimum gap is evidence of DOWNTIME**. Commit 19: the
+  Evo row's counter-pick count is 14 not 13. Operator note NOT drafted (my
+  feedback) — user to send. Push: any repo order, shell last; then watch the
+  first cron (cursor moves only with real change; index table; cross-check
+  block static until --full; yellow fetch + green run = designed failure;
+  pins never decrease). Cadence: a hand --full sweep periodically.
