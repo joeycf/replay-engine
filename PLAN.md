@@ -2693,3 +2693,30 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   GBVSR, MK1, VF5 REVO, DBFZ) vs 2026 launches (Invincible VS Apr 30, Avatar
   Legends Jul 23 — both with ComboForge ids already) vs the horizon (VF6,
   TBA — the day-one-archive candidate when it lands).
+- **Game #5 recon complete (2026-09-03, nine candidates, eight axes).**
+  Corpus-ready: **Fatal Fury: CotW** (4 live channels, parse 99.4%, 8.5
+  rec/day, day-one 6,823, Evo main, RT `cotw` 3,465, CF ✓, 1v1, Season 3 with
+  named Seasons as eras + date-keyed DLC children on the Steam endpoint
+  Tōkon's checker already polls — "the only candidate insulated against the
+  failure that actually killed a corpus here": volume spread 4.32/2.87/0.67/
+  0.42 per day); **GG Strive** (3 channels, parse 83.7%, 8.7/day, day-one
+  25,396, RT `strive` 21,909, CF ✓, Season 5 with the richest version grammar
+  — second because two comparable channels run MIRROR-IMAGE grammars, 46/50
+  handle-outside vs 45/50 character-outside, so orientation must be decided
+  per channel first); GBVSR (30,794 day-one, cleanest grammar, but 92% of
+  live volume on one channel). Corpus-forming: Avatar Legends (253, 6 wks).
+  Wind-down: MK1 (vendor left; sales posts only since 2025-11). No ecosystem:
+  Invincible VS (corpus formed and died — sole channel silent 99 days while
+  the vendor is the healthiest), VF5 (0/88 — per-character showcases, no
+  pairings), DBFZ (1/139), MHA (0 VS tokens in 112 titles). Horizon: **Virtua
+  Fighter Crossroads** revealed at SGF 2026 (window unverified). Numbers beat
+  the brief: RT slug ≠ ComboForge id (cotw/strive/gbvs/avatar vs
+  ffcotw/ggst/gbvsr/ava). Checklist gaps to carry: role-differentiated second
+  slots (MK1's Kameo namespace overlaps fighters); **invisible Unicode inside
+  parsed fields — 143 U+202F in CotW titles, 16 with EVERY space replaced**.
+  Two of its own measurements corrected before the table. **Decision: FF
+  first (the easy one — the checklist's second consumer), GGST second,
+  STAGGERED not simultaneous; design sessions + coming-soon cards for BOTH in
+  parallel now.** FF build prompt issued (prompt-ffcotw-game.md) — the first
+  game to LAUNCH with RT, the witness, the cron cursor and ComboForge from
+  day one.
