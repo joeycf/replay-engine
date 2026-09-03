@@ -2668,3 +2668,28 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   vendor checkers where a machine-readable source exists (SF6 Cargo API, wavu,
   Riot's tag page) + a cadence warning per repo keyed to each game's median
   gap, so a stale table pages instead of waiting for a manual pass.
+- **Two sessions closed (2026-09-02).** (a) Patch tables refreshed AND the
+  queued "patch-check for every game" done in the same session: Tekken and
+  2XKO gained vendor checkers (+ riot-site.ts, e2e controls, a Tekken
+  future-date guard — my rider), Tōkon's threshold 21→10 days; a
+  `check-patches.sh` wrapper at the workspace root makes the weekly routine
+  one command; all rebased over the cron and pushed. Follow-ups: only Tōkon
+  has a clock-only alarm (the others rely on running the wrapper); 2XKO's
+  e2e hardcodes act2's version list (will disagree at 1.2.6); 2XKO's "Dec 5
+  hotfix" include matches no Riot post. (b) The first unattended cron was
+  CHECKED and found things: two Tōkon ids retired by the cron needed
+  regenerated redirects (308s verified live after redeploy); **cursor mode was
+  REBUILDING every morning** (the dump wasn't cursor-gated — Tōkon's row was a
+  rebuild not a carry) → scripts/theater-delta.ts keeps only entries above the
+  committed cursor, positive-controlled both ways, all four repos now read "0
+  tagged newer than the cursor"; SF6 share guard on cursor mornings; false
+  prose corrected to computed values; regeneration commits so committed
+  reports read from their generators (RT records, pins, disagreement
+  artifacts byte-identical). All four repos 0/0 clean; e2e 184/191/146/63.
+  **Board: Tōkon bench queue 108 → data:catchup with a logged-in session;
+  SF6 player-dupes merges; 2XKO act2 e2e hardcode; periodic RT --full sweep;
+  2XKO EOL horizon (Dec 2026). Next arc: GAME #5** — comparative recon prompt
+  issued (prompt-game5-recon.md). Field: established corpora (GGST, FFCOTW,
+  GBVSR, MK1, VF5 REVO, DBFZ) vs 2026 launches (Invincible VS Apr 30, Avatar
+  Legends Jul 23 — both with ComboForge ids already) vs the horizon (VF6,
+  TBA — the day-one-archive candidate when it lands).
