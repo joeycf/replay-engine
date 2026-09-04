@@ -2780,3 +2780,45 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   Checklist note: the command is `npm run typecheck`, never raw tsc. Art
   deploy verified by IMAGE hash, since verify:deployed fingerprints
   replays.json which art doesn't touch — the right instrument chosen again.
+- **First Fatal Fury cron ran (2026-09-04 morning) — five crons live; the
+  quiet window is now 06:00–08:30 UTC.** Next: three Coming Soon cards on the
+  shell — prompt-shell-coming-soon-x3.md: Guilty Gear Strive · Avatar
+  Legends: The Fighting Game · Granblue Fantasy Versus: Rising, in that order.
+  Design points: slugs are the one irreversible thing (propose ggst / avatar /
+  gbvsr — matching ComboForge ids where sensible, readability for Avatar —
+  confirmed by the user before writing); accents PROVISIONAL (the Strive/CotW
+  red reconciliation is pending; at flip time the theme wins — Tōkon's
+  #00a6ff→#03A5FE precedent); one parameterized card-art script (headless
+  Chrome + fonts.ready barrier), no logos/wordmarks/character art; the grid
+  goes to 8 tiles (only ever 3/4/5 — screenshots both breakpoints); gates
+  extended (exactly-3 upcoming, no sitemap/ItemList presence, JSON-LD stays 5,
+  drift constants bumped with a remove-one-card positive control); one
+  platform changelog entry with NO dates or ordering promises.
+- **Three Coming Soon cards plan audited (2026-09-04) — approved with two
+  feedback items.** The user resolved Avatar's studio conflict by hand
+  (developer Gameplay Group International, publisher PM Studios, Inc. — three
+  official surfaces had disagreed; the plan had correctly omitted the field).
+  Plan quality: caught a SHIPPED bug — `index.vue:162` hard-codes the alt as
+  "MARVEL Tōkon: Fighting Souls — coming soon", so three cards would all
+  announce as Tōkon → bound to `u.fullName`, with a positive control proving
+  the distinct-alts assertion bites (exactly one failure on revert).
+  `expectedCards = GAME_COUNT + UPCOMING_COUNT` argued precisely: at 7 tiles
+  [2,2,2,1] is LEGAL under "only the last row short," so the exact count is
+  the only clause that catches a missing tile. Accent rule formalized (OKLCH
+  ΔH ≥ 25, or ΔH ≥ 10 with |ΔL| ≥ .12) with occupied hues mapped (2XKO 2 ·
+  Tekken 20 · SF6 52 · CotW 93 · umbrella 190 · Tōkon 244) and free bands
+  named (green ~142, violet ~303). **Strive's in-progress skin chose GOLD
+  primary (#d9a53a — the red-collision lever pulled as predicted)**, marked
+  PROVISIONAL and un-sampled by its own header; Granblue flagged at risk
+  (sky-blue near Tōkon, gold near Strive → twilight violet fallback);
+  sampled values reported before written. One parameterized card-art script
+  with the measureText probe baselined against `__no_such_family__` (never
+  `serif`) and GGStrive_Logo.webp named as a sampling source never an asset;
+  verify-shell/cutover batteries RESTORED generalized and order-sensitive
+  with ItemList/sitemap counts deliberately unchanged; two pre-existing
+  cutover drifts fixed (/ffcotw/sitemap.xml never added). Feedback: include
+  the confirmed Avatar studio line with the user's confirmation as the
+  resolving source (conflicts kept as provenance), tagline in the Tōkon
+  shape; add FATAL FURY to `index.vue:323`'s meta description (live-game
+  omission = launch drift; upcoming stay out). User to-do: add
+  ffcotw-replay-database to fetch-and-pull.sh / commit-and-push.sh.
