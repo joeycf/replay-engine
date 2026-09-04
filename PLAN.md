@@ -2720,3 +2720,34 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   parallel now.** FF build prompt issued (prompt-ffcotw-game.md) — the first
   game to LAUNCH with RT, the witness, the cron cursor and ComboForge from
   day one.
+- **Fatal Fury: CotW BUILT and pushed (2026-09-03, d7bb254 clean): 4,481
+  replays · 8,971 side appearances; Vercel project NOT yet created — the
+  session's Vercel MCP is authed to the wrong team (DevMD's) and correctly
+  refused to create game five outside team_DYjBCSQZKDzlN0YmmmDxPQir.** The
+  smoke check behaved exactly right: DEPLOYMENT_NOT_FOUND for 15 minutes
+  distinguished from a deploy in flight, exit 1 (a count-only check would
+  have compared 4,481 against nothing and called it a collapse). **Eleven
+  checklist gaps — the checklist contained ZERO occurrences of Replay
+  Theater / cursor / witness / composite / catchup / fingerprint /
+  commit-guard / patch-check / 202F**: every capability since Tōkon was
+  absent. Standouts: (9) **the collapse guard is AWAKE on day one for the
+  first time on the platform** (top channels 1,217 and 1,118); (10) UPCOMING
+  is [] since 08-14 — the flip is an append; (3) the witness cross-check
+  assumes independence and nothing measures it. Findings that beat the
+  prompt: RT tagged share is **0.3%** (127 entries on 10 videos), not
+  "meaningful"; **1,075 of 3,348 RT videos are DEAD (32%)**, age-graded (0.4%
+  for 2026-08 rows, 55.6% for 2025-12) — an index source needs a liveness
+  step; trust n=2,234 field comparisons at 99.87% characters / 99.64% handles /
+  zero swaps — with the honest caveat that RT is a NEAR-DEPENDENT witness on
+  these channels (transcribed from the same uploads, same-day correlation:
+  "close to tautological"), genuinely independent only where it supplies Evo
+  characters and repairs B.Jene → B. Jenet; U+202F: 333 occurrences in 43
+  titles (plus U+3000/U+200B) — normalization changes the parse rate by
+  EXACTLY 0 (JS \s already covers NNBSP); what breaks is identity/alias
+  lookup, so the control targets exact-match surfaces, not the parser (my
+  control was aimed wrong). Roster 32 (handoff right; two Season 3 arrivals
+  on the UNRELEASED gate); ComboForge ffcotw = the most divergent map yet (6
+  derive / 21 override / 3 null). Patch cadence median 21d, p90 34d.
+  **Runbook: user creates the Vercel project in the right team with BOTH env
+  vars on Production AND Preview before the first build (the preview-404
+  shape); verify:deployed on the game host; only THEN push the shell.**
