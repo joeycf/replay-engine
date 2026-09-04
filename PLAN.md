@@ -2751,3 +2751,32 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   **Runbook: user creates the Vercel project in the right team with BOTH env
   vars on Production AND Preview before the first build (the preview-404
   shape); verify:deployed on the game host; only THEN push the shell.**
+- **FATAL FURY: City of the Wolves LIVE (2026-09-04) — five games on the
+  door.** verify:deployed ✓ 4,481 replays · 8,971 side appearances · digest
+  bb7eb1e1dc19 (the fingerprint distinguished DEPLOYMENT_NOT_FOUND from a
+  deploy in flight for 15 minutes, then passed when the project existed);
+  shell flip live (5 card anchors, ItemList position 5, "5 games in the
+  archive", /ffcotw rewrite pair + /ffcotw-insights proxy 200 — analytics
+  wired); **verify:cutover 115/115** (11 shell assertions had to learn a fifth
+  game and a 32nd changelog entry — count assertions extended, not loosened);
+  cron `17 8 * * *` (the no-push window widens to 06:00–08:30 UTC); YT_API_KEY
+  set by the user; first `workflow_dispatch` = the last runbook item. Post-
+  launch art cleanup (a3b967a..c3ad04a, pushed): grid portraits from a bust
+  crop of the same SNK `character_main_*` render the hero uses, on the
+  fighter's accent gradient — one image, one fetch (halves the load on SNK's
+  site; the arrangement SF6's pipeline reached from the other direction);
+  all 30 show a face; four needed a hand-read head row because "the top of
+  the figure is only the head when the fighter is upright" (Terry's raised
+  arm, Dong Hwan's kick, Jae Hoon inverted — a shoe is topmost, Tizoc's
+  headdress); two of those rows were wrong at contact-sheet size and caught
+  at full tile size; the table is GUARDED (TABLE vs estimated printed per
+  fighter; a stale key hard-fails — positive-controlled, since it would
+  otherwise fall back to the exact estimate it overrides); three e2e
+  assertions each broken to prove one failure. **Correction owned by the
+  session: `npx tsc --noEmit -p .` does NOT cover scripts/** (that tsconfig
+  is `files: []` delegating to Nuxt references; the pipeline is
+  tsconfig.pipeline.json via `npm run typecheck`) — it reported clean while
+  art.ts referenced two deleted functions; only running data:art caught it.
+  Checklist note: the command is `npm run typecheck`, never raw tsc. Art
+  deploy verified by IMAGE hash, since verify:deployed fingerprints
+  replays.json which art doesn't touch — the right instrument chosen again.
