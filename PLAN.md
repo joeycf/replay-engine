@@ -2822,3 +2822,31 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   shape; add FATAL FURY to `index.vue:323`'s meta description (live-game
   omission = launch drift; upcoming stay out). User to-do: add
   ffcotw-replay-database to fetch-and-pull.sh / commit-and-push.sh.
+- **Three Coming Soon cards COMMITTED (2026-09-04, shell, unpushed) + ffcotw
+  added to the three workspace scripts.** Accents sampled and reported before
+  written: Strive #d9a53a (the skin's provisional gold, unchanged); Avatar
+  #aeacff (sampled indigo #363c88 from avatarfighters.com — the
+  paramountgames.com logo and all four element seals are pure white line art,
+  zero chroma, and the key art's dominant red sits 11° from Tekken — lifted
+  L .395→.778 for AA 9.67:1); Granblue #5569ff (kv_logo ultramarine #0000c8
+  lifted for AA, +8° to clear Tōkon). Avatar and Granblue share the indigo
+  band, separated by ΔL .185, and sit side by side in row 4. Eight tiles,
+  four level rows of two at 380/640/1280 ("Guilty Gear Strive" wraps at 640
+  — so does its row partner "FATAL FURY: CotW"). **85/85 gates; positive
+  control A (drop gbvsr): 10 failures incl. rows [2,2,2,1] at children 7 —
+  the legal-shape argument proven; control B (revert the alt literal): 4
+  failures ending in "alts distinct (1 for 3)" — the shipped alt bug's
+  assertion bites.** Changelog #33 "Three more games are on the way"
+  (platform/feature) — says plainly none is a link or carries a count, and
+  explains why no dates: the page redeploys only when the shell changes and a
+  baked promise goes stale unwatched. Workspace scripts: fetch-and-pull.sh
+  GAMES 5 (appended last to preserve the cron stagger), commit-and-push.sh
+  APPS 6 + a GATE_CMD entry (ffcotw's typecheck ends in repo-local validators
+  — without it a failing patch table reads as a bad engine pin),
+  check-patches.sh GAMES/REPO_OF/SCRIPT_OF; both drift_check functions warned
+  before and are silent after (the mechanism designed for exactly this
+  confirmed the fix). **Flagged UNRESOLVED: Tekken meets the GATE_CMD
+  criterion (its typecheck now ends in `redirects.ts --check`) but has no
+  entry — a failing Tekken redirects table currently reads as a bad engine
+  pin; one-line add, the user's word.** SKILL.md's count edit is local only
+  (gitignored).
