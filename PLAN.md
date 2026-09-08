@@ -2941,3 +2941,28 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   never the Fan Kit asset; attribution surface named); FF's mr-karate = the
   invariant's first live catch → FF follow-up with evidence before deletion;
   Tekken's comboforge drift fix = its own staged Tekken commit.
+- **Strive Step −1 + the three feedback items DONE (2026-09-07, three
+  unpushed commits: engine 917e634 · tekken 85d2a55 · ffcotw 680fa11).**
+  Checklist 301 → 560 lines, 22 amendments, no duplicate labels: Fatal
+  Fury's eleven became **step 12 — an index source is a pipeline stage, not a
+  channel** (12a–12i) plus 4c/5l/9b/9c/10e/10f; Strive's six (5m–5o, 8c, 10g,
+  11b) contributed BEFORE its build; **12f names SF6's hard refusal as correct
+  and explains why the newer softening cannot heal.** Tekken comboforge:
+  controlled both ways, deep links 36 → 41, anna still null (live-checked).
+  **mr-karate: the evidence REVERSED my framing** — three colliding ids, none
+  a mis-parse: xHslrureiqI is "MRKARATE (Wolfgang Krauser) vs SOMBRA (#7
+  Ranked Mr. Karate)" — a player literally named MRKARATE and an opponent
+  playing Mr. Karate, separated correctly; McTZSWYV7nE is a player named
+  after the fighter they main. A TRUE POSITIVE for the guard and a false
+  alarm for the defect — exactly what 5n's CONFIRMED-list-with-video-ids
+  exists to permit; nothing deleted; the table seeds the list. (I had called
+  it "the invariant's first live catch / a bug" — wrong; the guard surfaced a
+  collision for a human decision, and the decision was "real player.") Open:
+  mr-karate vs mrkarate may be one person — a redirect question, logged.
+  **Lucy: a generated tile for her alone**, art-provenance.json cites Article
+  5, a positive control asserts removing her exception fails the build; the
+  CDPR-source alternative rejected for the right reason (the Strive rendition
+  is ArcSys artwork of a CDPR character and CDPR publishes no first-party art
+  of it — a "permitted source" would be an unsupportable provenance claim).
+  Attribution: global footer on every page + baked into the OG card; Lucy's
+  tile carries no ASW credit. Stage 1 next.
