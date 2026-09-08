@@ -2850,3 +2850,94 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   entry — a failing Tekken redirects table currently reads as a bad engine
   pin; one-line add, the user's word.** SKILL.md's count edit is local only
   (gitignored).
+- **Strive build prompt issued (2026-09-07):** prompt-ggst-game.md — the
+  checklist's THIRD consumer, with a Step −1: confirm Fatal Fury's eleven
+  amendments were actually WRITTEN into NEW-GAME-CHECKLIST.md (write them
+  first as an engine docs commit if not — consuming the same stale checklist
+  twice wastes the meta-deliverable). Three Strive-specific STOPs: (1)
+  **orientation per channel before any parse** — the mirror-image grammars
+  (46/50 handle-outside vs 45/50 character-outside) decided from 50-title
+  samples, the paren insight tested, the registry-shares-no-roster-name
+  invariant mandatory from the first parse (a mis-oriented channel at 25k =
+  thousands of fighters filed as players); (2) the 16.3% misses split (lab
+  videos / third grammar / orientation), invisible-Unicode scan; (3) the
+  handoff verified against the scraped ~35-character roster (accent-family
+  map present, punctuation names render, the gold #d9a53a provisional by its
+  own header — the coming-soon card moves to the theme at flip). RT `strive`
+  21,909 with a liveness step (FF found 32% dead, age-graded — a 2021 game's
+  rows will be worse) and likely the platform's largest witness set; patch
+  table versioned (SF6's shape) across Seasons 1–5 with a checker; YouTube
+  quota estimated for the 25k backfill; cron `47 8`, window widens to 09:00;
+  the flip = UPCOMING 3→2, ItemList 5→6, derived counts; season honesty in
+  the changelog (a five-year archive is mostly historical under a current-
+  patch filter); the three workspace scripts + the Tekken GATE_CMD line.
+  (The 09-06 upload was a re-export of the coming-soon session — nothing new;
+  shell push/cutover status not in it.)
+- **Strive build plan audited (2026-09-07) — approved with three feedback
+  items; FOURTEEN corrections to the brief, all on measurement.** Step −1
+  confirmed: the checklist was NEVER amended after Fatal Fury (last content
+  commit before 09-03; every FF term reads zero) — the eleven are written
+  first as an engine docs commit, reconstructed from FF's shipped code, plus a
+  normalization amendment with its trap named (a control asking "does it
+  still parse" passes with no normalization at all — FF shipped 24 controls
+  and none covers it) and Strive's own gaps (orientation/slot order; the
+  registry-no-roster-name invariant, which **FF is LIVE-FIRING right now:
+  player `mr-karate` === character `mr-karate`, both pages prerendered**;
+  character-id naming as a joint decision; the rank facet; empty-repo
+  sequencing; hydrate before quoting a parse rate). STOP 0.1: **7 live
+  channels, not 3 — the recon missed the FASTEST (created 2026-02, 4.63/day)
+  and it is the char-outside mirror**; the paren insight is DEAD (0.0% on
+  channel 5 — would swap player and fighter on all 1,486 records); but
+  per-channel config is also wrong — FF's parseSide already has three paths
+  none assuming slot order, and the real defect is NARROW: path 1 returns on
+  the first resolving paren without checking the outside also resolves →
+  215 rejected + **67 filed silently wrong** (player "UNIKA / ユニカ"). Fix: a
+  both-sides-resolve → slot-ambiguous → review branch, slotOrder only as
+  tie-breaker; CONFIRMED_FIGHTER_HANDLES evidenced per entry (Johnny, May,
+  "Lasagna Slayer" ×69 are REAL players). STOP 0.2: 83.88% reproduced; 79.6%
+  of misses are correct rejections; third grammar = 23 titles; +282/−67 from
+  the fix; **U+202F does not recur — the carriers are U+3000 (547) and U+00A0
+  INSIDE the game marker**; `GGST(?![A-Za-z])` not `\bGGST\b` (GGST2.0 —
+  \b loses 1,003 videos); STRIVE is the marker, GUILTY GEAR is not (576
+  back-catalogue videos); 83.88% is an UPPER BOUND (zero videos.list calls
+  — hydrate first, 391 units). STOP 0.3: 34 = 34 released, Season 5 slots
+  literally `???` → UNRELEASED empty; family map present AND machine-readable
+  (better than FF's); 48/48 contrast claims correct; two provenance errors
+  (#D3403F "lifted to AA" measures 3.98:1; #C9CDD2's cited source has zero
+  pixels); **the gold has TWO tight neighbours** — FF's #ffd21f at ΔL .125/.12
+  and the umbrella secondary #fbc318 at Δhue 5 / ΔL .00 (chroma only) →
+  flip re-checks both. **RT strive: every headline wrong, mostly favourably**
+  — tagged 32.74% (highest on the platform, FF is 3.64%); **liveness 9.2%,
+  NOT age-graded — a 2023 CLIFF (34.63%): a per-match channel submitted its
+  back catalogue and later deleted it, the proReplays failure verbatim; FF's
+  "age-graded" prose is FALSE here**; witness reach 11,604; matches with the
+  RIGHT evidence (cross-row 64.2% vs within-row 0.319%, ~200×; 2XKO's 180s
+  gap test FAILS here — 328 gaps under 180s); trust 94.2%/88.8%. Decisions:
+  full-name kebab ids (re-key 15 tokens; CF 4 overrides not 17); filter
+  defaults ALL (current patch 3.5%); OG stripe 34; RT = SF6 base + FF's 12
+  with my note honored; rank:false with a six-spelling RANK_PREFIX. Stage 1:
+  **the era authority is the BATTLE VERSION, not the game major** (two mid-
+  season decoys would open seasons 70/101 days early); 12 versions
+  genuinely absent — never invent; never key the date off the feed (12 of 18
+  titles contradict the body); **first-party Fan Kit, 34 uniform 1600² PNGs —
+  `© ARC SYSTEM WORKS` REQUIRED by licence and Article 5 CARVES OUT LUCY**
+  (CDPR governs her); 22 of 34 need a hand-read head row (bedman's top 40%
+  is a machine). Stage 2: backfill 828 units (8.3% of a day — the anxiety was
+  search.list); **corpus ≈16,900 records not 25,396 (uploads counted)**;
+  pre-release rows to 2020-04-18; 686 malformed links (53× FF); 4 composite
+  collisions, one a REAL data error → counter must not hard-fail; 645
+  placeholder handles never players; 421 case-only collision groups → vote
+  casing first; do NOT port playerSep (shreds t.tv/WhispCL, K/UE); CF ids
+  non-kebab and `--suggest` emits INVALID JS for this roster; **Tekken's
+  verify:comboforge FAILS today (5 nulls now present upstream)**. Stage 3: the
+  flip is ~25 literal sites across five files; fullName is DROPPED at flip
+  (ShellGame lacks it); two shipped comments become false at 6+2 with no gate;
+  workspace scripts in the SAME commit as the first real push; the Tekken
+  GATE_CMD is an ABSENCE (add the entry); do not name Evo (107 rows, 0.49%).
+  **Verification: FF's control suite has three weaknesses — `r.status !== 0`
+  counts null as PASS (a control that never ran reports PASS), seven soft-SKIP
+  on fresh checkout, and the frozen-pin assert has NO control and has NEVER
+  EXECUTED.** Feedback: Lucy's art path explicit (tile or permitted source,
+  never the Fan Kit asset; attribution surface named); FF's mr-karate = the
+  invariant's first live catch → FF follow-up with evidence before deletion;
+  Tekken's comboforge drift fix = its own staged Tekken commit.
