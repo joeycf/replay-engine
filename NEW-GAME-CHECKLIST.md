@@ -299,3 +299,262 @@ content below it never examined. Use one constant once. When changing a
 threshold, prove the change is ADDITIVE across the whole corpus — count the
 items newly admitted AND the items whose answer changed, and require the second
 to be zero.
+
+### Amendments from the second consumer (Fatal Fury: CotW, 2026-09-03)
+
+Written 2026-09-07, by the THIRD consumer. These eleven were reported on
+2026-09-03 and never written down, so the third consumer opened the same file the
+second one had already outgrown. The capabilities below all shipped between Tōkon
+and Fatal Fury and none of them had a step: the checklist contained zero
+occurrences of `theater`, `cursor`, `witness`, `composite`, `catchup`,
+`fingerprint`, `commit-guard`, `patch-check`, `liveness`, `typecheck` or `202F`.
+
+Each is reconstructed from the shipped code rather than from the summary, because
+the code is the only surviving record. Where the five copies of a rule disagree,
+the amendment says which one is right and why.
+
+**12. An index source is a pipeline stage, not a channel.**
+A third-party match catalogue — one that hosts no video and points AT video — is
+the first source that is not a channel, and every assumption in step 1 bends
+around it. It has no channel id, no uploads playlist and no title to gate; its
+rows arrive already parsed by strangers; it re-indexes uploads you already have;
+and it is somebody else's service, so it can be wrong, slow, or gone. It gets its
+own entry in the channel table with an `index` block and a LOWEST dedupe
+precedence, because a source that re-indexes other people's uploads should never
+outrank the uploader. Sub-rules 12a–12i are not optional extras: each one was a
+defect first.
+The instance every game on this platform consumes is **Replay Theater**
+(`replaytheater.app/api/matches`), ported five times; the rules below are
+written from what those five ports disagreed about.
+_Failure: the rule set for this stage lived only in five diverging copies of one
+file, and the divergences below are what accumulated in the gap._
+
+**12a. Gate the game per ENTRY, not on the query you sent.**
+`?game=<slug>` is a filter the catalogue answers, not one you control, and the
+slug is THEIRS (`cotw`, `strive`, `tkn8` — never your own game id; a wrong one
+returns HTTP 400). Re-check every row against its own declared game label. A
+mistagged submission arrives looking exactly like a real one.
+
+**12b. A composite id follows the ENTRY, not the source.**
+`${videoId}@${startSeconds}` when the entry carries a real offset, the plain video
+id when it does not. Stating the composite rule unconditionally is right only for
+an all-segments catalogue: on a catalogue that is mostly whole videos it mints
+ids like `vid@0` that can never dedupe against the same video arriving from a
+channel. Guard `videoId` and `startSeconds` TOGETHER when emitting — guarding on
+`startSeconds` alone strips `videoId` from every offset-zero record.
+_Failure: one VOD holding nine matches collapses to one record, or the same
+upload publishes twice under two id shapes._
+
+**12c. Ignore anything known ANYWHERE — and exclude the intake's own rows.**
+If the repo has already ruled on a video in any capacity — a raw dump pre-gate,
+a record built this run, the committed corpus, an overrides entry, `exclude` or
+not — the catalogue entry is ignored, not merged, not preferred. The subtlety
+that only shows up on run two: when the intake's own record ids can be bare video
+ids, its committed rows match THEMSELVES, every candidate skips as already-known,
+the run builds zero, and the add-only pin assertion throws. Exclude this intake
+from its own known-set.
+_Failure: an intake that works perfectly on its first run and cannot run twice._
+
+**12d. Add-only, never-depends, and a carry pin that only grows.**
+The intake may only ADD. Carry every committed record the dump did not reproduce;
+COUNT entries that vanished upstream, never remove them. The cron step runs last
+and is allowed to fail: on any failure there is simply no dump, parse carries, and
+the cron stays green. Pin the built count in a data file — the rebuild path
+asserts the pin never falls (`<`), the carry path asserts it exactly (`!==`). That
+asymmetry is deliberate.
+_Failure: one VOD going private removes every segment cut from it — 57 records in
+one measured case — passing both collapse-guard arms while the pin is overwritten
+downward._
+
+**12e. The cursor is written by parse, on the PULL, not by the fetcher on the
+rebuild.**
+Every `data/` write belongs to parse. A fetcher that wrote the cursor would
+advance it for a pull whose records parse then refused, and the next run would
+skip those pages forever. Key the write on the pull having happened, not on
+records being rebuilt — the common carry path rebuilds nothing, and a cursor
+keyed on rebuilds never advances at all. It only ever moves forward.
+
+**12f. The cursor plausibility bound must REFUSE, not recover.**
+Bound the committed cursor against the newest id the catalogue offers on page 1.
+Exceeded, it means a bad write, an upstream id reset or a hand edit. **Exit
+non-zero.** The newest repo softened this to a warning plus a silent full sweep,
+and the recovery cannot heal: the fallback observes a LOWER highest-id than the
+poisoned cursor, the forward-only write refuses to move it down, and the
+catalogue gets swept in full every morning forever — visible only as a
+`console.warn` inside a step that is already expected to be yellow. Clamping is
+just as wrong: it hides which entries were skipped while the cursor was bad. A
+cursor that is wrong is a question about the repository's history, not a number to
+round off.
+_Failure: a forward-only cursor can never heal; every page reads as already-seen;
+the cron stays green while the intake silently never ingests again._
+
+**12g. Cursor-gate the dump, or the number you print is the walk length.**
+The daily walk reads a fixed window — two clean pages, ten at most — whether or
+not anything in it is new. Cutting the dump from that whole window makes the
+intake's reported figure a function of how far you walked rather than of the data,
+so a quiet morning prints a window-sized number into a file the cron commits.
+In cursor mode keep only entries above the committed cursor; keep an entry with
+no id, because a spurious rebuild is free under add-only and a dropped entry waits
+for the next full sweep.
+
+**12h. Liveness is a property of the source — measure it and report a RATE.**
+A catalogue accumulates links to videos that no longer resolve. Join every
+candidate to the video API and drop what does not come back: absence from the
+response IS the dead signal, and a record whose video does not resolve is never
+built. Report the rate, not the list, once the count passes a handful. **Do not
+inherit another game's number or its shape** — one measured 32% decaying smoothly
+with age; the next measured 9.2% concentrated in a single year, because a channel
+had deleted its back catalogue. Both are true; neither predicts the other. And
+note that the daily cursor window is all recent rows, so any alarm keyed on the
+daily figure reads ~0% forever — the real number only appears on a full sweep.
+
+**12i. A witness must have a reader.**
+Write every row the run saw, behind the per-entry game gate, to a file that is NOT
+the intake file: nothing that reads it may build a record from it. Then actually
+read it — compare the catalogue's handles and characters against your own parse,
+publish the agreement rate, route disagreements to a file with both claims side by
+side, and let it overwrite nothing. It never outranks a confident parse and never
+outranks a human. **Measure the independence before banking the number**: where
+the catalogue is a same-day re-index of your own uploads it read the same title
+you did, and agreement is close to tautological. Say which part of the reach is
+genuinely independent.
+_Failure: a witness file written every morning that no code has ever opened, and
+a trust number quoted as verification that measures the pipeline agreeing with
+itself._
+
+**4c. `data:patch-check` treats an unparseable title as a HARD FAILURE.**
+The checker exists to notice a shipped patch missing from your table, so anything
+it cannot read must fail loudly rather than be skipped. Two more rules the vendor
+will teach you: category membership is not enough (a "Known Issues" post can carry
+a parseable version bracket and would mint a duplicate row), and the announcement
+date in the title is not the release date — extract the date from the body
+sentence, and expect the two to disagree.
+_Failure: a green tick forever while the table rots._
+
+**5l. Normalize invisible Unicode — and make the control exercise IDENTITY.**
+Titles carry characters that look like spaces and are not: U+202F, U+3000, U+00A0,
+U+200B. Normalize before matching, on the exact-match surfaces — handles, aliases,
+registry keys. The trap is in the control, and it is the reason this amendment
+exists: **a control that asks "does it still parse" passes on a pipeline with no
+normalization at all**, because `\s` in JS already covers these codepoints. The
+parse rate is unmoved; what breaks is identity lookup, so one player becomes two.
+Do not assume the codepoint carries over either — one game found 333 U+202F and
+zero U+3000; the next found zero U+202F, 547 U+3000 hiding a hashtag-run boundary,
+and a U+00A0 sitting inside the game marker itself, where a marker written with a
+literal space misses it entirely.
+
+**9b. The commit-guard stages data files BY NAME, never `git add data/`.**
+A blanket add stages whatever else is in the directory — a hand-edited overrides
+file mid-review, a scratch file — and commits it as part of an unattended refresh.
+List every pipeline-owned file explicitly, with a comment saying what each one is.
+Two files that look skippable are not: the carry pin, because most runs rewrite it
+and an unstaged file that DOES change is a change discarded in silence; and the
+cursor, because a fresh CI checkout without it resets to zero every morning.
+Suppress the commit when the cursor is the ONLY change, or the archive redeploys
+daily forever — and write that test as an emptiness check on the remaining staged
+NAMES, since an empty pathspec means "everything" and would invert the check.
+
+**9c. Pair fetch with parse in one command — `data:catchup`.**
+`raw/` is gitignored, so a local dump is routinely OLDER than the committed data
+the cron produced in CI, and running parse alone silently deletes every record the
+local dump cannot reproduce. The collapse guard does not catch it: the loss
+arrives as one or two records spread across every intake. The stale-raw guard
+catches only the clear-cut case. **Ordering is what closes the gap** — fetch, then
+the index pull (allowed to fail), then parse, then emit — and making the mistake
+unhittable by accident is worth more than either guard.
+
+**10e. The deploy check compares a CONTENT DIGEST, not a record count.**
+A count catches an archive collapsing and is blind to a record's characters
+changing while the count holds — which is exactly what a review resolution or an
+override does, and it is the common case. Hash every record's id and characters
+alongside the count. Nothing is embedded in the build: both sides are computed
+independently at check time and compared, cache-cold. Keep the failure semantics
+narrow — a count collapse past the band is the only hard failure, because a hash
+mismatch cannot distinguish a slow build from a wrong one. What the hash buys is
+that the success claim is TRUE when it is made.
+_Failure: a smoke check that cannot tell a deployment that does not exist from one
+still in flight, and calls a collapsed archive green because the count it compared
+against was nothing._
+
+**10f. The command is `npm run typecheck`, never raw `tsc`.**
+A game repo is two disjoint TypeScript tracks: the Nuxt project graph, and the
+data pipeline in `scripts/` and `types/` under `tsconfig.pipeline.json`. The root
+`tsconfig.json` is `files: []` delegating to Nuxt references, so `npx tsc --noEmit
+-p .` reports clean while a pipeline script references two deleted functions.
+Neither track alone is sufficient. This applies to anything that SUBSTITUTES for
+the command too: a narrowed gate written to skip a repo-local data validator must
+not also drop the pipeline track, or a pin bump typechecks none of the pipeline.
+_Failure: green, and the next data run throws._
+
+### Amendments from the third consumer (Guilty Gear Strive, 2026-09-07)
+
+Reported before the build, from Stage 0 recon. Numbers here are Strive's;
+the rules are not.
+
+**5m. Decide title ORIENTATION per channel, before the first parse.**
+Two channels covering the same game at the same quality can run MIRROR-IMAGE
+grammars — one writing `HANDLE (Character)`, the other `CHARACTER (handle)` — each
+96–98% internally consistent. A single rule of the form "the character is inside
+the parentheses" scores 98% on one and **0%** on the other, and the 0% channel
+does not fail: it files every fighter as a player and every player as a fighter,
+and the pages render normally. Two more shapes defeat the question itself: a
+channel with brackets on 4% of its titles, and a channel that puts a RANK TIER in
+the parentheses on some titles and a handle on others.
+Resolve by ROSTER RESOLUTION, not by slot position — ask which side of the
+bracket resolves to a roster alias. Then add the check that a naive implementation
+omits: **when BOTH sides resolve, do not take the first one.** Route it to the
+review queue as slot-ambiguous, and let a per-channel declared order be the
+tie-breaker for that branch alone. Tally the resolved orientation per channel,
+BOTH sides, and print it — a channel that silently flips is otherwise invisible.
+_Failure: measured on one corpus, 215 titles rejected and 67 filed confidently
+wrong, every one of them a plausible-looking record._
+
+**5n. The player registry shares no name with the roster.**
+Assert it from the FIRST parse, not from an end-to-end test after the site is
+generated — by then the bad data is on disk. Compare through the alias matcher,
+not against a set of display names: punctuation-stripped, alias-expanded,
+case-folded and NFC-normalized in one call, or a handle spelled `SOL` slips past a
+roster entry named `Sol Badguy`. Real players ARE named after fighters, so the
+guard needs an explicit CONFIRMED list, and every entry on it carries a video id
+as evidence. Nothing is deleted on the guard's say-so alone.
+_Failure: one game shipped a player page and a character page at the same id, both
+prerendered, with nothing warning; another put fighter names in the player field
+on 26 records with every count, schema and gate green._
+
+**5o. Hydrate the video metadata before quoting a parse rate.**
+A parse rate computed from titles alone omits every miss class that needs a
+duration or a live flag — on one game that was 251 records and an entire gate. It
+is an upper bound, and reporting it as a rate overstates the pipeline twice: once
+in the headline, once in the miss split that is supposed to tell you what to fix.
+The hydration pass is cheap next to the backfill it informs.
+
+**8c. Decide the rank facet, and say which signal you are looking at.**
+`filters.rank` and a `ranks` ladder are required together, so the decision must be
+explicit. The distinction that decides it: a LADDER TIER describes the player, a
+per-character LEADERBOARD POSITION describes one character's standing this week
+and is not a property of the match at all. Strip the latter and never turn it into
+a rank. Expect several spellings of the same thing in one corpus, and measure the
+strip's coverage against the residue gate — an unstripped rank prefix leaks into
+the handle and mints players.
+
+**10g. Register the game in the workspace scripts — and mind the sequencing.**
+Step 10b names the cron slot; it does not name the three scripts that actually run
+the platform. A new game joins the fetch list, the commit list with its own gate
+command, and the patch-check list — and that last one needs its short-name map,
+its script map, AND the bare error string that enumerates the games, which is not
+derived from any of them. **Add all of it in the same commit as the game's first
+real push, never before**: an empty repo makes the commit script's preflight mark
+it unusable every run and the patch checker file it as an error, while both
+scripts' drift warnings stay silent because they key on artifacts an empty repo
+does not have. Forgetting is not self-correcting in either direction.
+
+**11b. The character-id convention is ONE decision, made before the design
+handoff is authored.**
+The id is simultaneously the URL slug, the accent key, the CSS variable, the
+roster id, the partner site's link suffix, and the surface the roster-name guard
+compares against — and the slug is the one irreversible thing. Partner sites key
+characters by FULL name, so full-name ids derive for free and short ids need a
+hand override each; one game measured 26 of 32 deriving against 21 overrides for
+the alternative. Decide it once, for the design system and the partner link
+together, and hand the convention TO the design handoff. Nothing downstream
+catches a handoff that quietly chose the other one.
