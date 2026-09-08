@@ -156,4 +156,14 @@ export interface GameConfig {
     gameId: string;
     characters?: Record<string, string | null>;
   };
+  /** Optional vendor art credit (additive, v0.12.1), rendered in the site
+   *  footer on EVERY breakpoint. Exists because a vendor's art licence can
+   *  require a copyright notice "in an easily visible location on the content"
+   *  — Arc System Works' Fan Kit terms do, verbatim — and nothing else in the
+   *  footer satisfies that: the platform © line is the SITE's, and it is hidden
+   *  below `sm`. Render the string exactly as configured; the notice text is
+   *  the licensor's, not ours to rephrase. Absent on every game whose art
+   *  carries no such term, and the footer is byte-identical to before when it
+   *  is absent. */
+  artCredit?: string;
 }

@@ -41,7 +41,20 @@
       Help support the site
     </a>
 
-    <p class="col-start-3 hidden justify-self-end font-mono text-[10px] sm:block">
+    <!-- A vendor art credit, when the game's licence requires one, is VISIBLE
+         AT EVERY WIDTH: the platform © beside it hides below `sm`, but a
+         licence notice that vanishes on phones is not "easily visible". -->
+    <p
+      v-if="artCredit"
+      class="col-start-3 justify-self-end text-right font-mono text-[10px]"
+    >
+      <span>{{ artCredit }}</span>
+      <span class="hidden sm:inline"> · © {{ year }} {{ brand }}</span>
+    </p>
+    <p
+      v-else
+      class="col-start-3 hidden justify-self-end font-mono text-[10px] sm:block"
+    >
       © {{ year }} {{ brand }}
     </p>
   </footer>
@@ -57,7 +70,12 @@
  *   • the platform changelog link + the brand tagline (left; the tagline is
  *     revealed at lg, the link is always there — the pinned bar stays one line)
  *   • the Buy Me a Coffee support link (center)
- *   • the copyright (right, from sm up)
+ *   • the copyright (right, from sm up) — and, when GameConfig.artCredit is
+ *     set (v0.12.1), the vendor's art credit ahead of it at EVERY width. That
+ *     one is a licence obligation, not decoration: Arc System Works' Fan Kit
+ *     terms require "© ARC SYSTEM WORKS" in an easily visible location on any
+ *     page showing the art, and the footer is on every page. When artCredit
+ *     is absent this markup is exactly what it was before.
  * The fan-project disclaimer lives in the VideoModal's mobile mini-disclaimer.
  *
  * THE CHANGELOG LINK IS ABSOLUTE, AND A PLAIN <a>, on purpose (v0.7.1). The
@@ -72,6 +90,8 @@
  */
 const brand = useBrandName();
 const year = new Date().getFullYear();
+/** The vendor's art credit, verbatim, or undefined on games with no such term. */
+const artCredit = useGame().artCredit;
 
 /** The apex changelog. Derived from the site origin rather than configured:
  *  every app on this platform sets siteUrl to the apex, and the shell serves

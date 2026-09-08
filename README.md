@@ -58,11 +58,14 @@ export default defineNuxtConfig({
   // clones the layer with NO node_modules, and the engine's runtime deps
   // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
   // Phase-3 remote-layer check).
-  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.10.0', { install: true }]],
+  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.12.1', { install: true }]],
 });
 ```
 
-`v0.10.0` is the current platform-wide pin.
+`v0.12.1` is the current pin for a new consumer; every shipped game is on
+`v0.12.0` or later. (This line read `v0.10.0` for two releases while all six
+consumers had moved on — the pin is stated here AND in each game's
+`nuxt.config.ts`, so treat the games as the truth and this as the guide.)
 
 **Local co-development** (editing the engine while building a game): keep a local
 checkout next to your app and set `ENGINE_PATH` in the app's `.env`:
@@ -203,6 +206,11 @@ export default defineAppConfig({
     // vertical up so the head isn't cropped. Keep X ~70% to hold the subject
     // right of the name/stat overlay.
     // heroFocus: '70% 4%',
+    // Optional vendor art credit (additive, v0.12.1), rendered in the footer at
+    // every width. Set it when the vendor's art licence REQUIRES a notice on
+    // the content — Arc System Works' Fan Kit does — and use their wording
+    // verbatim. Absent, the footer is unchanged.
+    // artCredit: 'Character art © ARC SYSTEM WORKS',
     // Optional ComboForge cross-link (additive, v0.11.0). Adds a partner band
     // to every character page, deep-linking that character's combos. `gameId`
     // is COMBOFORGE'S id, which is not always ours (our 'tokon' is their
