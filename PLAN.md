@@ -2966,3 +2966,75 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   of it — a "permitted source" would be an unsupportable provenance claim).
   Attribution: global footer on every page + baked into the OG card; Lucy's
   tile carries no ASW credit. Stage 1 next.
+- **Pushed and in sync (2026-09-07 23:09): engine adff575..917e634 (the 22
+  checklist amendments — the meta-deliverable is now DURABLE), tekken
+  b87c1f0..85d2a55, ffcotw a7076c9..680fa11.** Flag noted: replay-engine/
+  PLAN.md carries 25 uncommitted appended lines — the user's journal sync,
+  accurate, safe to commit as docs; the checklist is structurally immune to
+  a PLAN.md paste now (its own file, which is exactly why the 259 lines went
+  there). Stage 1 in progress.
+- **Strive Stage 1 in flight (2026-09-07 23:34):** theme.css exact against the
+  engine contract (18 tokens, no @theme, no accent leakage, both provenance
+  corrections carried, the gold's two tight neighbours documented);
+  channels.ts matches the ChannelKey union and every measured trap; seasons.ts
+  validates 6 eras / 48 patches with the battle major incrementing on 4/4 era
+  boundaries — the recon's era authority ENFORCED; pipeline track typechecks
+  clean. Two idioms worth the checklist: **the frozen channel is pinned at
+  `records: -1`, not a TODO — skipping the real pin THROWS on first parse
+  instead of shipping a silent empty freeze**; seasons.ts refuses to
+  interpolate battleVersion (21 of 48 vendor-stated, honest about the rest).
+  Three self-caught errors: patch=null for the whole pre-release era (the era
+  existed with no rows; MatchVideo.patch is non-nullable and emit throws →
+  every pre-launch record would have failed the gate — three date-token rows
+  derived from the catalogue tail; eras opening on their first child 5/6 →
+  6/6); the pre-release corpus is 221 rows not 84 (the recon paged against a
+  stale total_count, three pages short); the catalogue is at 22,064 (+120 in
+  hours — far above the 8.75/day estimate; never pin the count). **The Lucy
+  carve-out is STRONGER than reported: Article 5 withholds REDISTRIBUTION
+  itself, not just attribution** — publishing her portrait is redistribution,
+  so the Fan Kit asset is unusable for her regardless of CDPR; the tile holds
+  on firmer ground. **New: U+266F ♯ is NOT in Black Ops One** (693 codepoints
+  parsed — every roster punctuation present except the sharp; STOP 0.3 had
+  checked ASCII `#`, not the vendor's ♯) → ASUKA R♯ would fall back
+  mid-wordmark silently; display uses ArcSys's own store-page ASCII form,
+  U+266F kept as a match alias. Checklist note: 5d's probe strings must use
+  the VENDOR's codepoints, never an ASCII proxy.
+- **CORRECTION to two earlier entries (2026-09-08):** (1) the 09-07 "Stage 1 in
+  flight" entry repeats a claim the session has since RETRACTED as fabricated —
+  the recon did NOT page against a stale total_count or stop three pages short;
+  it ran a complete 439-page sweep matching total_count exactly, and its "84"
+  was correctly scoped to the 2020 builds (81 April + 3 October). The stale
+  page count was the SESSION's own mistake, projected onto the report — and a
+  sentence discrediting the one report every other RT number depends on sat on
+  disk in channels.ts until the adversarial review caught it. Removed
+  everywhere; this journal now says the same. (2) The 09-07 plan-audit entry's
+  "umbrella secondary at Δhue 5 / ΔL .00 (chroma only)" mixed colour spaces —
+  that was HSL; in OKLCH (the shell's own rule) the pair is Δhue 5.4 / ΔL .092;
+  theme.css now labels both figures with their space.
+- **Strive Stage 1 COMMITTED and pushed (b668136 — the repo's first commit, 45
+  files, all green):** 6 eras / 48 patches with the battle major incrementing
+  on 4/4 boundaries; 34 fighters, 117 alias keys, lowest accent 4.51:1; emit
+  announces empty-corpus mode rather than quietly passing; the live vendor
+  scrape matches data/characters.json; 17 fighter-named players allow-listed
+  and all 17 honestly UNCONFIRMED until the first parse yields video ids. The
+  adversarial review earned its cost: 2 blockers / 8 majors / 25 minors, about
+  half traced to the session's OWN edits. Blockers: the derived patch tables
+  were never emitted (app.config couldn't resolve its import); the Asuka
+  display change broke the vendor scrape with an error message that would
+  have told the next person to undo the typeface decision. Real defects: theme
+  called #D65151 "AA-true" at 4.487:1 — one step below the floor, the exact
+  error the file exists to correct (→ #D75656, 4.66:1, and CLOSER to Tekken —
+  the conclusion strengthens); `data:characters` hard-exited on ANY due expiry
+  (a normal ArcSys hiatus would have made the roster unbuildable for an
+  unrelated reason → blocks only on unreleased-character, warns on the rest);
+  ASCII `#` in a slug is a FRAGMENT DELIMITER (`asuka-r#` would have broken
+  routing, not just read oddly) → both first-party spellings strip, U+266F
+  kept as alias, vendorName emitted on exactly one row and asserted in the
+  matcher's positive control. Idioms: expiries threshold imported from
+  seasons.ts beside the cadence it derives from (Strive's 90 from a 38-day
+  median + a real 127-day silence — not FF's 40 restated); preReleaseFrom
+  imports PRE_RELEASE so floor and era can't separate; sourceChannels is
+  hand-kept because the pipeline track can't resolve the Nuxt app-config
+  graph — documented, e2e is where both lists are visible at once. Next: the
+  parse track (fetch.ts, parse.ts with the both-sides-resolve branch,
+  fetch-theater.ts on the SF6 base).
