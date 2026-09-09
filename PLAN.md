@@ -3038,3 +3038,77 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   graph — documented, e2e is where both lists are visible at once. Next: the
   parse track (fetch.ts, parse.ts with the both-sides-resolve branch,
   fetch-theater.ts on the SF6 base).
+- **Strive Stage 2 committed and pushed (2026-09-09): corpus 24,706 records ·
+  6,540 players · 49,589 side appearances** (vs the recon's ~16,900 estimate).
+  Adversarial review again paid several times over. **The finding that shipped
+  visibly: BUST_HEAD.potemkin at (0.74, 0.11) had alpha 0 with nothing opaque
+  within 55px — the crop centred on empty background and put his helmet 18%
+  from the left edge; the big upper-left shape is a GAUNTLET, not a head.**
+  Slayer and Leo failed identically; writing the guard found a FOURTH the
+  reviewer missed (Asuka, in the gap between his floating tome and his pages).
+  The guard's first form was wrong in an instructive way — a single-pixel alpha
+  test failed four rows whose crosshair is fine (they land in a one-pixel gap
+  between hair strands); measuring the NEIGHBOURHOOD separates cleanly:
+  off-figure 0.0/0.0/2.6/21.0% vs on-figure 51.2/52.3/58.7/85.4%, so the 35%
+  threshold sits in the middle of a real gap rather than tuned to the failures
+  (the FF crop lesson generalized: the top of the figure is the head only when
+  the figure is upright, and now it's MEASURED not eyeballed). Three findings
+  were about the session's own verification, not the agents' code: **`npm run
+  lint` was red the whole time and never run** (four errors, all parse.ts);
+  report.md shipped "2,864 of ggstHq's 2,994 titles" directly above the table
+  refuting it (the parser sees 644 of 3,006); and **fetch-theater.ts carried a
+  raw NUL byte that made git and `file` treat the track's largest file as
+  BINARY — every plain grep audit had been silently skipping it.** MAX_HANDLE_
+  WORDS' comment claimed a distribution the code couldn't reproduce → the
+  measured one, with surviving decoration NAMED with counts rather than claimed
+  gone (four handles like "UFA 2023 Losers Semifinals Sorani" can't be stripped
+  without costing real players); removing "PATCH 2.0 ZIN" merged two phantom
+  players into real ones (6,542 → 6,540, records unchanged). Two RT record ids
+  carry genuinely different matches at one id (tmyR-G1zxqs, oq97ugafLMI) — the
+  recon read the split as 3 duplicates + 1 error, the full sweep says 2 and 2,
+  which makes the case for counting-not-failing STRONGER: upstream data errors
+  are a standing condition, not an incident. The OG card reads characters.json
+  every run — and the docstring now records that **SF6's card went stale at 30
+  when its roster grew to 31, which is exactly the failure that design
+  prevents.** Remaining for Stage 2: verify-gates.ts, e2e.ts, app README.
+- **Strive Stage 2 CLOSED and Stage 3 built (2026-09-09).** The gates suite is
+  40 controls — inject the defect each gate exists to catch, require non-zero,
+  then require the clean run exits 0 — and it landed at **40 passed · 0 failed ·
+  0 skipped · 0 gaps**, with CotW's three known weaknesses fixed (a `null`
+  status counted as PASS, seven soft SKIPs on a fresh checkout, and a frozen-pin
+  assert that had never executed). Two controls found real defects rather than
+  confirming guards. **An RT segment whose offset exceeds its own VOD's duration
+  was built, written and published with the pull exiting 0** — nothing
+  downstream could catch it, because a segment record deliberately carries
+  `durationSec: 0`, so fetch-theater's build loop is the last place both numbers
+  are in scope; the control was written to turn itself into a PASS the day the
+  guard landed, and it did. And **the marker's loss figure was the recon's, not
+  the repo's**: `\bGGST\b` drops 150 videos across the eight dumps ingested
+  here, all on ggstBattleCollection, against the 1,003 quoted in four places
+  from a 24-channel / 56,951-title sweep. Both true of their own corpus; only
+  one true of this one.
+  **Stage 3 flip is one commit** (`e5e6b2a`) and the gate found what the sweep
+  missed: verify-cutover's literal `5 NAVIGABLE cards` and, second-order, the
+  **/changelog badge palette — a new game is a new COLOUR there**, so it needed
+  7 distinct and asserted 6. Both derived from the games table now. Two shipped
+  comments claiming every grid regime has a mixed live/announced row became
+  false at 6 live + 2 announced ([3,3][2] and [2,2,2][2]) and now say so,
+  including that **nothing in the gates would catch the reserved .count-slot's
+  removal today** — the honest reading, not the flattering one. verify:shell 97
+  passed · 0 failed; verify-cutover against the local topology 124 passed · 18
+  failed, all eighteen the edge-injected insights scripts that no game ships on
+  disk (checked: zero for all six), three per game across the five in
+  production and Strive alike.
+  Also closed here: the **ggst cron is `47 8 * * *`** and CotW's "NOTE FOR
+  WHOEVER ADDS GAME SIX" is now marked history rather than left as a stale
+  instruction; the three workspace scripts register ggst and **tekken's
+  UNRESOLVED GATE_CMD is resolved** by applying the criterion the comment
+  already stated; the shell README's step 6 now names `check-patches.sh`, which
+  it had never mentioned. Tekken's ComboForge drift shipped as its own commit
+  (`85d2a55`, verified green live today) and CotW's mr-karate collision was
+  adjudicated with per-row video evidence and nothing deleted (`680fa11`).
+  **BLOCKING THE FIRST VERCEL BUILD: the `v0.12.1` tag is still not on the
+  engine's remote.** ggst pins `github:joeycf/replay-engine#v0.12.1` and Vercel
+  clones the pinned ref, so the install fails until it is pushed. That plus four
+  branch pushes (ggst ×2, shell ×1, ffcotw ×1) are the user's — the permission
+  layer denies them here.
