@@ -41,6 +41,38 @@
             </div>
             <p class="mt-1 font-ui text-body text-text-secondary">{{ tool.description }}</p>
             <p
+              v-if="tool.queue"
+              class="mt-2 font-mono text-[11px]"
+            >
+              <template v-if="counts[tool.to] === 'unavailable'">
+                <span class="text-text-faint">queue unavailable</span>
+              </template>
+              <template v-else-if="counts[tool.to]">
+                <span
+                  :class="
+                    (counts[tool.to] as ReviewCounts).pending > 0
+                      ? 'text-primary'
+                      : 'text-text-faint'
+                  "
+                  >{{ (counts[tool.to] as ReviewCounts).pending }} pending</span
+                >
+                <span class="text-text-faint">
+                  / {{ (counts[tool.to] as ReviewCounts).done }} done</span
+                >
+                <span
+                  v-if="(counts[tool.to] as ReviewCounts).unreadable > 0"
+                  class="text-warning"
+                >
+                  · {{ (counts[tool.to] as ReviewCounts).unreadable }} unreadable</span
+                >
+              </template>
+              <span
+                v-else
+                class="text-text-faint"
+                >counting…</span
+              >
+            </p>
+            <p
               v-if="tool.writes"
               class="mt-2 font-mono text-[11px] text-text-faint"
             >
@@ -54,6 +86,10 @@
 </template>
 
 <script setup lang="ts">
+// What a dev page declares about itself — shape, the literal-only rule, and the
+// v0.14.0 `queue` key all documented on the type (@engine/types/devtool.ts).
+import type { DevToolMeta, ReviewCounts } from '@engine/types';
+
 // The /dev index: every dev page in the merged route table, grouped and
 // described. Nothing here is per-game — it reads what each page declares about
 // itself — so the engine owns the one copy and all four games inherit it.
@@ -63,31 +99,6 @@
 // keeps the whole prefix out of the static output.
 if (!import.meta.dev) {
   throw createError({ statusCode: 404, statusMessage: 'Not Found' });
-}
-
-/**
- * What a dev page declares about itself:
- *
- * ```ts
- * definePageMeta({
- *   devTool: {
- *     title: 'Fuse review',
- *     category: 'Diagnostic',
- *     description: 'Manual fuse workbench — adjudicate every gap the CV could not settle.',
- *     writes: 'data/overrides.json',
- *   },
- * });
- * ```
- *
- * Every value MUST be a plain quoted literal — see the extraction note on
- * `experimental.extraPageMetaExtractionKeys` in the engine's nuxt.config.
- */
-interface DevTool {
-  title?: string;
-  category?: string;
-  description?: string;
-  /** The committed JSON the tool writes back to, if it writes at all. */
-  writes?: string;
 }
 
 /** Listed first, in this order; anything else sorts in alphabetically after. */
@@ -110,16 +121,46 @@ const tools = useRouter()
   .getRoutes()
   .filter((route) => route.path.startsWith('/dev/'))
   .map((route) => {
-    const meta = route.meta.devTool as DevTool | undefined;
+    const meta = route.meta.devTool as DevToolMeta | undefined;
     return {
       to: route.path,
       title: meta?.title ?? humanize(route.path),
       category: meta?.category ?? UNCATEGORIZED,
       description: meta?.description ?? 'No description yet — add devTool meta to this page.',
       writes: meta?.writes,
+      queue: meta?.queue,
     };
   })
   .sort((a, b) => a.title.localeCompare(b.title));
+
+// How much of each tool's queue is actually OPEN.
+//
+// The index used to name tools and nothing more, so the only way to learn that a
+// queue held 132 rows of finished work was to open it and scroll. These counts
+// are the cheap version of that question, asked of the tool's own route.
+//
+// Fetched on mount, never during SSR: these are dev-only endpoints that read
+// working files, and one slow or missing artifact must not hold up the page that
+// lists every OTHER tool. A failure is reported as a failure — a tool whose
+// route 404s because its artifact has not been generated yet is exactly the
+// state these tools exist to fix, and rendering a confident "0 pending" for it
+// would be a lie the reader cannot see through.
+const counts = ref<Record<string, ReviewCounts | 'unavailable'>>({});
+
+onMounted(async () => {
+  await Promise.all(
+    tools
+      .filter((t) => t.queue)
+      .map(async (t) => {
+        try {
+          const payload = await $fetch<{ counts?: ReviewCounts }>(t.queue!);
+          counts.value[t.to] = payload?.counts ?? 'unavailable';
+        } catch {
+          counts.value[t.to] = 'unavailable';
+        }
+      }),
+  );
+});
 
 const groups = computed(() => {
   const byCategory = new Map<string, typeof tools>();

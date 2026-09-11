@@ -679,6 +679,7 @@ definePageMeta({
     category: 'Curation', // Curation · Diagnostic · Authoring sort first, in that order
     description: 'Adjudicate the review queue from sampled HUD frames.',
     writes: 'data/overrides.json', // optional
+    queue: '/api/dev/source-review', // optional, v0.14.0 — see below
   },
 });
 ```
@@ -697,6 +698,56 @@ description, this is why.
 A consuming app needs `nitro.prerender.ignore: ['/dev']` for the whole prefix
 (all four games already carry it) — nitro matches it as a prefix, so it covers
 the bare `/dev` index too.
+
+## Review queues (v0.14.0)
+
+A curation tool's job is to hand a human the work that is still open. Every one
+of these tools got that wrong the same way: the route computed a
+done/saved/applied flag and returned the row **anyway**, leaving the page to
+restyle finished work instead of dropping it. Measured across two games the day
+this landed — 132 of 132 rows in one queue already labelled, 63 of 63 in another,
+353 of 353 in a review sheet, 21 of 21 and 10 of 10 in two more. Every pass paid
+to re-read work that was done, and the real backlog hid inside the noise.
+
+`server/utils/reviewQueue.ts` is the shared vocabulary. A route hands it the
+artifact's rows and a predicate, and gets back `{ generatedAt, counts, items,
+resolved }` — `items` keeps its name and now holds the open work only.
+
+```ts
+import { partitionReviewQueue } from '@engine/server/utils/reviewQueue';
+
+return partitionReviewQueue(rows, (row) => resolutionOf(row), {
+  generatedAt: report.generatedAt,
+});
+```
+
+Four rules, each of them load-bearing:
+
+1. **The predicate reads the VERDICT STORE, never the published records.** The
+   published data is rebuilt by a pipeline run, so a verdict written seconds ago
+   is invisible to it and the page goes on offering work already done. Read the
+   file the verdict _writes_ — that, and only that, is what makes a save clear
+   its row on the next request instead of after the next pipeline run.
+2. **The artifact defines the universe.** `counts.total` always equals the rows
+   passed in; this function sorts them, it never invents or drops any. A queue
+   FILE that lists work which no longer exists is a different bug, fixed in the
+   pipeline that writes the file.
+3. **`negative` is a verdict, not a blank.** "A human looked and it cannot be
+   read" is a finding; without a word for it, such items come back forever. It is
+   counted apart from `done`, because a queue that is 90% unreadable is a
+   detector problem wearing the costume of a finished backlog.
+4. **`counts` is the contract**; `items`/`resolved` are the convenience. The
+   `/dev` index reads `counts` off each tool's declared `queue` endpoint and
+   renders "N pending / M done", so the state of every backlog is visible without
+   opening anything.
+
+**This layer ships no `server/api/*` and no auto-imported server code.** A route
+here would register in all seven consuming apps and enter every production build
+whether that game wanted it or not, so the engine exports helpers and the apps
+own their routes. Apps import by path (`@engine/server/utils/…`) rather than
+leaning on nitro's layer auto-import: the mechanism works, but nothing
+load-bearing should rest on a bundler behaviour that is invisible at the call
+site.
 
 ## Analytics endpoints (v0.6.3) — required when the app runs behind the shell
 
