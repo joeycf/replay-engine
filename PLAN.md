@@ -3136,3 +3136,70 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   cron ran from the Actions tab. Review backlog (the user's pace): 21 Evo
   records, 4 fuse gaps incl. the Lux mirror. Queued: marvelTokonYT grammar
   drift (16 titles); the v0.12.1 pin round; the .npmrc guard.
+- **Vercel deployment storage exceeded (2026-09-11): 11.89 / 10 GB** — Tekken
+  3.52 · SF6 2.99 · 2XKO 2.67 · ggst 1.24 · ffcotw 915 MB · tokon 862 MB ·
+  shell 469 MB. Diagnosis: Vercel retains ~50% of (build output + source) per
+  deployment for the retention window; **99% of the bulk is the fixed ~21 KB
+  page shell × thousands of prerendered pages, not the replay data**; HTML
+  already minified. Four supporting fixes offered. Recommendation: **1 (shell
+  videos → Blob: ~469 MB, decorative asset, poster fallback), 2 (engine hook
+  dropping modulepreload + payload extraction: ~26 MB per rebuild set, 16.5k
+  fewer files, one tag — gates reading prerender output get extended), 3
+  (cut avoidable deploys: ignoreCommand for docs-only commits WITH positive
+  controls, pin bumps batched into the next data commit, local fuse pushes
+  batched weekly) — and NOT 4 (replays.json → Blob) yet**: it decouples the
+  deployment from the data that every verification rests on (fingerprint,
+  cutover, e2e live checks), needs hash-addressed versioning so a code deploy
+  never meets a schema-mismatched JSON, a CI write credential, a prune job,
+  and the CORS lesson revisited — real engineering for ~5% of a deploy's
+  bulk. Measure after 1–3 + the prerender/retention choices; revisit 4 with
+  the hash-addressed design only if still over.
+- **Storage plan audited (2026-09-11) — approved with feedback; user selected 1
+  + 2, declined the deploy-count work.** The model: storage = Σ(retained
+  deployments × bytes/deploy), full copies, no deltas; ~250 prod deploys/month;
+  16,538 prerendered player pages at ~21 KB each, 99% fixed chrome (8.4 KB
+  Tailwind classes, 6.3 KB head, 354 B of actual data — "trimming replay rows
+  would save nothing"); ggst is the outlier at 155 MB/deploy (would reach ~7 GB
+  alone at 30-day retention). Change 1: retention 7 days / keep 10 on all ten
+  projects (11.89 → ~4.8 GB; the production alias is never swept; rollback
+  beyond 10 = redeploy from git) + delete the stale vercel/install-web-analytics
+  branch pinning a preview. Change 2: engine v0.13.1 — build:manifest hook
+  clearing dynamicImports (19 modulepreload links/page) + payloadExtraction
+  false (−1.5 KB/page, −7%; ggst −6,588 files; config.json halves); tag first
+  then seven pins. Change 3: shell videos → Blob (preload=none, hover-to-play,
+  poster fallback — nothing fetched on load). Projected ~4.4 GB, ~5.6 GB
+  headroom ≈ three mid-size games; the recorded next lever is the prerender
+  long tail (50–61% of players have exactly one replay; a client-resolved
+  fallback would cut ~166 MB/rebuild set without any handle 404ing).
+  Declining the deploy-count work is defensible now that keep-10 caps the
+  window. Feedback: extend the gates that read prerender output/config.json;
+  one explicit client-side navigation check post-change; shell gates allow
+  the Blob origin for video sources only (positive-controlled);
+  verify:deployed baselines before the seven pin pushes.
+- **Storage work SHIPPED (2026-09-11): engine v0.13.1 (modulepreload 15 → 0,
+  player page 21,107 → 19,781 B; ggst output 149.4 → 137.5 MB, 6,588 payload
+  files gone, config.json 1.15 MB / 13,176 overrides → 0.52 MB / 6,589),
+  pins bumped across all six games and verified live by HTML probes + browser
+  nav; shell hero videos on Blob (206 range playback verified end-to-end;
+  the shell's hygiene gate never even requested the videos before — a
+  Blob-origin check was ADDED so the move is policed); retention set in the
+  dashboard on all ten projects.** Found-by-running: `dynamicImports` wasn't
+  the field that carried the modulepreload tags (the payload link went, the
+  tags didn't — corrected); the extended prerender gate positive-controlled
+  against the old-shape build; prerender-queue's Rule A confirmed no-op; a
+  docs-only v0.13.2→v0.13.3 proven build-equivalent by byte-identical HTML
+  totals rather than rebuilt everywhere. **Two instrument findings:** (1)
+  **verify:deployed is BLIND to a pin-only change** — it matched on tokon's
+  first poll while the new deployment was still BUILDING, because the replay
+  count and content hash hadn't moved; the checks that proved the rollout were
+  live HTML probes and browser nav ("git-green is not production-green caught
+  something real") → the fingerprint needs the CODE version (engine tag / build
+  sha in summary.json), not just the data; (2) **the dashboard's retention
+  panel CLEARED `deploymentsToKeep`** (writes only the four dropdowns; the API
+  rejects the field outright) — the keep-10 rollback floor is gone; costs
+  nothing for the six games (production alias never swept, crons keep 7+
+  builds in-window) but the three quiet personal projects will hold only the
+  live build. The sweep is asynchronous — expect ~4.3 GB within a day; chase
+  it if counts look unchanged at 48h. 2xko carries one unpushed user refresh
+  commit (17ecdac) — push it. ggst still ~137 MB/build vs tokon's 16.6: the
+  long-tail prerender question stands (3,264 of 6,549 players have one replay).
