@@ -3071,44 +3071,42 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   every run — and the docstring now records that **SF6's card went stale at 30
   when its roster grew to 31, which is exactly the failure that design
   prevents.** Remaining for Stage 2: verify-gates.ts, e2e.ts, app README.
-- **Strive Stage 2 CLOSED and Stage 3 built (2026-09-09).** The gates suite is
-  40 controls — inject the defect each gate exists to catch, require non-zero,
-  then require the clean run exits 0 — and it landed at **40 passed · 0 failed ·
-  0 skipped · 0 gaps**, with CotW's three known weaknesses fixed (a `null`
-  status counted as PASS, seven soft SKIPs on a fresh checkout, and a frozen-pin
-  assert that had never executed). Two controls found real defects rather than
-  confirming guards. **An RT segment whose offset exceeds its own VOD's duration
-  was built, written and published with the pull exiting 0** — nothing
-  downstream could catch it, because a segment record deliberately carries
-  `durationSec: 0`, so fetch-theater's build loop is the last place both numbers
-  are in scope; the control was written to turn itself into a PASS the day the
-  guard landed, and it did. And **the marker's loss figure was the recon's, not
-  the repo's**: `\bGGST\b` drops 150 videos across the eight dumps ingested
-  here, all on ggstBattleCollection, against the 1,003 quoted in four places
-  from a 24-channel / 56,951-title sweep. Both true of their own corpus; only
-  one true of this one.
-  **Stage 3 flip is one commit** (`e5e6b2a`) and the gate found what the sweep
-  missed: verify-cutover's literal `5 NAVIGABLE cards` and, second-order, the
-  **/changelog badge palette — a new game is a new COLOUR there**, so it needed
-  7 distinct and asserted 6. Both derived from the games table now. Two shipped
-  comments claiming every grid regime has a mixed live/announced row became
-  false at 6 live + 2 announced ([3,3][2] and [2,2,2][2]) and now say so,
-  including that **nothing in the gates would catch the reserved .count-slot's
-  removal today** — the honest reading, not the flattering one. verify:shell 97
-  passed · 0 failed; verify-cutover against the local topology 124 passed · 18
-  failed, all eighteen the edge-injected insights scripts that no game ships on
-  disk (checked: zero for all six), three per game across the five in
-  production and Strive alike.
-  Also closed here: the **ggst cron is `47 8 * * *`** and CotW's "NOTE FOR
-  WHOEVER ADDS GAME SIX" is now marked history rather than left as a stale
-  instruction; the three workspace scripts register ggst and **tekken's
-  UNRESOLVED GATE_CMD is resolved** by applying the criterion the comment
-  already stated; the shell README's step 6 now names `check-patches.sh`, which
-  it had never mentioned. Tekken's ComboForge drift shipped as its own commit
-  (`85d2a55`, verified green live today) and CotW's mr-karate collision was
-  adjudicated with per-row video evidence and nothing deleted (`680fa11`).
-  **BLOCKING THE FIRST VERCEL BUILD: the `v0.12.1` tag is still not on the
-  engine's remote.** ggst pins `github:joeycf/replay-engine#v0.12.1` and Vercel
-  clones the pinned ref, so the install fails until it is pushed. That plus four
-  branch pushes (ggst ×2, shell ×1, ffcotw ×1) are the user's — the permission
-  layer denies them here.
+  **Eleven ggst commits + the engine tag were the user's to push — DONE.**
+- **GUILTY GEAR STRIVE LIVE (2026-09-09 22:43) — SIX GAMES.** verify:gates
+  40/0 · e2e 51/0 · comboforge 34/34 · verify:shell 97/0 · verify:deployed
+  matched first probe (24,706 · 49,589 · b52a0e32b6cf) · **verify:cutover
+  142/0 against the live apex** · check-patches CURRENT (44 versions vs ArcSys's
+  feed) · Web Analytics hasData:true. **The launch had a real defect only a live
+  check could catch: the Vercel project's env vars had been COPIED FROM CotW and
+  NUXT_APP_BASE_URL never changed — the first successful build shipped the
+  entire Strive site mounted at /ffcotw/** (confirmed, not guessed:
+  ggst-replay-database.vercel.app/ffcotw/data/summary.json → {"game":"ggst"});
+  had the shell flip landed first, /ggst would 404 while two projects claimed
+  /ffcotw. Three quieter ones: the registered domain was
+  ggst-replay-database-pink.vercel.app (the bare hostname every rewrite targets
+  404ing, still behind SSO); a stale .vercel/project.json; **.gitignore matches
+  .env but not .env.local — which the Vercel CLI writes WITH AN OIDC TOKEN
+  inside — all five siblings share that gap.** Checklist amendment: never copy
+  a sibling's env; assert the game host's summary.json `game` field at the
+  expected base path BEFORE the flip. Workflow registered, 0 runs (08:47 not yet
+  reached); a manual dispatch tests YT_API_KEY too.
+- **Lux added to 2XKO via the new-champion runbook (2026-09-10, pushed, live
+  6,608 → 6,615):** the built-in alarm had already fired correctly — 10 records
+  live with Lux SILENTLY OMITTED from the duo (never invented); patch 1.3.1 @
+  2026-09-08 with the tool's publishedAt fallback (09-07) rejected on evidence
+  (title, URL slug, trailer, and the 1.2.5 precedent — 09-07 would have swept 3
+  pre-Lux uploads); 17 Lux records, 20 under 1.3.1, low-confidence 29 → 20 (the
+  survivor VleKPHDmML8 was hiding a genuine solo Yasuo behind the Lux failure);
+  the preflight caught a SIGNED-OUT cookie export (only __Secure-3P* variants,
+  no SAPISID/LOGIN_INFO) before the CV pass burned it; after re-export fuse
+  fill 99.4 → 99.9%, gaps 36 → 4; runbook step 6 (nameplate crops from cached
+  frames) added — the one gap the written procedure had. **Cross-game roster
+  check: six pushes** (Tōkon aliases incl. "Cap. America" ×4; 2XKO's OG card
+  regenerated; four build-time tooling); Tōkon's 17 missing player redirects
+  RESTORED (live 404s; one flipped direction as canonical ids evolved;
+  typecheck green); CotW + Tōkon raw/ fetched (7 days behind), the stale-raw
+  condition verified cleared via the guard's own comparison. Surfaced:
+  marvelTokonYT's grammar has drifted (16 titles name a fighter but miss the
+  shape — "UNOKOA'S INSANE DUO | Loki & Blade") — a parse-coverage follow-up.
+  Pending the user's word: commit Tōkon's vercel.json alone (live 404 fix)
+  and let the crons parse, or parse now in its own commit.
