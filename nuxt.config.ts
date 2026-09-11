@@ -117,6 +117,27 @@ export default defineNuxtConfig({
       const cfg = viteConfig as import('vite').UserConfig;
       cfg.plugins = [...(cfg.plugins ?? []), tailwindcss()];
     },
+
+    // Every prerendered page carried a <link rel="modulepreload"> for each
+    // lazily-imported chunk — 19 of them, ~1.4 KB, on a build that emits one
+    // file per player (6,549 of them on GGST alone, where a page is ~21 KB and
+    // 99% of it is fixed chrome). The hints buy a round-trip of chunk-loading
+    // depth on a static content page; the bytes cost far more, because Vercel
+    // stores a complete copy of every build and the deployment-storage bill is
+    // (builds retained × build size), not (sites × build size).
+    //
+    // Clearing dynamicImports drops the <link> tags ONLY — the chunks still
+    // resolve through the module graph when the route code runs. Reverting is
+    // this one line; watch Speed Insights for an LCP/TTI shift if you do.
+    'build:manifest'(manifest) {
+      let cleared = 0;
+      for (const entry of Object.values(manifest)) {
+        entry.preload = false;
+        entry.prefetch = false;
+        cleared += 1;
+      }
+      console.log(`[replay-engine] preload/prefetch hints cleared on ${cleared} manifest entries`);
+    },
   },
 
   // Engine CSS entry: Tailwind + the two-tier tokens. Absolute path (computed
@@ -146,6 +167,19 @@ export default defineNuxtConfig({
   // shows up on the index wearing the "no description" fallback.
   experimental: {
     extraPageMetaExtractionKeys: ['devTool'],
+
+    // Payload extraction externalizes a page's data into a sibling
+    // `_payload.json` plus a <link rel="preload" as="fetch"> in the HTML. Here
+    // the payload is ~100 bytes — every page's REAL data arrives from
+    // public/data/*.json at runtime — so the split bought nothing and cost one
+    // extra file and one extra link tag per route. Off: the payload inlines
+    // back into __NUXT_DATA__, the per-route file disappears, and config.json's
+    // override ledger halves (it carried one entry per payload route).
+    //
+    // Rule A in modules/prerender-queue.ts (the payload cache-buster dedupe)
+    // has no payload routes left to match and no-ops; Rule B still carries the
+    // mixed-space page dedupe that module exists for.
+    payloadExtraction: false,
   },
 
   typescript: {

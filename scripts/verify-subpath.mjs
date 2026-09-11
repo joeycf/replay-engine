@@ -36,6 +36,18 @@ import { join, relative, resolve } from 'node:path';
  *      really serves at `/<base>/stats` — a root-space serving path for a
  *      base-scoped file. This is the output-side fingerprint of a mixed-space
  *      prerender queue, and it is what fails on v0.6.1.
+ *   3. No `_payload.*` file is emitted, and no payload route appears in the
+ *      override ledger. Payload extraction is off (v0.13.1) because the payload
+ *      was ~100 bytes while costing a file and a <link> per route; under a base
+ *      it also doubled the override map, one entry per payload twin.
+ *   4. No `modulepreload`/`prefetch` <link> survives in emitted HTML — the
+ *      engine's `build:manifest` hook clears those flags.
+ *
+ * Contracts 3 and 4 exist because the v0.13.1 storage work HALVED the override
+ * ledger and shrank every page, and contracts 1–2 cannot fail on that new shape:
+ * fewer overrides that all still serve under the base pass trivially. A gate
+ * that cannot fail on the shape it is meant to police is not a gate. Positive
+ * control: run --artifacts against any pre-v0.13.1 output and 3 and 4 must fail.
  */
 function checkArtifacts(outputDir, base, check) {
   const staticRoot = resolve(outputDir, 'static');
@@ -65,6 +77,37 @@ function checkArtifacts(outputDir, base, check) {
     `every prerendered-route override serves under /${prefix}`,
     strays.length === 0,
     strays.slice(0, 6).join(', ') || 'none',
+  );
+
+  // ── contract 3: payload extraction is off ────────────────────────────────
+  const emitted = walk(staticRoot);
+  const payloadFiles = emitted.filter((f) => /(?:^|\/)_payload\.(?:json|js)$/.test(f));
+  check(
+    'no _payload.* file emitted',
+    payloadFiles.length === 0,
+    payloadFiles.length
+      ? `${payloadFiles.length}, e.g. ${payloadFiles.slice(0, 3).join(', ')}`
+      : 'none',
+  );
+
+  const allOverrides = Object.keys(config.overrides ?? {});
+  const payloadOverrides = allOverrides.filter((k) => /_payload\.(?:json|js)$/.test(k));
+  check(
+    'no payload route in the config.json override ledger',
+    payloadOverrides.length === 0,
+    `${payloadOverrides.length} payload of ${allOverrides.length} overrides`,
+  );
+
+  // ── contract 4: no preload/prefetch hints in emitted HTML ────────────────
+  const hinted = emitted
+    .filter((f) => f.endsWith('.html'))
+    .filter((f) =>
+      /rel="(?:modulepreload|prefetch)"/.test(readFileSync(join(staticRoot, f), 'utf8')),
+    );
+  check(
+    'no modulepreload/prefetch <link> in emitted HTML',
+    hinted.length === 0,
+    hinted.length ? `${hinted.length} page(s), e.g. ${hinted.slice(0, 3).join(', ')}` : 'none',
   );
 }
 

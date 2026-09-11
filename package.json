@@ -1,6 +1,6 @@
 {
   "name": "replay-engine",
-  "version": "0.13.0",
+  "version": "0.13.1",
   "private": true,
   "type": "module",
   "description": "Shared, base-path-aware Nuxt 4 layer (design system + data contract) for the Replay Database multi-game platform. Consumed via `extends`; never deployed on its own.",
@@ -23,7 +23,8 @@
     "lint": "nuxt prepare && eslint .",
     "lint:fix": "nuxt prepare && eslint . --fix",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "verify:spa-nav": "node scripts/verify-spa-nav.mjs fixtures/.vercel/output/static"
   },
   "dependencies": {
     "@tailwindcss/vite": "^4.3.2",

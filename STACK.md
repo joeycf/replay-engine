@@ -1227,3 +1227,64 @@ Two additive optional fields on `Replay`, resolved in the badge:
   stripping it would have broken every `?q=<event name>` deep link. `event` and
   `channelName` are ADDED to the haystack instead, which also covers emitters
   that carry an event without putting it in the title.
+
+---
+
+## 25. v0.13.1 — the page shell was the payload
+
+A Vercel deployment-storage breach (11.89 GB against a 10 GB Hobby allowance)
+traced back to arithmetic nobody had done: the platform stores a COMPLETE copy of
+every deployment, so the bill is `retained builds × build size`, not
+`sites × build size`. Seven projects at ~250 production deployments/month, and a
+GGST build that emits one prerendered file per player across 6,549 players, is a
+storage curve, not a storage cost.
+
+The instinct was to trim the replay tables rendered into those pages. Measuring
+killed that idea outright — across GGST's 6,549 player pages the size
+distribution is min 20,773 / median 20,965 / p99 25,201 bytes. **99% of the bulk
+is the fixed page shell**, identical on every page: 8.4 KB of inline Tailwind
+class attributes, 6.3 KB of `<head>`, 3.5 KB header, 1.5 KB footer — against 354
+bytes of actual `__NUXT_DATA__`. The HTML is already minified (0% inter-tag
+whitespace), so there was no free win there either.
+
+Two things in that fixed shell were pure overhead, and both are config:
+
+- **19 `<link rel="modulepreload">` tags, ~1.4 KB per page.** Cleared via a
+  `build:manifest` hook setting `preload`/`prefetch` false on every manifest
+  entry. Note `dynamicImports = []` — the recipe that circulates for this — does
+  NOT do it: those tags come from the preload flags, and clearing dynamicImports
+  alone measured a 0-tag reduction. The chunks still resolve through the module
+  graph; what is lost is a round-trip of loading depth on a static content page.
+- **`experimental.payloadExtraction`.** It externalized ~100 bytes per route into
+  a sibling `_payload.json` plus a `<link rel="preload" as="fetch">`. Every page's
+  real data arrives from `public/data/*.json` at runtime, so the split bought
+  nothing — and under a subpath base it doubled `config.json`'s override ledger,
+  one entry per payload twin.
+
+Measured on the real GGST build: output 149.4 → 137.5 MB (−8.0%), 13,348 → 6,761
+files, `config.json` 1.15 MB / 13,176 overrides → 0.52 MB / 6,589. `sitemap.xml`
+is byte-identical, which is the invariant that mattered — `static-artifacts`
+already filtered on `fileName.endsWith('.html')`, so payload routes were never in
+it. Rule A in `modules/prerender-queue.ts` (the payload cache-buster dedupe) now
+has nothing to match and no-ops; Rule B still carries the mixed-space page dedupe
+the module exists for.
+
+- **Gate growth (the standing rule).** The change halves the override ledger and
+  shrinks every page — and `verify-subpath.mjs`'s two existing contracts cannot
+  fail on that new shape, because fewer overrides that all still serve under the
+  base pass trivially. It gains contracts 3 and 4: no `_payload.*` emitted, no
+  payload route in the override ledger, no `modulepreload`/`prefetch` link in any
+  emitted HTML. Positive control is the real thing rather than a flag — run
+  `--artifacts` against a pre-v0.13.1 build and exactly those three fail, at
+  fixture scale (13 of 26 overrides) and at GGST scale (6,588 of 13,176).
+- **`verify-spa-nav.mjs` is new, and it covers a hole that was already there.**
+  Turning payload extraction off changes what the client router fetches on a
+  route change, and NOTHING exercised that: the apps' e2e suites reach every
+  route with a full `page.goto` (`gotoIdle`), and their `page.click` calls drive
+  in-page filter controls, not navigations. A broken client-side router would
+  have passed the entire battery. The gate walks roster → character → player →
+  back in a real browser on built output, and plants a marker on `window` that a
+  full document reload would destroy — because the page still RENDERS correctly
+  if the router falls back to a hard navigation. Verified on fixtures and on the
+  real GGST build; controls against a pre-v0.13.1 build, where the payload
+  request reappears.
