@@ -33,7 +33,9 @@
             <SourceBadge
               v-if="replay"
               :source="replay.source"
-              class="ml-auto"
+              :event="replay.event"
+              :channel-name="replay.channelName"
+              class="ml-auto max-w-[60%]"
             />
           </div>
 
@@ -42,7 +44,10 @@
             <SourceBadge
               v-if="replay"
               :source="replay.source"
+              :event="replay.event"
+              :channel-name="replay.channelName"
               size="md"
+              class="md:max-w-[420px]"
             />
             <span class="truncate font-mono text-[11px] text-text-muted">{{ metaLine }}</span>
             <a

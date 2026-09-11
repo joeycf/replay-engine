@@ -422,6 +422,22 @@ _Failure: a witness file written every morning that no code has ever opened, and
 a trust number quoted as verification that measures the pipeline agreeing with
 itself._
 
+**12j. Carry the event tag and the uploader all the way to the public record.**
+An index source is one token covering many uploaders, so its configured name
+cannot say where any single record came from — it can only name the catalogue,
+which is the one thing a viewer never wants on a card. The catalogue's own event
+tag and the VOD's uploader are the two facts that CAN say it, and both are
+already on the raw record every fetcher builds. Emit them as engine
+`Replay.event` and `Replay.channelName` (v0.13.0) and the badge resolves
+`event → channelName → configured name`. Two rules learned the hard way: put the
+tag through the SAME text normalizer the title goes through, or one event gets
+two spellings depending on which run ingested it; and emit `channelName` only
+when it differs from the configured name, or every record on every channel
+carries a string that says nothing.
+_Failure: five ports each read the tag, folded it into a synthesized title for
+the search haystack, and dropped it — so the field existed in every pipeline,
+was displayed by none, and two games shipped a chip naming the catalogue._
+
 **4c. `data:patch-check` treats an unparseable title as a HARD FAILURE.**
 The checker exists to notice a shipped patch missing from your table, so anything
 it cannot read must fail loudly rather than be skipped. Two more rules the vendor

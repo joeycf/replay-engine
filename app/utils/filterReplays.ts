@@ -102,7 +102,15 @@ export function buildSearchIndex(
   const handle = new Map(players.map((p) => [p.id, p.handle]));
   const index = new Map<string, string>();
   for (const r of replays) {
+    // event/channelName (v0.13.0) are additive here, not a replacement: the
+    // index intakes already fold their event tag into the synthesized title so
+    // it is searchable, and that stays. This covers the emitters that carry an
+    // event WITHOUT putting it in the title (2XKO's hand-authored records), and
+    // makes an uploader name findable at all. Duplicates cost nothing — the
+    // haystack is substring-matched, not tokenized into a set.
     const parts: string[] = [r.title];
+    if (r.event) parts.push(r.event);
+    if (r.channelName) parts.push(r.channelName);
     for (const side of r.sides) {
       for (const pid of sidePlayers(side)) parts.push(handle.get(pid) ?? pid);
       for (const cid of side.characters) parts.push(charText.get(cid) ?? cid);
@@ -172,7 +180,9 @@ export function matchesReplay(
 
   const tokens = normalizeText(state.search).split(/\s+/).filter(Boolean);
   if (tokens.length) {
-    const hay = searchIndex?.get(replay.id) ?? normalizeText(replay.title);
+    const hay =
+      searchIndex?.get(replay.id) ??
+      normalizeText([replay.title, replay.event, replay.channelName].filter(Boolean).join(' '));
     if (!tokens.every((t) => hay.includes(t))) return false;
   }
 

@@ -67,6 +67,22 @@ export interface Replay {
    *  Drives the embed's `?start=` and the watch link's `&t=`. It is
    *  deliberately NOT a URL param — see VideoModal. */
   startSeconds?: number;
+  /** The event this record is footage of (additive, v0.13.0) — a tournament or
+   *  bracket name, verbatim from whatever catalogue named it ("Combo Breaker
+   *  2025 Top 8"). Free text, so it is a LABEL and not a key: nothing groups,
+   *  sorts or filters on it, and two spellings of one event are two values.
+   *  When present the badge prints this INSTEAD of the source's configured
+   *  name — a set is better identified by the event it was played at than by
+   *  the channel that catalogued it. */
+  event?: string;
+  /** The channel that actually published the footage (additive, v0.13.0), set
+   *  only when it differs from what `source` resolves to. An INDEX source is
+   *  one token covering many uploaders, so its records' real provenance is
+   *  per-record and the configured name cannot state it. Ranks BELOW `event`
+   *  in the badge: a tournament set names its tournament, and an untagged
+   *  whole video names whoever uploaded it. Absent for every record whose
+   *  uploader IS its source. */
+  channelName?: string;
 }
 
 export interface Stats {

@@ -249,6 +249,7 @@ not sameness. Run it before cutting an engine tag and after adopting one.
 | `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base; `--artifacts <output dir> [base]` gates BUILD placement (§15)       |
 | `scripts/verify-patch-groups.mjs`        | Grouped patch facet (v0.6.0) on an overlay build — deep links, tri-state, era-keyed stats                                             |
 | `scripts/verify-override.mjs`            | Theme-override gate on the BUILT fixture bundle, both directions (`:root` override wins / removal → umbrella) + raw-`@theme` tripwire |
+| `scripts/verify-event-chip.mjs`          | Badge label chain (v0.13.0) on an overlay build — order, the empty-label trap, `<span>`, truncation, cap placement                    |
 
 SSG: `nitro.preset = 'vercel-static'`, `prerender.crawlLinks = true`; output lands in
 `fixtures/.vercel/output/static` (games: their own `.vercel/output`).
@@ -1171,3 +1172,58 @@ item per game, and the same interstitial on every partner link.
   unset, so the search absorbs the fifth item instead of overflowing: at 768px it
   goes 299 → 223px, at 820px 340 → 275px, and from 900px up it is untouched. Row
   overflow is 0 at every width.
+
+## 24. v0.13.0 — the chip names the event, not the catalogue
+
+`SourceBadge` printed exactly one thing for twelve minor versions: the configured
+`sourceChannels` name for `Replay.source`. That is right for a channel and wrong
+for an INDEX source, where one token covers many uploaders — so five of six games
+had a badge naming _the catalogue that filed the footage_. Two printed the
+catalogue's brand name outright; the other three printed a euphemism for it. The
+event the set was actually played at — which the catalogue knows, and which every
+fetcher had been reading into `TheaterRawRecord.tag` all along — was dropped at
+the parse/emit boundary and survived only inside the synthesized title, where
+nothing renders it.
+
+Two additive optional fields on `Replay`, resolved in the badge:
+
+    event → channelName → sourceChannels name → the raw source id
+
+- **`source` does not move.** It stays the filter key, the `?src=` token, the
+  dedupe unit and the badge's style index. The new fields change what the chip
+  PRINTS and nothing else, which is what keeps this additive: a record with
+  neither renders byte-identically to v0.12.1.
+- **Two fields, not one.** `event` holds a real event name; `channelName` holds a
+  real uploader. A single display-only field would have been smaller and would
+  have published `event: "Sajam"` on 1,330 GGST records — a false statement in a
+  public JSON file, and a field no future facet could be built on. They are
+  mutually exclusive per record in practice, so the payload cost is the same.
+- **`||`, not `??`.** An emitter that publishes `event: ''` means "no event". `??`
+  passes the empty string through and renders a bordered, filled chip with no
+  text — a coloured smudge over the thumbnail that reads as a CSS bug, on exactly
+  the records nobody spot-checks. Whitespace-only folds the same way.
+- **The style stays positional.** Colour keys on the source's index in
+  `sourceChannels`, never on whether a label is present. Measured before
+  deciding: every event-bearing source on the platform already sits at index >= 2
+  and already wears the warning outline, so preferring the label changes no
+  colour anywhere. A label at index 0 keeps the filled-primary treatment, which
+  no consumer exercises today — `verify-event-chip.mjs` pins it so the behaviour
+  is documented rather than discovered.
+- **The tooltip is not decoration.** The label REPLACES the source name, so the
+  card otherwise stops saying where a record came from. `title` carries the full
+  text plus the source it displaced — no JS and no per-card state, on a component
+  a grid renders hundreds of times.
+- **Found by running: the cap was invalid CSS, twice.** `max-w-[calc(70%-9px)]`
+  drops silently — CSS requires whitespace around calc's `-`, and Tailwind
+  arbitrary values need `_` to express it. The plain `max-w-[70%]` that replaced
+  it _also_ did nothing, because `SourceBadge` carried its own `max-w-full` and
+  Tailwind resolves competing utilities by STYLESHEET order, not attribute order:
+  the baked-in default beat the caller's cap. Both times the class read as
+  present and the 60-character label ran off the thumbnail. The component now
+  owns the clipping and the caller owns the budget, which is also the honest
+  split — only the caller knows its layout. The gate caught both on its first
+  run, which is the argument for writing it before the release rather than after.
+- **The title keeps its ` ▰ <tag>` slot.** It is the search haystack, and
+  stripping it would have broken every `?q=<event name>` deep link. `event` and
+  `channelName` are ADDED to the haystack instead, which also covers emitters
+  that carry an event without putting it in the title.

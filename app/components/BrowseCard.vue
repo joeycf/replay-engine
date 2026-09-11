@@ -29,9 +29,15 @@
         decoding="async"
         @error="thumbFailed = true"
       />
+      <!-- the label can be a full event name (v0.13.0), so it is capped and
+           ellipsized: a 46-character tag would otherwise be sheared off by the
+           thumbnail's overflow with no ellipsis to say so. 70% leaves the
+           bottom-left meta line and bottom-right duration chip untouched. -->
       <SourceBadge
         :source="replay.source"
-        class="absolute left-[9px] top-[9px]"
+        :event="replay.event"
+        :channel-name="replay.channelName"
+        class="absolute left-[9px] top-[9px] max-w-[70%]"
       />
       <span
         v-if="(replay.durationSec ?? 0) > 0"
