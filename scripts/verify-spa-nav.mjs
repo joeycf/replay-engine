@@ -90,20 +90,44 @@ page.on('response', (r) => {
 // gate runs unchanged against a real game build (`... <static> /ggst`) where
 // the roster segment may also be renamed — Tokon files its roster at
 // /fighters/, so fall back to whatever the index page actually links to.
-let rosterFound = false;
-for (const segment of ['/characters', '/fighters']) {
-  const res = await page.goto(`${origin}${BASE}${segment}`, { waitUntil: 'networkidle0' });
-  if (res && res.status() < 400) {
-    rosterFound = true;
-    break;
-  }
-}
-check('roster index resolves', rosterFound, rosterFound ? '' : 'neither /characters nor /fighters');
-recording = true;
-const charHref = await page.$$eval('a[href]', (as) => {
-  const a = as.find((x) => /\/(?:characters|fighters)\/[^/]+$/.test(x.getAttribute('href') ?? ''));
-  return a ? a.getAttribute('href') : null;
+// The roster segment is DERIVED from the build's own sitemap, never enumerated:
+// three games already spell it three ways (/characters, /fighters, /champions)
+// and game seven will invent a fourth. A hardcoded list does not fail loudly
+// here — it fails as "no roster found", which reads like a broken build. Any
+// two-segment entity path that is not /players is the roster.
+const sitemapLocs = [
+  ...readFileSync(join(ROOT, BASE, 'sitemap.xml'), 'utf8').matchAll(/<loc>([^<]+)<\/loc>/g),
+].map((m) => new URL(m[1]).pathname);
+const entityPath = sitemapLocs.find((p) => {
+  const rest = p.slice(BASE.length).replace(/^\//, '').split('/');
+  return rest.length === 2 && rest[0] !== 'players' && !!rest[1];
 });
+const rosterSegment = entityPath ? entityPath.slice(BASE.length).split('/')[1] : null;
+check('sitemap names a roster segment', !!rosterSegment, rosterSegment ?? 'none found');
+if (!rosterSegment) {
+  await browser.close();
+  server.close();
+  process.exit(1);
+}
+
+const rosterRes = await page.goto(`${origin}${BASE}/${rosterSegment}`, {
+  waitUntil: 'networkidle0',
+});
+check(
+  `/${rosterSegment} index resolves`,
+  !!rosterRes && rosterRes.status() < 400,
+  rosterRes ? String(rosterRes.status()) : 'no response',
+);
+recording = true;
+const charHref = await page.$$eval(
+  'a[href]',
+  (as, seg) => {
+    const re = new RegExp(`/${seg}/[^/]+$`);
+    const a = as.find((x) => re.test(x.getAttribute('href') ?? ''));
+    return a ? a.getAttribute('href') : null;
+  },
+  rosterSegment,
+);
 check('roster index links to a character', !!charHref, charHref ?? 'none');
 if (!charHref) {
   await browser.close();

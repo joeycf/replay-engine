@@ -1299,3 +1299,16 @@ that reports its own traffic as a defect is worse than no gate: it trains you to
 read a red run as noise. Recording now starts once the roster segment is known.
 Caught on the first real consumer after fixtures and GGST, both of which use
 `/characters` and so never exercised the fallback.
+
+### v0.13.3 — the roster segment is derived, not enumerated
+
+The v0.13.2 fix kept the wrong shape: a hardcoded `['/characters', '/fighters']`
+list. 2XKO files its roster at `/champions`, so the gate reported "neither
+/characters nor /fighters" — which reads like a broken build, not like a gate
+that needs a new entry. That is the worst failure mode available to a gate.
+
+The segment now comes from the build's own `sitemap.xml`: any two-segment entity
+path that is not `/players` is the roster. Verified to discover all three
+spellings in use — `characters` (fixtures, GGST, Tekken, SF6), `fighters`
+(Tokon), `champions` (2XKO) — and it will not need touching when game seven
+invents a fourth.
