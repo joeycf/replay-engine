@@ -58,11 +58,11 @@ export default defineNuxtConfig({
   // clones the layer with NO node_modules, and the engine's runtime deps
   // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
   // Phase-3 remote-layer check).
-  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.12.1', { install: true }]],
+  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.13.0', { install: true }]],
 });
 ```
 
-`v0.12.1` is the current pin for a new consumer; every shipped game is on
+`v0.13.0` is the current pin for a new consumer; every shipped game is on
 `v0.12.0` or later. (This line read `v0.10.0` for two releases while all six
 consumers had moved on — the pin is stated here AND in each game's
 `nuxt.config.ts`, so treat the games as the truth and this as the guide.)
@@ -253,11 +253,26 @@ walks them in order; this is the reference the checklist links to.
 
 **Consolidate channels into groups; keep the per-channel tokens underneath.**
 `GameConfig.sourceGroups` (v0.5.5) renders one chip per group instead of one per
-channel — both shipped games collapse to **Online / Tournament**. The per-video
-badge still resolves the real channel from `sourceChannels`, and the source
+channel — both shipped games collapse to **Online / Tournament**. The source
 predicate still matches per-channel ids, so per-channel deep links keep working.
 With `sourceGroups` set the engine renders **only** group chips; child filtering
 is URL member-CSV (`?src=a,b,c`) — there is no parent token.
+
+**The per-video badge names the record, not the channel (v0.13.0).** It resolves
+
+    Replay.event → Replay.channelName → sourceChannels name → the raw id
+
+and only the last two rungs come from config. `source` is unaffected — it stays
+the filter key, the `?src=` token and the badge's style index; the new fields
+only change what the chip PRINTS. This exists for INDEX sources, where one token
+covers many uploaders: a set indexed by a third-party catalogue should say
+"Combo Breaker 2025 Top 8", not the name of the catalogue that filed it. Publish
+`event` when you know the tournament, `channelName` when you know the uploader
+and it is not the source itself, and neither when the configured name is already
+the truth. Both are free text and neither is a key — nothing groups, sorts or
+filters on them, and long values ellipsize on the card (keep them under ~30
+characters or the card shows a fragment; the tooltip carries the full text and
+the source name it replaced).
 
 **One physical channel may emit several `Replay.source` tokens.** SF6's
 @TheKingArena is classified per video by title signals into `kingArenaOnline`
@@ -862,6 +877,7 @@ Browser-level verification (needs a local Chrome at
 node scripts/verify-subpath.mjs http://localhost:4174 /sub   # base-path resilience probe
 node scripts/verify-override.mjs                             # theme-override contract, both directions
 node scripts/verify-patch-groups.mjs                         # grouped patch facet (overlay build)
+node scripts/verify-event-chip.mjs                           # the badge's label chain (overlay build)
 ```
 
 > `verify-phase2.mjs` and `verify-browser.mjs` were **deleted in v0.6.4**. Both
