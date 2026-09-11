@@ -3110,3 +3110,29 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   shape — "UNOKOA'S INSANE DUO | Loki & Blade") — a parse-coverage follow-up.
   Pending the user's word: commit Tōkon's vercel.json alone (live 404 fix)
   and let the crons parse, or parse now in its own commit.
+- **Roster check became platform hardening (2026-09-10 20:56, all EIGHT repos
+  pushed, 0/0 clean).** "You asked whether any other game needed a character
+  added. The answer was no — all six rosters were already complete.
+  Everything since came out of checking why nothing could have told you
+  that." Now unattended: **four announced fighters gated** — Arjun (10-13:
+  the SF6 gate was LIVE-needed, data:characters would have pulled him in five
+  weeks early), Mikey + Draken (10-22), Samira (October), Roger Jr. + Yujiro
+  Hanma; 2XKO and Tekken have expiry gates for the first time;
+  `./check-rosters.sh` (six checkers behind one roster-check: trailer)
+  replaces the manual audit; redirect drift goes RED instead of silent
+  (Tōkon's 17 were live 404s); `.env.local` can't be committed anywhere.
+  Three opens flagged: (1) five repos pin engine v0.12.0, engine is v0.12.1
+  (ggst already ahead) — a routine pin round; (2) **`.npmrc` is TRACKED in the
+  game repos — gitignore can't protect a tracked file, and the usual `>>
+  .npmrc` token idiom would append straight into the index** (no credential
+  there today) — a gate asserting no token-shaped line, never untrack if
+  builds need it; (3) **Tōkon's next cron goes red on the patch threshold — a
+  TRUE negative** (vendor quiet since 08-28; the 10-day threshold is measured
+  cadence) — do not clear it by moving the threshold. Lux closed: nameplate
+  templates 32/32, 22 appearances, 6,620 live, fuse fill 99.8%; two merges
+  with the cron's competing refresh cost a 6 MB videos.json conflict each —
+  **`git pull --rebase` before any long local run; refresh-all's
+  behind-upstream preflight refuses for exactly this reason.** Strive's first
+  cron ran from the Actions tab. Review backlog (the user's pace): 21 Evo
+  records, 4 fuse gaps incl. the Lux mirror. Queued: marvelTokonYT grammar
+  drift (16 titles); the v0.12.1 pin round; the .npmrc guard.
