@@ -1288,3 +1288,14 @@ the module exists for.
   if the router falls back to a hard navigation. Verified on fixtures and on the
   real GGST build; controls against a pre-v0.13.1 build, where the payload
   request reappears.
+
+### v0.13.2 — the gate's own probe was in its evidence
+
+`verify-spa-nav` discovers the roster segment by trying `/characters` then
+`/fighters`, because Tokon renames it. The unused one legitimately 404s — and the
+response listener was already recording, so the gate's own probe landed in its
+404 tally and failed the run on Tokon while the build was perfectly fine. A gate
+that reports its own traffic as a defect is worse than no gate: it trains you to
+read a red run as noise. Recording now starts once the roster segment is known.
+Caught on the first real consumer after fixtures and GGST, both of which use
+`/characters` and so never exercised the fallback.

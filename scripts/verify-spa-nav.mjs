@@ -77,8 +77,13 @@ const page = await browser.newPage();
 const requests = [];
 const errors4xx = [];
 page.on('request', (r) => requests.push(new URL(r.url()).pathname));
+// Roster discovery below probes /characters then /fighters, and whichever the
+// game does not use legitimately 404s — Tokon files its roster at /fighters/.
+// Those probes are this gate's own traffic, so they must not land in the
+// hygiene tally; recording starts once the roster segment is known.
+let recording = false;
 page.on('response', (r) => {
-  if (r.status() >= 400) errors4xx.push(`${r.status()} ${new URL(r.url()).pathname}`);
+  if (recording && r.status() >= 400) errors4xx.push(`${r.status()} ${new URL(r.url()).pathname}`);
 });
 
 // Discover the entity routes rather than hardcoding fixture slugs, so this
@@ -94,6 +99,7 @@ for (const segment of ['/characters', '/fighters']) {
   }
 }
 check('roster index resolves', rosterFound, rosterFound ? '' : 'neither /characters nor /fighters');
+recording = true;
 const charHref = await page.$$eval('a[href]', (as) => {
   const a = as.find((x) => /\/(?:characters|fighters)\/[^/]+$/.test(x.getAttribute('href') ?? ''));
   return a ? a.getAttribute('href') : null;
