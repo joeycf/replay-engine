@@ -749,6 +749,65 @@ leaning on nitro's layer auto-import: the mechanism works, but nothing
 load-bearing should rest on a bundler behaviour that is invisible at the call
 site.
 
+**One exception, and it is deliberate: `server/middleware/dev-guard.ts`
+(v0.15.0).** Middleware is precisely the invisible machinery the rule above
+distrusts — it has no call site by construction, so it cannot be made to comply.
+It is here anyway because the alternative is worse. The `import.meta.dev` guard
+it backs up is copy-pasted across 47 sites in four repos, and
+NEW-GAME-CHECKLIST.md already records the failure that produces: three Tōkon
+pages shipped without it, because nobody could see the other seven from where
+they were working. A guard that every future dev page inherits cannot be
+forgotten by the page that forgets it. It registers no route and no auto-imported
+symbol, and under `vercel-static` it is compiled out of the deployed artifact
+entirely, so the harm the rule protects against does not apply to it.
+
+## Dev surface access (v0.15.0)
+
+Every consuming app inherits two things that decide who can reach `/dev` and
+`/api/dev`. Neither touches production: these builds are `vercel-static`, so
+there is no server in the output and the routes already 404 by not existing.
+
+**1. The dev server binds loopback.** `devServer.host` is `127.0.0.1` in this
+layer. Nuxt's default binds every interface, which meant a `npm run dev` was
+reachable off-machine from the moment it started — and the surface behind it is
+32 dev routes across four apps, 11 of which rewrite committed data in the git
+working tree. An app can override this, but should know what it is choosing.
+
+**2. `DEV_REVIEW_TOKEN` gates the surface when set.** Unset (the default), the
+bind address is the only control and nothing changes. Set, every request to
+`/dev` and `/api/dev` needs the token:
+
+|                    | `DEV_REVIEW_TOKEN` unset | set                                |
+| ------------------ | ------------------------ | ---------------------------------- |
+| reachable at all   | loopback only, by bind   | wherever you have pointed a tunnel |
+| `/dev`, `/api/dev` | open                     | token required                     |
+| everything else    | open                     | open                               |
+
+Pass it as an `x-dev-token` header, or visit any dev URL once with `?k=<token>` —
+that sets an httpOnly cookie and redirects, which is what a phone wants, and what
+the `/dev` index needs before its per-tool queue counts will load.
+
+**Why the token is not an address check.** Under `nuxt dev` a request reaches
+Nitro through the dev proxy with no socket behind it (`remoteAddress` is
+undefined), and `x-forwarded-for` is passed through from the client verbatim — a
+LAN request claiming `x-forwarded-for: 127.0.0.1` is indistinguishable from a
+real loopback call. So "allow loopback" cannot be enforced in the request path;
+it is enforced by the bind, and the token covers the case where you have
+deliberately tunnelled past it.
+
+**Reaching it from another machine.** Point a tunnel at localhost and set the
+token — the tunnel terminates locally, so the loopback bind is not in the way:
+
+```bash
+tailscale serve --bg http://localhost:3000
+DEV_REVIEW_TOKEN=… npm run dev
+```
+
+Then open `https://<host>.ts.net/<base>/dev?k=<token>` once per device. Note the
+concurrency hazard this makes likelier: the dev write endpoints rewrite whole
+JSON files with no locking, so a review session and a local pipeline run that
+touches the same file will lose one of them.
+
 ## Analytics endpoints (v0.6.3) — required when the app runs behind the shell
 
 Both Vercel SDKs are wired by the engine's

@@ -3,8 +3,9 @@ import type { ReviewCounts, ReviewQueue, ReviewResolution, ReviewState } from '.
 /**
  * Split a review worklist into the open work and the settled work.
  *
- * THE ENGINE'S FIRST SERVER FILE. Two rules govern everything under
- * `server/` here, both learned from the seven repos that consume this layer:
+ * THE ENGINE'S FIRST SERVER FILE, and for a while its only one. Two rules
+ * govern everything under `server/` here, both learned from the seven repos that
+ * consume this layer:
  *
  *  1. NO AUTO-IMPORTS. Nitro does scan a layer's `server/utils` (each consuming
  *     app's generated tsconfig.server.json already includes this directory, and
@@ -18,6 +19,12 @@ import type { ReviewCounts, ReviewQueue, ReviewResolution, ReviewState } from '.
  *     game wanted it or not. This module is pure — no h3, no node:fs, no I/O —
  *     so it has no resolution surface to get wrong and can be tested as plain
  *     semantics.
+ *
+ * `server/middleware/dev-guard.ts` (v0.15.0) is the one exception, and it breaks
+ * rule 1 rather than bending it: middleware IS the invisible machinery, with no
+ * call site to read. It is there because the guard it backs up is copy-pasted 47
+ * times across four repos and has already been forgotten once. Nothing else
+ * should follow it under `server/` without the same argument.
  */
 export type ReviewPredicate<T> = (item: T) => ReviewResolution | ReviewState;
 

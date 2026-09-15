@@ -33,6 +33,27 @@ export default defineNuxtConfig({
     },
   },
 
+  // ---- The dev server binds loopback, and that IS the access control -------
+  //
+  // Nuxt's default binds every interface, which nothing in these repos asks for
+  // or documents: a `npm run dev` is reachable off-machine from the moment it
+  // starts, and the /dev surface behind it is 32 routes across four apps, 11 of
+  // them writing committed data. `import.meta.dev` does not help — it is a
+  // build-mode constant, true for every caller wherever they are.
+  //
+  // This has to live at the listener rather than in the request path. Measured
+  // under `nuxt dev`: requests reach Nitro through the dev proxy with no socket
+  // behind them (`remoteAddress` is undefined), and `x-forwarded-for` is passed
+  // through from the client verbatim — so a middleware cannot tell a loopback
+  // call from a LAN call that claims to be one. Binding can.
+  //
+  // Reaching it from another machine still works and is now deliberate: point a
+  // tunnel at localhost (`tailscale serve`) and set DEV_REVIEW_TOKEN, which
+  // server/middleware/dev-guard.ts enforces over /dev and /api/dev.
+  devServer: {
+    host: '127.0.0.1',
+  },
+
   // ---- SSG + Vercel static output (PLAN.md §0 / §9), inherited by apps -----
   nitro: {
     preset: 'vercel-static',
