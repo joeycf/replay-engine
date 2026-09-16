@@ -3203,3 +3203,43 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   it if counts look unchanged at 48h. 2xko carries one unpushed user refresh
   commit (17ecdac) — push it. ggst still ~137 MB/build vs tokon's 16.6: the
   long-tail prerender question stands (3,264 of 6,549 players have one replay).
+- **Games #7 and #8 design briefs issued (2026-09-15):** prompt-avatar-design.md
+  and prompt-gbvsr-design.md, mirroring the CotW/Strive structure with the hue
+  map updated to seven occupied hues (2XKO 2 · Tekken 20 · SF6 52 · Strive ~82
+  · CotW 93 · umbrella 190 · Tōkon 244 — the warm arc is now dense) and the two
+  remaining free bands named (green ~142, violet ~303). Pair-coordination rule
+  stated in both: the two new skins take DIFFERENT bands, or the same band
+  split by ΔL ≥ .12 AND chroma, sampled hexes left on record for
+  reconciliation before either build transcribes. Avatar: the four-elements
+  trap called out (element blue/red/orange all collide) → one primary in a
+  free band, the elements living in per-character families BY NATION;
+  known-blocked facts from the card work carried (white line-art logo/seals,
+  the Tekken-adjacent red, the avatarfighters.com indigo as the starting
+  anchor). Granblue: sky-blue = Tōkon's hue and gold = Strive's are both
+  blocked; the twilight-violet band is its natural claim; gilding allowed only
+  as a hairline tone, never a chip; accent families by Granblue's six
+  ELEMENTS (~30 characters). Both: roster enumerated in-session (the Champion
+  lesson), family maps machine-readable (the Strive precedent), OG/favicon
+  agreeing with the Coming Soon cards' registers. Build-sequencing note:
+  Granblue's day-one corpus was ~30,794 at recon (ggst-class, ~137 MB/build) —
+  the prerender long-tail design should precede or accompany its build given
+  ~5.6 GB of storage headroom.
+- **COLOR POLICY REVISED (2026-09-15, the user's call): if a game has a clear
+  color identity, use it — cross-game primary collisions are acceptable.**
+  Reasoning: inside a game's site only that game's palette exists; the two
+  surfaces where games meet (selector grid, changelog badges) carry wordmarks,
+  art and text labels that do the identifying — the distinctness rule bought
+  variety on the door at the cost of authenticity everywhere else, and at
+  eight games the trade flipped. What survives: within-skin separation
+  (primary vs secondary vs status at chip size; AA everywhere; roster accents
+  distinguishable — the OKLCH rule now applies INSIDE a skin), and a soft
+  preference against an exact match with the umbrella teal (platform-scoped
+  changelog items). Both briefs rewritten: Granblue takes its real sky-blue +
+  gold (previously routed to ultramarine because of Tōkon/Strive); Avatar's
+  four elements become the system (water blue / air saffron candidates
+  unblocked), families by nation still carry the four. Coming Soon cards
+  were chosen under the old rule and follow the theme at flip (the Tōkon
+  precedent). No retroactive changes to shipped skins (Strive's gold stands
+  on its own canon). Follow-up: the shell README's accent-rule paragraph
+  (written by the coming-soon session) becomes advisory/within-skin — a
+  one-line docs amendment when next in the shell.
