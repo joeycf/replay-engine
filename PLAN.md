@@ -3243,3 +3243,26 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   on its own canon). Follow-up: the shell README's accent-rule paragraph
   (written by the coming-soon session) becomes advisory/within-skin — a
   one-line docs amendment when next in the shell.
+- **Both handoffs landed and verified (2026-09-16), under the new policy:**
+  Avatar = Avatar-State/water blue `#4EC0ED` primary (sampled from the AVATAR
+  wordmark fill; Tōkon neighbour noted for the record) + Air Nomad saffron
+  `#FCA942` secondary (SF6 neighbour noted); 17 --char tokens (12 launch +
+  Year 1 Pass Bolin/Ty Lee/Lin Beifong/Iroh + roster-slot names Avatar Aang /
+  Nightmare Korra); accent-families.json by nation. Granblue = SKY BLUE
+  `#4DA6FF` + GILT `#E0B65A` (its real colors, previously routed away; Tōkon
+  and Strive neighbours noted); 40 --char tokens incl. `id`, `2b`,
+  `avatar-belial`; gbvsr-accents.json by element. Both: 16 semantic tokens vs
+  the engine's 18 (derive on the ramp — the Tōkon precedent); both chose
+  **Figtree for UI and the Cinzel family for display** (Cinzel vs Cinzel
+  Decorative) — sessions ran in parallel with no coordination by design;
+  flagged for the user as a conscious keep-or-swap, not a defect. Issued:
+  prompt-avatar-game.md (4th checklist consumer; Stage 0 go/no-go on a
+  corpus that was "forming" at 253 — trajectory and channel spread decide,
+  not a number; cron 17 9), prompt-gbvsr-game.md (5th; ggst-class — three
+  Strive-shaped stops; the `id` character positive-controlled; UPCOMING
+  returns to []; storage projection in the launch report; cron 47 9), and
+  prompt-prerender-long-tail.md (read-only measure-first: analytics on
+  single-replay player pages — visits and search share — then levers A
+  client-resolved fallback / B slim the page shell keeping every prerender /
+  C both, with a cost table; the pick is the user's; does NOT block Granblue
+  while ~5.6 GB of headroom holds).
