@@ -803,6 +803,12 @@ tailscale serve --bg http://localhost:3000
 DEV_REVIEW_TOKEN=… npm run dev
 ```
 
+The layer also allows `.ts.net` in `vite.server.allowedHosts`. Vite refuses Host
+headers it does not recognise — a DNS-rebinding defence — so without it a tunnel
+reaches the app and Vite answers `403 This host is not allowed` before any of our
+code runs, which reads as a broken tunnel and is not one. The allowance is
+Tailscale's namespace only; the token still guards `/dev` behind it.
+
 Then open `https://<host>.ts.net/<base>/dev?k=<token>` once per device. Note the
 concurrency hazard this makes likelier: the dev write endpoints rewrite whole
 JSON files with no locking, so a review session and a local pipeline run that

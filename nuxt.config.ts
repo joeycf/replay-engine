@@ -54,6 +54,19 @@ export default defineNuxtConfig({
     host: '127.0.0.1',
   },
 
+  // A tunnel arrives with its own hostname, and Vite refuses hostnames it does
+  // not know — a DNS-rebinding defence, and a correct one. Without this the
+  // tunnel reaches the app and Vite answers 403 "This host is not allowed"
+  // before any of ours runs, which looks like the tunnel is broken and is not.
+  // `.ts.net` is Tailscale's namespace and matches subdomains only, so this
+  // admits tailnet hostnames and nothing else; the token still guards /dev
+  // behind it. Localhost stays allowed by Vite's own default.
+  vite: {
+    server: {
+      allowedHosts: ['.ts.net'],
+    },
+  },
+
   // ---- SSG + Vercel static output (PLAN.md §0 / §9), inherited by apps -----
   nitro: {
     preset: 'vercel-static',
