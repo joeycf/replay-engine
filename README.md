@@ -803,6 +803,22 @@ tailscale serve --bg http://localhost:3000
 DEV_REVIEW_TOKEN=… npm run dev
 ```
 
+**The token does not make a dev server safe to publish.** It runs inside Nitro,
+and Vite answers its own paths first — measured with the token enforced and no
+credentials, `/_nuxt/@fs/…` served `data/overrides.json` in full and route source
+code, and Nuxt DevTools answered 200, while `/dev` correctly 404'd. On a private
+tailnet that is acceptable, because only your own devices can resolve the name.
+For anything **public** — Tailscale Funnel, a quick tunnel, a port forward — put
+an authenticating proxy in front of the entire dev server and publish only the
+proxy, never port 3000:
+
+```text
+browser ─▶ public tunnel ─▶ proxy (credentials required) ─▶ 127.0.0.1:3000
+```
+
+With that in place nothing reaches Vite, DevTools or `/dev` unauthenticated, and
+the token becomes a second layer over `/dev` rather than the only one.
+
 The layer also allows `.ts.net` in `vite.server.allowedHosts`. Vite refuses Host
 headers it does not recognise — a DNS-rebinding defence — so without it a tunnel
 reaches the app and Vite answers `403 This host is not allowed` before any of our

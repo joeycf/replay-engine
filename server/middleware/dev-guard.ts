@@ -44,6 +44,18 @@ import { timingSafeEqual } from 'node:crypto';
  * `vercel-static` it is compiled out of the deployed artifact entirely, so the
  * harm that rule protects against does not apply to it.
  *
+ * IT DOES NOT MAKE A DEV SERVER SAFE TO PUBLISH. This middleware runs inside
+ * Nitro, and Vite answers its own paths before Nitro sees the request. Measured
+ * with the token enforced and no credentials: `/_nuxt/@fs/…` returned
+ * data/overrides.json in full and served route source code, and Nuxt DevTools
+ * answered 200 — while `/dev` correctly 404'd. That is fine on a private tailnet,
+ * where only your own devices can resolve the name. It is not fine on anything
+ * public (Tailscale Funnel, a Cloudflare quick tunnel, a port forward): there the
+ * authentication has to sit IN FRONT of the whole dev server — a proxy that
+ * demands credentials before forwarding anything — and the tunnel must publish
+ * that proxy, never the dev server's own port. The token is then a second layer
+ * over /dev, not the first line.
+ *
  * IT GUARDS NOTHING IN PRODUCTION, and must never be sold as if it did. Every
  * app builds `vercel-static`: there is no server in the output at all, and these
  * routes already 404 there by not existing.
