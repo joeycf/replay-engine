@@ -3266,3 +3266,56 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   client-resolved fallback / B slim the page shell keeping every prerender /
   C both, with a cost table; the pick is the user's; does NOT block Granblue
   while ~5.6 GB of headroom holds).
+- **Avatar build plan audited (2026-09-18) — approved with feedback; the
+  session's own decision "build now, flip when confirmed" endorsed.** Corpus:
+  367 records / 32 channels at week 8 (263 reconstructed for 09-03 — within 4%
+  of the recon's 253, the method reproduces); ~6.3/day, top-1 20.6%, top-3
+  45.5% — but the rise is EVENT-DRIVEN (NdyTV's 53 uploads on three days;
+  three channels appeared entirely after 09-03; STiLL's titles carry the
+  played-on date up to 26 days before upload, flushing an August backlog) and
+  **Aegis, the largest channel, has stopped cutting per-match uploads** (15/wk
+  → 1/wk; markedPerDay28 was anchored to the newest upload, which flattered
+  it). The flip gate: the complete weeks of 09-14 and 09-21 each ≥ 40 parsed
+  records, measured 09-29 by the same method; either < 25 → hold. Stages 1–2,
+  the Vercel project and the cron go live behind the shell. **Findings that
+  change the build:** (1) **Aegis's grammar is a FIFTH, pair-level
+  orientation** — `CharA vs CharB (HandleA vs HandleB)` — SlotOrder has four
+  per-side shapes and the shipped Strive parser rejects all 57 as vs-count:
+  the largest channel has NO code path today → Stage 1 item 1; (2)
+  **match-level duplication the dedupe key cannot see** — one organiser posts
+  a full VOD and per-match cuts; one pairing has five candidate records across
+  three intakes and five video ids; "0 duplicate video ids" is true and
+  non-probative → FEEDBACK: match identity (handle pair × fighter pair ×
+  played-on date) as a REPORT-ONLY tier with human verdicts, never an
+  auto-drop key — the runback (same pairing, same characters, same day,
+  different set) is a legitimate collision and the 118/196 reversal is the
+  precedent; (3) **the game has SUPPORT characters** — 36, each owned by one
+  fighter, `char2` is a support on 231/231 RT rows (the ported chars() would
+  fold them in as counter-picks and print 100%), Katara is a fighter AND a
+  support name → a game-local `supports` field + registry with ownership +
+  a facet + side-badge override (the 2XKO fuses precedent), supports never in
+  Side.characters, the registry invariant covering both namespaces; (4)
+  **art: the licence says NO** — Paramount ToU prohibits, no fan kit exists,
+  the wiki/SuperCombo files are pixel-proven to be the same Paramount renders
+  and inherit the prohibition → generated tiles for all 17, no splash, FAIL
+  LOUD on any vendor/wiki fetch, ToU re-check with expiry; and the honest
+  disclosure that **5 of 6 siblings ship vendor art with no licence reading on
+  record** → a platform art-licence audit queued as its own session; (5) the
+  Year 1 Pass has FIVE fighters with no vendor dates (a dateless UNRELEASED
+  shape expiries.ts lacks); (6) rights line is "© 2026 Viacom International
+  Inc." per the vendor's legal notice; (7) theme: 5 missing not 2, derivations
+  on the ramp, the saffron citation false (0 px in the logo), text-faint on
+  surface-raised 4.34:1 below AA — and the engine silently falls back to
+  umbrella teal when a handoff omits primary-hover/focus; (8) the Unicode scan
+  proves ABSENCE (the corpus is ASCII; carry normalization anyway); (9) RT
+  0.00% dead; h/m/s offsets (7.8%) dropped by Strive's START_VALUE; set-format
+  tags are not events; intro-skip offsets would mint false segment ids; ♱ is
+  a real handle. **Recon incidents disclosed first:** the discovery agent
+  exhausted the shared YouTube quota (1,770 units, 1,200 on search.list) — no
+  cron harmed, verified via the runs API; the machine bot-gated; five session
+  limits. Checklist lesson: a recon's API budget counts against the crons'
+  quota, search.list belongs in the brief, recon waits for the day's crons.
+  OWNED: my "Tōkon launched at 105 / 5" was the recon table's parseable count,
+  not the shipped corpus (10/1 · 35/6 · 314/7 at weeks 4/6/8) — the plan's
+  measured comparison supersedes it, and gap 18 (no written viability bar
+  exists) is right. Eighteen checklist gaps as Step −1. Pin v0.15.1.
