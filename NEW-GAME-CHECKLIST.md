@@ -574,3 +574,211 @@ hand override each; one game measured 26 of 32 deriving against 21 overrides for
 the alternative. Decide it once, for the design system and the partner link
 together, and hand the convention TO the design handoff. Nothing downstream
 catches a handoff that quietly chose the other one.
+
+### Amendments from the fourth consumer (Avatar Legends: TFG, 2026-09-18)
+
+Reported from Stage 0 recon, before the build. Numbers here are Avatar's; the rules
+are not. This consumer is the first whose game has a ROLE-DIFFERENTIATED SECOND SLOT,
+the first whose partner site keys by SHORT name, and the first whose vendor licence
+forbids the art outright — three places the list assumed the opposite.
+
+**13. A role-differentiated second slot is a NAMESPACE, not another character.**
+Supports, assists, kameos: a second pick per side that is not a fighter. Avatar's
+every side carries one (12 fighters × 3 supports = 36), and the index source fills it
+on 100% of rows. Three rules, each of which was a defect waiting in the ported code:
+the support set is its own matcher with its own registry, because **a support name can
+BE a fighter name** (`Katara` is a fighter and also Avatar Aang's support — 1 of 462
+sides here, and the one that decides the design); the span is typed by ROLE, never by
+position, because a channel that writes `Fighter/Support` and a channel that writes
+`Support/Fighter` both exist and one game's titles put a support in the fighter slot
+outright; and the emitted record keeps supports OUT of `Side.characters`, or the stat
+unit, the character pages and the prerender set all inherit a second roster. The
+engine has no field for this: model it game-locally (the 2XKO `fuses` precedent) plus
+a facet and a badge override, and leave `charactersPerSide` at 1.
+_Failure: the ported index reader folds the support into the side as a counter-pick,
+the residue gate drowns in 36 unresolvable names, and the one support that is also a
+fighter mints a second fighter on that side — all with every count green._
+
+**2b. Match identity is a REPORT-ONLY tier, never an auto-drop key.**
+Step 2's intake-channel key cannot see the duplicate that matters once an organiser
+posts BOTH a full VOD and per-match cuts: the index source segments the VOD, the
+channel arm ingests the cut, and the two records collide on nothing — measured here at
+10 of 47 segments on one organiser's VODs, 70% on the single VOD it fully re-cut, with
+one pairing reaching five candidate records across three intakes. Compute a match
+signature (normalized handle pair × fighter pair × played-on date), report the rate,
+and route candidates to the review queue. **Do not drop on it.** The runback is a
+legitimate collision — same two players, same two fighters, same day, winners final
+then grand final — and a signature is a HYPOTHESIS about footage identity, not a
+verdict. Composite/segment ids stay the mechanism for RT-within-VOD.
+_Failure: either half. Without the tier, the archive quietly double-counts its biggest
+event. With the tier as a key, it deletes the grand final because the winners final
+had the same two players._
+
+**5p. Measure whether the description tier is POPULATED before scoping a parser for it.**
+5b establishes three tiers; it does not say to check which exist. A recon pass here
+scoped a description gate for the largest channel and the verifier found **zero
+fighter spans in all 63 of its descriptions** — everything was in the title, in a
+grammar nobody had read closely. One `grep -c` over the hydrated descriptions settles
+it before a parser is designed around an empty tier.
+
+**5q. A pair-level slot order exists, and four per-side shapes do not cover it.**
+`CharA vs CharB (HandleA vs HandleB)` — both handles in ONE bracket, the pairing
+outside it. The shipped parser splits on a global `vs` regex and refuses parts > 2, so
+it rejected **every one of the largest channel's 57 records** as `vs-count`. Slot
+order is a property of the TITLE's shape, not only of each side, and the enum needs
+the pair-level member before a channel that uses it can be intaken.
+
+**5r. CPU and arcade footage passes "marker + two fighters + vs". The separating
+signal is HANDLE RECOVERABILITY.**
+Measured on a channel where 16 of 23 titles cleared every gate and not one was a real
+match. A matchup title is exhausted by the two fighter spans plus mode words, so the
+residue on each side is empty; a real title contains a PERSON that nothing else
+explains. Refuse a side whose residue is empty after the fighter span and the
+decoration vocabulary are removed. The rule generalizes to every showcase and CPU
+network (one multi-game network here publishes 20+ games this way).
+_Failure: 16 fabricated records per channel, each naming two real fighters, with no
+player attached and nothing in any count to show for it._
+
+**5s. When the title states the date the match was PLAYED, that is the record's date.**
+One channel here uploads sets up to 26 days after they were played and titles them
+with the played-on date. A `publishedAt`-keyed date facet misdates that channel's
+whole corpus and, worse, credits a backlog flush to the weeks it was uploaded in —
+which is how a corpus can look like it is accelerating while ambient volume is flat.
+
+**5t. The duration floor has no ceiling, and the ceiling is the harder edge.**
+A 1h58m whole-tournament VOD passes the marker gate, clears `MIN_MATCH_SEC` by a
+factor of 60, and becomes ONE record standing for fourteen matches. That is the
+inverse of the sub-120s clip problem and nothing in this list catches it. Cap the unit
+per channel, or route over-length uploads to the index arm that already segments them.
+
+**3b. The marker is not always a word, and a boundary is not always `\b`.**
+Three shapes measured here that a ported marker misses silently: a HASHTAG-only marker
+(`#AvatarLegends` mid-title, the only marker that channel writes); an acronym whose
+neighbours are alphanumeric, where `\bALTFG\b` matches nothing inside `scjuly26altfg`
+and a lookaround `(?<![A-Za-z])ALTFG(?![A-Za-z])` matches — worth 3 of 9 uploads on
+one channel; and a vendor name the uploader MISSPELLS (`Avatar Legens`, `AVATAR
+LEGNDS`), which argues for a typo-tolerant stem rather than an exact title.
+
+**4d. A vendor can split its patches across channels, and version only some of them.**
+Steps 4 and 4b both assume one authority. This vendor published one versioned patch on
+its storefront, one date-titled update on the storefront, and a third — a balance patch
+that changed seven characters — **only on X**. Rules 4/4b then disagree with each
+other row by row. Prefer date tokens for ALL rows when any published patch has no
+published predecessor, carry the version as a display label, and keep an explicit
+allowlist of off-channel rows keyed by date with the reason and the source. Also:
+anchor the version regex on the vendor's own prefix, or `Ranked Mode 1.0` and `up to
+2.5 frame reduction` mint patches.
+
+**11c. Measure the partner's key convention for THIS game. Do not inherit 11b's
+premise.**
+11b says partner sites key by FULL name and that full-name ids therefore derive for
+free. Measured against this game's partner entry, the opposite holds: their ids are
+SHORT (`ava-toph`, `ava-ozai`), short ids derive 10 of 12 against full-name ids' 8,
+and one of their ids is simply out of date. The decision is still made once and before
+the handoff — but from a measurement, not from this list's prior.
+
+**11d. An UNRELEASED row needs a date the vendor never gives.**
+The expiry gate's shape requires `releases`. This vendor's five unreleased fighters
+have "over the course of the season" and "later this year" between them, and the only
+"Fall 2026" in existence is on a fan wiki. Give the gate a window (`releasesAfter` /
+`releasesBefore`) or a stated backstop with its reasoning, and never launder a wiki's
+guess into a vendor-stated date.
+
+**14. Transcribing the design handoff into the theme is a STEP, and it is lossy.**
+This list never mentions the theme. Every consumer has hit the same three problems:
+the handoff names tokens the engine does not (`surface-2`, `surface-3`), omits tokens
+the engine needs (`primary-hover`, `focus` — and the engine falls back to the UMBRELLA
+teal in silence when they are missing), and carries provenance claims that do not
+reproduce. Map all 18 engine tokens explicitly — verbatim / renamed / derived / parked
+— derive the missing ones on the handoff's own ramp with the arithmetic in the file,
+and **re-measure every sampled hex against the file it cites**: two consecutive
+handoffs have now claimed a sampled colour that has zero pixels within ΔE .02 of the
+named asset. Re-measure every contrast claim too; keep the design value and correct
+the citation.
+
+**15. Art has a licence, and reading it is the first step of the art chain.**
+This list has no art step at all, while five of six shipped games carry vendor art
+with no licence reading on record. Read the terms BEFORE enumerating anything. The
+case this consumer hit is the one nobody had planned for: the vendor prohibits reuse
+outright ("STRICTLY PROHIBITED WITHOUT THE PRIOR WRITTEN CONSENT"), publishes no fan
+kit, and the wiki copies are pixel-identical to the vendor's own renders (mean
+absolute difference 3.9–24.7 against 71–73 between different characters), so they
+inherit the prohibition — a wiki's "fair use on this wiki" tag does not transfer. The
+answer there is generated tiles for the WHOLE roster, FAIL LOUD on any fetch, the
+citation recorded in `art-provenance.json`, and an expiry that re-checks for a fan kit.
+Two mechanical traps for the guard: frame constants keyed to a square kit break on
+non-square renders, so make them per-axis; and the near-black test must catch a dark
+COSTUME (one render here is 55.6% near-black), not only a baked shadow.
+
+**10h. The Vercel project is part of the launch, and it has its own failure.**
+10b covers the cron slot and the flip. It does not cover: both env vars on Production
+AND Preview before the first build; **never copying a sibling's env** (one game
+shipped its first build mounted at the PREVIOUS game's base path because
+`NUXT_APP_BASE_URL` came along with the copy); the project name resolving to the bare
+`<slug>-replay-database.vercel.app` alias; retention; and the analytics toggle. Add
+the assertion that catches the copy: before the flip, read
+`<game-host>/<slug>/data/summary.json` and require `game === <slug>`. `verify:deployed`
+cannot catch it — it reads `replays.json` and never looks at `summary.json`.
+
+**10i. The deploy fingerprint needs the CODE version, not only the data.**
+A pin-only change moves no record and no content hash, so the smoke check matched a
+deployment that was still building. Put the engine tag (or build sha) in
+`summary.json` and assert it in `verify:deployed`. This does not contradict 10e:
+nothing is embedded that the check compares against ITSELF — the tag is read from the
+deployment and compared with the tag the repo pins.
+
+**10j. A recon's API budget is spent against the crons' quota. Say the number, and
+wait for the crons.**
+A recon agent here spent ~1,770 units — 1,200 of them on twelve `search.list` calls —
+and exhausted the shared daily quota at 23:25 UTC. The crons survived only because
+they had already run. Put the unit budget in the brief with `search.list` counted
+separately (100 units each), run the recon AFTER the day's crons have finished, and
+prefer quota-free surfaces. The second half: heavy quota-free scraping gets the
+machine's IP bot-gated (HTTP 429, "Sign in to confirm you're not a bot"), which then
+degrades every later measurement — cap the request count and STOP at the first block
+rather than rotating clients to get around it.
+
+**10k. Anchor a per-channel rate window to TODAY, not to the channel's newest upload.**
+Anchoring to the newest upload keeps a dead channel's rate alive forever. Measured
+here: the largest channel's tabled 0.75 marked/day was 0.536 to today, and its weekly
+output had already fallen from 15 to 1 while the corpus total was still rising.
+
+**1b. Give the FETCH stage a per-channel date floor.**
+`preReleaseFrom` bounds the parse, not the walk. A multi-game channel with 3,780
+uploads costs ~152 units EVERY DAY to harvest the 53 that carry the marker. The floor
+belongs on the fetcher, keyed to the game's own launch date.
+
+**12k. An index source's offsets, tags and zero-offsets each have an edge this list
+does not name.**
+Four, all measured on one catalogue: `t=` values in **h/m/s form** (`1h11m20s`) that a
+seconds-only pattern silently drops (7.8% of rows here); a `tag` column that is
+sometimes a set FORMAT (`FT10`) rather than an event, which 12j would publish as an
+event chip; **intro-skip offsets** of 5–51 seconds on whole-video uploads, which mint
+`vid@N` segment ids for videos that are not segments (12b's "real offset" needs a
+floor, proportional or absolute); and a **t=0 row inside a multi-row video**, which is
+a segment at zero, not a whole video. Also: a real handle can be a single symbol
+(`♱`), so a placeholder rule keyed on "no letters" deletes a real player.
+
+**16. A Stage 0 go/no-go needs a written viability bar.**
+This list tells a fourth consumer to decide from "trajectory and channel spread" and
+gives nothing to decide against, so every threshold gets improvised and the precedent
+gets misquoted — the figure carried between briefs for the reference launch ("105
+records across 5 channels") is the recon table's parseable count, not the shipped
+corpus, which measures 10 records / 1 channel at week 4, 35/6 at week 6, 314/7 at week
+8. State the bar: measure the reference game's OWN corpus at the same week offset,
+report records, contributing channels, top-1 and top-3 concentration, and the weekly
+series with event dumps and backlog flushes separated out — then commit to the
+number that would change the answer, in advance.
+
+**10g addendum. There are FIVE workspace scripts that enumerate games, not three.**
+`check-rosters.sh` (GAMES, REPO_OF, its own error string, and the `roster-check:`
+trailer contract) and `sync-yt-cookies.sh` (GAMES, and `secrets/` must be gitignored
+first) join the three 10g names. Related, and shipped wrong in every entry today:
+`commit-and-push.sh`'s `GATE_CMD` runs `npx nuxt prepare && npx nuxt typecheck`, which
+drops the `tsconfig.pipeline.json` track that 10f says a narrowed gate must keep.
+
+**Corrections to this file's own text**, carried here rather than rewritten in place:
+line 125 says "The ten steps above" (there are eleven); line 305 says "These eleven"
+(that section holds seventeen labels); line 324 says "Sub-rules 12a-12i" and 12j has
+existed since 4e83d85; and the index-source instance count at line 327 is now six
+ports, not five.
