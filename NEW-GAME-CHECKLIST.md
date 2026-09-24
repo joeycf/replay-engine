@@ -782,3 +782,46 @@ line 125 says "The ten steps above" (there are eleven); line 305 says "These ele
 (that section holds seventeen labels); line 324 says "Sub-rules 12a-12i" and 12j has
 existed since 4e83d85; and the index-source instance count at line 327 is now six
 ports, not five.
+
+### Amendment from a live game (SF6, 2026-09-24)
+
+**7c. A channel can be DELETED, and its catalogue goes with it.**
+Step 7 says freeze rather than prune a channel that stopped publishing, and that
+is right — but it assumes the records still play. An account that is deleted
+takes every one of its videos with it, and the archive is then holding records
+that are real, parsed, correctly attributed, and permanently unwatchable. SF6
+met this on 2026-09-18: King Arena vanished between 09-10 and 09-18 with 2,030
+records, 8.2% of that archive, and the daily cron stayed red for six days
+because one 404 on one uploads playlist killed the fetch for the other seven
+channels — there was no per-channel error handling anywhere in the path.
+Four rules, each of which was a defect first:
+
+**Measure the deadness; do not infer it from a sample.** Eight ids came back
+gone, which suggested the rest were. Checking all 2,030 cost 41 quota units and
+turned a suggestion into a fact — which is what the decision to keep 8% of an
+archive should rest on. `videos.list` returns a Map precisely so the caller can
+diff for ids that did not come back.
+
+**Mark the records, per record, at carry time.** A freeze already pins a count;
+this adds WHY they can never play again. Derive the mark from the channel
+config on every run rather than writing it once: a carried record keeps the
+fields it has, but every record-BUILDING path writes a literal, so a stored mark
+evaporates the first time that channel is rebuilt. Keep it out of the emitted
+contract unless the engine has a field for it — and assert that, because "the
+projection happens to be field-by-field" is not a rule.
+
+**A frozen channel's pin must be counted the way that game publishes.** The pin
+is per CHANNEL, but a channel may publish under more than one public token (one
+physical uploader classified into online vs tournament footage). Assert the
+total AND each token: 100 records sliding from one token to the other sums to a
+correct total and sails past a total-only check.
+
+**An unplayable copy must never win a duplicate pair.** Cross-post precedence
+answers "whose copy is canonical"; it has nothing to say about a copy that
+cannot be watched. On the game that produced this rule, the dead channel sat
+fifth of eight, so the existing precedence would have kept the dead copy of 26
+measured pairs and proposed excluding the live one. Rank playability above
+channel priority and below a human's own verdict.
+_Failure: an archive that looks complete, counts correctly, passes every gate,
+and serves a dead link on one record in twelve — with nothing in the data
+saying which ones or why._
