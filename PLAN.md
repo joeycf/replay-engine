@@ -3319,3 +3319,62 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   not the shipped corpus (10/1 · 35/6 · 314/7 at weeks 4/6/8) — the plan's
   measured comparison supersedes it, and gap 18 (no written viability bar
   exists) is right. Eighteen checklist gaps as Step −1. Pin v0.15.1.
+- **AVATAR LEGENDS BUILT, pushed, deployed — flip held on branch behind the
+  09-29 gate (2026-09-18 → 09-24).** Engine 1ccd768 (20 amendments, Step −1);
+  five game commits (scaffold → fonts → contracts → pipeline+corpus → emit fix);
+  shell flip prepared on branch `avatar-flip` (bc9b8c0), main untouched. Corpus
+  at build 502 records / 366 players / 1,013 side appearances / 478 support
+  appearances counted separately / 24 duplicate candidates queued, none
+  dropped; live after five days of crons **585 records, 398 players**, digest
+  4489d2f70c18, `summary.json` carries `engine: v0.15.1` (the code-version
+  field). **Gate story:** verify:gates first ran 44/3 and all three were DEAD
+  CONTROLS not bad gates — frozen-pin anchor drift (the session's own −1→3
+  edit), a collapse injection that halved Aegis's dump by DATE (its oldest half
+  holds ZERO marked rows — "a control that removes rows the parse never reads
+  proves nothing"), and a registry injection aimed at `sideFromDescription()`,
+  which supplies 0 of 1,004 sides ("a tier nobody populates can't carry a
+  control either") → repaired, 47/0. e2e caught a real contract defect: 132
+  composite ids vs 127 segments — five `@0` records (t=0 first segment) lost
+  `startSeconds: 0` to a truthiness test, so the record said segment in its id
+  and whole-video in its fields (12b one level up) → fixed, 70/0. The −1 freeze
+  pin fired on the first real run exactly as designed → set to 3 from the
+  pipeline's own parse. Flip agent findings: 52 edit sites not 21; **the
+  "load-bearing .count-slot" belief is FALSE** (collapsed it, every row passed
+  at all breakpoints — both the CotW "load-bearing" and Strive "dormant"
+  comments measured the wrong thing); "join" inverted (every sibling launch
+  entry uses it); the accent fails the shell's own Δhue rule (16.2 vs 25) as
+  the 09-15 policy allows — the flip pays that docs amendment. **THE GATE IS
+  NOT OBVIOUSLY MET: two definitions disagree** — all sources 81/66/75 per week
+  vs EX-CATALOGUE 35/31/52, and the partial 09-14 week paces ~33/wk; the index
+  intake's one-time catalogue sweep inflates the all-source column, the honest
+  number is ex-catalogue, and at ~33/wk the gate FAILS. Definition written for
+  09-29. Opens: rood's unverified Ozain→ozai alias (2 records); **62 candidate
+  channels never deep-dived (473 marked titles — QueueMan 52, AWanderingTanuki
+  44, Kavalan 38)**; card-art-upcoming.mjs still registers live ggst (a no-arg
+  run overwrites a live card — pre-existing); workspace-script registration
+  now correct to do. Also: the recon exhausted the shared quota (no cron
+  harmed) → checklist lesson written; the engine commit had already been
+  pushed by the user's PLAN.md sync process.
+- **Tōkon (09-24):** five player merges had no redirect → vercel.json 15→20,
+  pushed 693007b; the user's 10,106-line uncommitted bench-review overrides
+  preserved via snapshot+stash+pop.
+- **SF6 — THE FIRST CHANNEL DEATH ON A LIVE GAME (09-24, sf6 4c2efd2 + engine
+  058b252 = checklist 7c):** King Arena DELETED — playlist 404, channels.list 0,
+  RSS 404, **0 of 2,030 videos alive (every id checked, 41 units)**, last
+  upload 09-10; 2,030 of 24,627 records (8.2%: 1,269 online + 761 tournament);
+  SF6's cron red six days because one dead channel killed the whole fetch.
+  User's decision: **freeze + carry, mark unplayable internally, keep counting
+  in stats, config + per-record stamp.** Shipped: frozen type with an
+  `unplayable` evidence block; kingArena frozen IN PLACE (array order is dedupe
+  precedence — moving it would change future verdicts); fetch skips frozen and
+  a playlistNotFound names the remedy; carry sums BOTH tokens (sf6 has no
+  intake field — filtering by source alone undercounts by 761) and asserts
+  total AND per-token split ("a per-token drift hides inside a correct
+  total"); the stamp derived each run (self-healing); emit asserts no
+  substrate-only key leaks (replays.json byte-identical); **replay-dupes: a
+  playable copy beats an unplayable one, above channel priority — 1,104 pairs
+  resolve on it and 26 would have kept the DEAD copy over a live one under the
+  old order.** 24,740 records after the six missed days; four injected-defect
+  controls refused then passed; e2e 196/0. Hazard noted: a commit message
+  with backticks executed as shell (amended; messages with inline code go via
+  a file).
