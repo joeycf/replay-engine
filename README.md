@@ -58,12 +58,12 @@ export default defineNuxtConfig({
   // clones the layer with NO node_modules, and the engine's runtime deps
   // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
   // Phase-3 remote-layer check).
-  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.13.0', { install: true }]],
+  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.16.0', { install: true }]],
 });
 ```
 
-`v0.13.0` is the current pin for a new consumer; every shipped game is on
-`v0.12.0` or later. (This line read `v0.10.0` for two releases while all six
+`v0.16.0` is the current pin for a new consumer; every shipped game is on
+`v0.13.3` or later. (This line read `v0.10.0` for two releases while all six
 consumers had moved on — the pin is stated here AND in each game's
 `nuxt.config.ts`, so treat the games as the truth and this as the guide.)
 
