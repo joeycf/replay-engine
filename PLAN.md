@@ -3378,3 +3378,129 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   controls refused then passed; e2e 196/0. Hazard noted: a commit message
   with backticks executed as shell (amended; messages with inline code go via
   a file).
+- **Avatar gate definition pinned (2026-09-24).** Two corrections to the
+  09-19 memory note (and to my own last entry): the recon bucketed by UPLOAD
+  week, not record date; and the Replay Theater catalogue is NOT a one-time
+  sweep — since 08-24 it is a recurring weekly flow (Mix Masters, ParagOnline,
+  Jalta League, uploaded 0–1 days after each event). Measured on 585 records:
+  count A (channels by upload week) 09-14 = **47 ✓**; B (played-on date) 31
+  (STiLL uploads up to 27 days late — recent weeks always read low: a
+  measurement artifact); C (all sources) 92 (passes 7 of 8 weeks — barely
+  tests anything, and depends on a third party's indexing). No week has ever
+  fallen under 25 on any count; A clears 40 in 5 of 8 weeks (the bar sits near
+  the median — a single miss is a coin flip). MY CALL: **A decides** (the bar's
+  own calibration; complete on the measurement date; measures the channel
+  ecosystem, not RT's effort); for 25–39, hold one week but decide on the
+  **trailing 4-week mean of A (≥ 40 with no week < 25 → flip)** rather than a
+  single re-measured week — if single weeks are noise, average them. B and C
+  recorded beside A every time (C is what visitors see). Independent flip
+  prerequisites: /_vercel/insights/script.js still 404 (Web Analytics
+  enablement on the project), and the first green Avatar cron.
+- **Gate rule finalized (2026-09-24):** A decides; 25–39 → hold one week; at
+  re-measure the trailing 4-week mean of A decides (≥ 40 with no week < 25 →
+  flip; **35–39 with no week < 25 → hold one more week, same rule** — the gap
+  the session flagged, confirmed; < 35 → longer hold). The session's
+  arithmetic: on 10-06 the window is 63 + 47 + X + Y, so with X in 25–39 the
+  rule reduces to "flip if the 09-28 week ≥ 25" — September's strength carries
+  the average; one soft week can't block, two can. Both other prerequisites
+  MET: Web Analytics live (script.js 200 at 14:16 UTC), first green Avatar
+  cron (09-24 14:12 UTC), deployment serving 589. Only 09-29 remains.
+  Positive controls on the tabulation: 09-14 must still read 47 (upload week
+  is fixed — a change means corpus membership moved); B must differ from A in
+  at least one week (proves the date field is actually read).
+- **Prerender long tail MEASURED (2026-09-28, read-only):** the deciding number
+  — **19 visits/month land on single-replay pages across all six games, 4 from
+  search (2 Bing, 2 DuckDuckGo, ZERO Google); Google sends 4 visits/month to the
+  whole platform.** Structurally near zero: a tail page's HTML is title, meta,
+  h1, count and four loading skeletons (the grid is client-only), and tail
+  pages are sitemap-only orphans (none of GGST's 3,251 is linked from any
+  prerendered page). Anatomy on 16,500 real pages (local builds byte-identical
+  to live): **the four skeleton cards are 4.7 KB = 24% of every page — a
+  one-replay player gets all four**; `class=""` attributes ~8.5 KB. Levers: A
+  (no file for the tail) −1.28 GB but its real cost is ROUTING not SEO — no
+  fallback route exists on Vercel, previews are SSO-walled so it can only be
+  proven on production, unknown ids become soft 404s, 7 vercel.json files (3
+  new), FFCotW's e2e fails day one; **B (slim the shell, keep every
+  prerender) −0.96 GB, engine-only, invisible, T1–T9 measured by string
+  surgery on real pages (−7.7 to −8.3 KB per tail page, 36–44%)**, with a
+  per-page byte-budget gate positive-controlled against today's build; **A′
+  (the session's own invention): every tail player keeps a REAL 2.8 KB stub
+  file** with the real head (title/description/canonical/OG/breadcrumb) + a
+  plain-text body + SPA boot — measured from a real GGST page (2,847 vs 19,190
+  B) — no routing change, real 404s kept, the "every player keeps a real
+  file" promise kept; B + A′ = −1.52 GB (89% of C). Storage after GBVSR: B
+  ~4.3 GB, B+A′ ~3.6 GB (vs ~5.6 unlevered). Limits stated: Hobby analytics
+  31 days; crawler metrics need Observability Plus; no Search Console. MY
+  PICK: **option 2 — B now, A′ later (never A/C)**. Side findings, ALL
+  taken: (1) **Nitro fully SSR-renders every `/?p=…&c=…` usage-bar link and
+  then discards it — 8,208 wasted renders per GGST build, MORE than the 6,589
+  pages it writes**; one `nitro.prerender.ignore` rule, likely the biggest
+  build-time lever, test = written-file set byte-identical + a timed build;
+  (2) /tekken/players/voila-99 is a live 404 — ledger row landed 09-27,
+  vercel.json last regenerated 09-16 — the SECOND stale-redirect miss in a week
+  (Tōkon 09-24) → structural fix: the cron regenerates redirects or fails
+  loud on drift, every game; (3) GGST/FFCotW redirects.ts comments claim the
+  engine reads player-redirects.json — it doesn't.
+- **B + side-fixes build plan audited (2026-09-28) — approved with three
+  notes.** The structural redirect fix is grounded in history: over 60 days
+  ledger rows were missing from vercel.json on **17 Tōkon and 5 Tekken
+  commit-days** (up to 5 rows at once), and every game's "Flag stale
+  redirects" step runs AFTER git push — red only once the 404 is live. Design:
+  the cron regenerates redirects after emit, vercel.json joins the by-name git
+  add, and a "Refuse redirect drift" step (`--drift` = destinations exist +
+  ledger↔vercel.json sync) fails BEFORE anything is committed; Tekken gains
+  --drift, Tōkon ports destinationsExist, FFCotW/GGST gain the writer + a
+  `{ "redirects": [] }` vercel.json with no build keys (dashboard settings
+  untouched) — side fix #3 lands there; headers reverse "MANUAL, deliberately
+  does NOT regenerate" with the reason; controls (a)/(b)/(c); live proof via
+  the runs API. Open: IDs leaving players.json with no ledger row (Tekken 246
+  incl. a cleanup, SF6 37, Tōkon 22) — a pre-commit guard needs a design that
+  tells merges from upstream deletions. `?`-ignore: one engine line,
+  defu-merged with each game's ['/dev']; control = identical written-file
+  list + ~8.2k fewer routes + a timed generate. B: T1–T9 with
+  verify-page-budget.mjs (ceilings 11.5 KB tail / 14 KB others, per-game
+  flags for 2XKO/Tōkon; skeletons = min(4, matches); no inline accent style;
+  JSON-LD on / only) — must FAIL on v0.15.1 first; pins one game at a time
+  with live HTML probes; storage re-measured at 48h vs ~3.3 GB. Notes: the
+  drift failure must name the row and the remedy (a held cron is a
+  two-minute fix); T4 `inlineStyles:false` is platform-wide — verify no FOUC
+  and watch Speed Insights (reversible in a line); T8 (one responsive nav) is
+  the riskiest trim — re-verify the header budget the ComboForge work
+  measured (SearchBox flex-shrink at 768/900) and the leaving-site dialog
+  mount in the same layout.
+- **Lever B BUILT (2026-09-28/29): engine v0.16.0 (9 commits + tag, LOCAL),
+  seven pin bumps (local), four redirect-drift commits (local); Tekken
+  voila-99 pushed and verified 308 → 200.** Measured on identical data:
+  **build output per full rebuild 407.4 → 285.9 MB (−30%, ≈ −0.93 GB vs the
+  plan's −0.96)**; tail pages GGST 19,238 → 11,083 B, Tekken 19,033 → 10,840,
+  Tōkon 22,172 → 14,318; GGST local build 76 → 34 s (the `?`-route ignore
+  alone 87 → 38 s, written-file list byte-identical after normalizing build
+  ids — 8,257 discarded renders confirmed by grep). Every trim
+  screenshot-diffed with JS OFF against a 12-px noise floor: T2/T7
+  pixel-identical, T1's diff confined to the removed skeleton columns, T3/T4
+  identical, T8 97/98 identical across seven games × seven widths with 98/98
+  leaving-site dialog round trips and SF6's documented search widths
+  (223/275/340) reproduced exactly; a cold throttled-load timing check shows
+  first paint after every stylesheet (+10–16 ms, no FOUC). Findings: **the
+  CSS minifier is lightningcss and it lowercases/shortens hex INSIDE custom
+  properties** (esbuild doesn't) — tested directly, so the accents e2e checks
+  now read the built CSS with hex normalization; **three games' "carries its
+  accent" checks had only ever matched the inline accents block, never the
+  character's own markup** — rewritten to `var(--accent-<id>)` and
+  positive-controlled (fails on v0.15.1 output); verify:page-budget fails on
+  v0.15.1 and trips on a synthetic +700 B regression. **The redirect fix
+  found a class beyond the brief: parse.ts silently DROPS a redirect whose
+  target is itself merged away later (x→y then y→z drops x→y) — the one
+  failure a sync check cannot see**; the `--drift` gate refuses it (all three
+  historical drops were flips, so nothing lost yet), names every row with its
+  retarget worked out, and holds the commit pre-push; FFCotW/GGST had NO way
+  to serve a redirect at all (their comments claiming the engine reads the
+  ledger were false). Found along the way: Combos wraps at 768–900 in every
+  game (pre-existing; `md:whitespace-nowrap`); Speed Insights reports only
+  for the shell (enable per game project to watch T4); the shell must emit
+  WebSite/Organization JSON-LD itself when it bumps past v0.16.0 (the engine
+  moved them to the game home page); GBVSR needs a page-budget row at launch.
+  Push order: engine main → tag → each game with a VALIDATE_TAG=1 build first
+  (validated only against the local engine at the tag); Avatar's pin commit
+  also touches data/summary.json's engine field — rebase trap if a cron lands
+  first (take the cron's copy, re-run data:emit).
