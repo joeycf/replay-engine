@@ -176,6 +176,67 @@
   );
 }
 
+/* Loading-card skeleton parts (components/BrowseCardSkeleton.vue). One class
+   per part instead of a utility list per element: the card is prerendered into
+   the fallback grid of every player and character page, where the lists cost
+   ~1.2 KB a card on a build that writes one file per player. @apply keeps the
+   CSS each part renders with exactly what its utility list produced. */
+@utility skel {
+  @apply bg-surface-raised motion-safe:animate-pulse;
+}
+@utility skel-card {
+  @apply border border-border-subtle bg-surface cut-md;
+}
+@utility skel-body {
+  @apply px-3.5 py-[13px];
+}
+@utility skel-vs {
+  @apply flex items-center justify-center gap-2.5;
+}
+@utility skel-pair {
+  @apply flex;
+  & > :nth-child(2) {
+    @apply -ml-[7px];
+  }
+}
+@utility skel-chip {
+  @apply h-7 w-7 cut-xs;
+}
+@utility skel-row {
+  @apply flex items-center justify-between;
+}
+@utility skel-foot {
+  @apply mt-2.5 border-t border-border-subtle pt-2.5;
+}
+
+/* The player hero's art (pages/players/[id].vue): the primary-tinted glow, and
+   the striped, corner-cut plate behind the initials. They were inline style=""
+   blocks, written out indentation and all into every prerendered profile. */
+@utility player-glow {
+  background: radial-gradient(
+    70% 130% at 20% 20%,
+    color-mix(in srgb, var(--color-primary) 16%, transparent),
+    transparent 60%
+  );
+}
+@utility player-plate {
+  background: repeating-linear-gradient(
+    135deg,
+    var(--color-surface),
+    var(--color-surface) 10px,
+    var(--color-surface-sunken) 10px,
+    var(--color-surface-sunken) 20px
+  );
+  clip-path: polygon(
+    0 0,
+    calc(100% - 16px) 0,
+    100% 16px,
+    100% 100%,
+    16px 100%,
+    0 calc(100% - 16px)
+  );
+}
+
 /* Bottom-left angled cut used on badges/buttons. */
 @utility cut-bl-sm {
   clip-path: polygon(0 0, 100% 0, 100% 100%, var(--cut-bl-sm) 100%);

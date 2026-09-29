@@ -1,28 +1,31 @@
 <template>
+  <!-- Every part is one skel-* class (tailwind/structural.css) rather than a
+       utility list: this card is prerendered into every player page's fallback
+       grid, and the lists were most of its bytes. -->
   <div
-    class="border border-border-subtle bg-surface cut-md"
+    class="skel-card"
     aria-hidden="true"
   >
-    <div class="aspect-video bg-surface-raised motion-safe:animate-pulse" />
-    <div class="px-3.5 py-[13px]">
-      <div class="flex items-center justify-center gap-2.5">
-        <div class="flex">
-          <span class="h-7 w-7 bg-surface-raised cut-xs motion-safe:animate-pulse" />
-          <span class="-ml-[7px] h-7 w-7 bg-surface-raised cut-xs motion-safe:animate-pulse" />
+    <div class="skel aspect-video" />
+    <div class="skel-body">
+      <div class="skel-vs">
+        <div class="skel-pair">
+          <span class="skel skel-chip" />
+          <span class="skel skel-chip" />
         </div>
-        <span class="h-3 w-5 bg-surface-raised motion-safe:animate-pulse" />
-        <div class="flex">
-          <span class="h-7 w-7 bg-surface-raised cut-xs motion-safe:animate-pulse" />
-          <span class="-ml-[7px] h-7 w-7 bg-surface-raised cut-xs motion-safe:animate-pulse" />
+        <span class="skel h-3 w-5" />
+        <div class="skel-pair">
+          <span class="skel skel-chip" />
+          <span class="skel skel-chip" />
         </div>
       </div>
-      <div class="mt-[11px] flex items-center justify-between">
-        <span class="h-3 w-20 bg-surface-raised motion-safe:animate-pulse" />
-        <span class="h-3 w-16 bg-surface-raised motion-safe:animate-pulse" />
+      <div class="skel-row mt-[11px]">
+        <span class="skel h-3 w-20" />
+        <span class="skel h-3 w-16" />
       </div>
-      <div class="mt-2.5 flex items-center justify-between border-t border-border-subtle pt-2.5">
-        <span class="h-2.5 w-14 bg-surface-raised motion-safe:animate-pulse" />
-        <span class="h-2.5 w-12 bg-surface-raised motion-safe:animate-pulse" />
+      <div class="skel-row skel-foot">
+        <span class="skel h-2.5 w-14" />
+        <span class="skel h-2.5 w-12" />
       </div>
     </div>
   </div>

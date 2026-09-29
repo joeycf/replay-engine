@@ -4,36 +4,10 @@
     <div
       class="relative overflow-hidden border-b border-border-subtle px-4 py-8 md:px-10 md:py-[34px]"
     >
-      <div
-        class="absolute inset-0"
-        style="
-          background: radial-gradient(
-            70% 130% at 20% 20%,
-            color-mix(in srgb, var(--color-primary) 16%, transparent),
-            transparent 60%
-          );
-        "
-      />
+      <div class="player-glow absolute inset-0" />
       <div class="relative flex flex-wrap items-center gap-5 md:gap-[26px]">
         <div
-          class="relative flex h-[92px] w-[92px] flex-none items-center justify-center border-2 border-primary/40 md:h-[120px] md:w-[120px]"
-          style="
-            background: repeating-linear-gradient(
-              135deg,
-              var(--color-surface),
-              var(--color-surface) 10px,
-              var(--color-surface-sunken) 10px,
-              var(--color-surface-sunken) 20px
-            );
-            clip-path: polygon(
-              0 0,
-              calc(100% - 16px) 0,
-              100% 16px,
-              100% 100%,
-              16px 100%,
-              0 calc(100% - 16px)
-            );
-          "
+          class="player-plate relative flex h-[92px] w-[92px] flex-none items-center justify-center border-2 border-primary/40 md:h-[120px] md:w-[120px]"
           aria-hidden="true"
         >
           <span class="font-display text-[34px] font-bold text-primary/70 md:text-[44px]">{{
@@ -150,7 +124,7 @@
         <template #fallback>
           <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
             <BrowseCardSkeleton
-              v-for="i in 4"
+              v-for="i in skeletons"
               :key="i"
             />
           </div>
@@ -188,6 +162,10 @@ const matches = computed(() =>
   Math.round(charRows.value.reduce((n, r) => n + r.value, 0) / perSide),
 );
 const mainChar = computed(() => (charRows.value[0] ? charById(charRows.value[0].id) : undefined));
+// One loading card per replay the grid will actually show, up to the four of a
+// first row. It used to be four for everyone, and half the players on every game
+// have exactly one replay: three phantom cards, ~1.7 KB, in each of those files.
+const skeletons = computed(() => Math.min(4, Math.max(1, matches.value)));
 const showDuo = computed(() => game.charactersPerSide > 1 && pairRows.value.length > 0);
 
 const initials = computed(() =>
