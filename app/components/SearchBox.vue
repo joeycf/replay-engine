@@ -1,8 +1,7 @@
 <template>
   <form
     role="search"
-    class="flex items-center gap-[9px] border border-border bg-surface-sunken"
-    :class="compact ? 'px-3 py-[9px]' : 'px-3.5 py-2.5'"
+    class="flex items-center gap-[9px] border border-border bg-surface-sunken px-3 py-[9px] md:px-3.5 md:py-2.5"
     @submit.prevent="onSubmit"
   >
     <span
@@ -26,8 +25,11 @@
 // Global header search. On Browse (/) it live-binds ?q= (debounced replace).
 // On every other route it's a plain input that navigates to /?q=<query> on
 // submit — global reach without triggering the replays fetch off-Browse.
-withDefaults(defineProps<{ compact?: boolean }>(), { compact: false });
-
+//
+// ONE instance at every width (v0.16.0): the header used to render a desktop
+// copy and a `compact` mobile copy, each hidden at the other breakpoint, so
+// every prerendered page carried both. The compact padding is now simply the
+// below-md padding.
 const route = useRoute();
 const router = useRouter();
 const terms = useGameTerms();

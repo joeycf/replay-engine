@@ -6,14 +6,24 @@
       >Skip to content</a
     >
 
+    <!-- ONE nav and ONE search at every width (v0.16.0). Both used to be
+         rendered twice, a desktop copy and a mobile copy each hidden at the
+         other breakpoint, so every prerendered page carried both. Below md the
+         nav is ordered last and wraps onto its own line, pulled out to the
+         header's edges (-mx-4 + px-4) so it scrolls edge to edge exactly as the
+         separate mobile row did; from md it sits inline between the wordmark
+         and the search. Unprefixed classes are the old mobile copy's, md: ones
+         the old desktop copy's, so neither breakpoint renders differently. -->
     <header
       class="sticky top-0 z-50 border-b border-border-subtle bg-surface-sunken/90 backdrop-blur"
     >
-      <div class="flex items-center gap-4 px-4 py-3 md:gap-[26px] md:px-7 md:py-4">
+      <div
+        class="flex flex-wrap items-center gap-x-4 gap-y-3 px-4 pt-3 md:flex-nowrap md:gap-[26px] md:px-7 md:py-4"
+      >
         <BrandWordmark />
 
         <nav
-          class="hidden gap-[22px] font-ui text-[14px] font-semibold md:flex"
+          class="order-last -mx-4 flex w-[calc(100%+2rem)] gap-5 overflow-x-auto px-4 pb-2.5 font-ui text-[13px] font-semibold md:order-none md:mx-0 md:w-auto md:gap-[22px] md:overflow-visible md:px-0 md:pb-0 md:text-[14px]"
           aria-label="Primary"
         >
           <template
@@ -29,7 +39,7 @@
               rel="noopener noreferrer"
               :aria-label="`${item.label} on ${item.partner!.name} (opens in a new tab)`"
               data-testid="nav-combos"
-              class="relative py-1 text-text-muted transition-colors duration-normal hover:text-text-secondary"
+              class="relative whitespace-nowrap text-text-muted md:whitespace-normal md:py-1 md:transition-colors md:duration-normal md:hover:text-text-secondary"
               @click="confirmExternal($event, item.href, item.partner!)"
             >
               {{ item.label }} ↗
@@ -37,25 +47,23 @@
             <NuxtLink
               v-else
               :to="item.to!"
-              class="relative py-1 transition-colors duration-normal"
+              class="relative whitespace-nowrap md:whitespace-normal md:py-1 md:transition-colors md:duration-normal"
               :class="
-                isActive(item.to!) ? 'text-text' : 'text-text-muted hover:text-text-secondary'
+                isActive(item.to!) ? 'text-text' : 'text-text-muted md:hover:text-text-secondary'
               "
             >
               {{ item.label }}
               <span
                 v-if="isActive(item.to!)"
-                class="absolute inset-x-0 -bottom-[19px] h-0.5 bg-primary"
+                class="absolute inset-x-0 -bottom-[19px] hidden h-0.5 bg-primary md:block"
               />
             </NuxtLink>
           </template>
         </nav>
 
         <!-- search everywhere: live on Browse, submit→/?q= elsewhere -->
-        <SearchBox class="ml-auto hidden w-[340px] md:flex" />
         <SearchBox
-          compact
-          class="ml-auto min-w-0 max-w-[220px] flex-1 md:hidden"
+          class="ml-auto min-w-0 max-w-[220px] flex-1 md:w-[340px] md:min-w-auto md:max-w-none md:flex-initial"
         />
         <button
           v-if="isBrowse"
@@ -82,36 +90,6 @@
           </ClientOnly>
         </button>
       </div>
-
-      <nav
-        class="flex gap-5 overflow-x-auto px-4 pb-2.5 font-ui text-[13px] font-semibold md:hidden"
-        aria-label="Primary mobile"
-      >
-        <template
-          v-for="item in nav"
-          :key="item.to ?? item.href"
-        >
-          <a
-            v-if="item.href"
-            :href="item.href"
-            target="_blank"
-            rel="noopener noreferrer"
-            :aria-label="`${item.label} on ${item.partner!.name} (opens in a new tab)`"
-            class="whitespace-nowrap text-text-muted"
-            @click="confirmExternal($event, item.href, item.partner!)"
-          >
-            {{ item.label }} ↗
-          </a>
-          <NuxtLink
-            v-else
-            :to="item.to!"
-            class="whitespace-nowrap"
-            :class="isActive(item.to!) ? 'text-text' : 'text-text-muted'"
-          >
-            {{ item.label }}
-          </NuxtLink>
-        </template>
-      </nav>
     </header>
 
     <main
@@ -135,8 +113,8 @@
 import type { PartnerSite } from '@engine/types';
 // The app shell — port of the shipped layout, config-driven: skip link,
 // sticky header (BrandWordmark + primary nav + global SearchBox + mobile
-// Filters button with the active-filter count badge), mobile nav row, footer
-// with the templated disclaimer. Semantic tokens only.
+// Filters button with the active-filter count badge; the nav drops to its own
+// row below md), footer with the templated disclaimer. Semantic tokens only.
 const route = useRoute();
 const drawerOpen = useState('filter-drawer-open', () => false);
 const terms = useGameTerms();
