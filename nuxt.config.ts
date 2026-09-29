@@ -72,6 +72,16 @@ export default defineNuxtConfig({
     preset: 'vercel-static',
     prerender: {
       crawlLinks: true,
+      // A QUERY ROUTE IS RENDERED AND THEN THROWN AWAY, so never queue one.
+      // Every player page's usage bars link to /?p=<id>&c=<char>, and crawlLinks
+      // queues each distinct href. nitropack renders a route (generateRoute →
+      // localFetch) BEFORE canWriteToDisk refuses any path containing "?", so
+      // each was a full SSR render with no file at the end of it: 8,257 of GGST's
+      // 14,887 queued routes on 2026-09-28, more than the 6,630 pages it wrote.
+      // No query URL can ever become a static file, so this drops nothing that
+      // ships; verified by an identical written-file list with and without it.
+      // Games' own ignore entries (['/dev']) merge in alongside this one.
+      ignore: [(route: string) => route.includes('?')],
     },
   },
 
