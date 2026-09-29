@@ -230,6 +230,19 @@ export default defineNuxtConfig({
     payloadExtraction: false,
   },
 
+  // Component <style> blocks ship as linked stylesheets, not inlined into each
+  // page. Nuxt's default inlines the CSS of every .vue module in a page's render
+  // graph, and here that graph reaches VideoModal from every route, so its 463 B
+  // of transition rules sat in the <head> of all ~16.5k prerendered pages
+  // (alongside a linked copy of the same file on most of them). Linked, each
+  // stylesheet is fetched once and cached; it is still render-blocking in the
+  // <head> of the pages that render the component, so first paint is unchanged
+  // — verified by JS-disabled screenshots matching pixel for pixel. Reverting is
+  // this one line; watch Speed Insights for an FCP/LCP shift if you do.
+  features: {
+    inlineStyles: false,
+  },
+
   typescript: {
     // Typecheck is run explicitly via `npm run typecheck` (vue-tsc), not inline.
     typeCheck: false,
