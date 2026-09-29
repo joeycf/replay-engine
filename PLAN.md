@@ -3504,3 +3504,120 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   (validated only against the local engine at the tag); Avatar's pin commit
   also touches data/summary.json's engine field — rebase trap if a cron lands
   first (take the cron's copy, re-run data:emit).
+- **v0.16.0 PUSH ROUND COMPLETE (2026-09-29): engine main + tag on GitHub; all
+  seven games live on v0.16.0, each built from the GitHub tag first (c12's
+  fetched layer confirmed, not the local engine), redirect commits pushed on
+  their own before pins, live probes after every deploy.** Every game's first
+  cron on the new code ran green; in all four ledger games "Regenerate player
+  redirects" and "Refuse redirect drift" ran green BEFORE "Commit if changed"
+  (Tekken's retirement guard stayed post-deploy and green). No ledger moved
+  today, so every regenerated vercel.json came out byte-identical and stayed
+  out of the commit — the no-merge-day behaviour; the same-commit case (row +
+  rule together) is proven locally and awaits the next real merge in
+  production. Avatar's cron re-emitted summary.json with `engine: v0.16.0`.
+  **Cron deploy times vs old-engine medians: 2XKO 98→45 s · Tekken 117→51 ·
+  SF6 88→41 · Tōkon 54→28 · FFCotW 83→58 · GGST 255→134 · Avatar 34→30.**
+  Live tail pages: GGST 0reo 19,190 → 11,043 B; every stylesheet serves every
+  accent (Tekken's 42 incl. three underscore ids the first probe's regex
+  missed). Two notes: 2XKO's cron fired seconds after its push and went green
+  on the pin (the first unattended v0.16.0 run); Tōkon's first probe caught
+  the alias-switch window (old HTML whose hashed stylesheet 404s for a few
+  seconds after READY — pre-existing on every deploy, not new). All seven
+  repos fast-forwarded to today's cron commits; the shell is on `avatar-flip`
+  (one unpushed commit) still pinned to engine v0.12.0 — its own bump past
+  v0.16.0 must add WebSite/Organization JSON-LD to its home page. Storage
+  re-measure due ~10-01 against ~3.3 GB.
+- **Next-step call (2026-09-29): flip-gate FIRST (today is the measurement
+  day; read-only, minutes), THEN Granblue** — not competing: if the gate
+  holds, Granblue starts anyway. prompt-gbvsr-game.md gained a "what changed
+  since" block overriding the original: engine v0.16.0 (+ a GBVSR row in
+  verify-page-budget ceilings; accents read from the built CSS), Avatar's 20
+  checklist amendments (the recon API budget vs the crons' shared quota —
+  Stage 0 runs only after the day's crons, search.list budgeted at zero —
+  the viability bar, match identity report-only, pair-level orientation,
+  partner keys measured), redirects from day one (writer + vercel.json + the
+  pre-commit Regenerate/Refuse-drift steps), the code-version fingerprint,
+  cron 47 9 with crons actually landing ~11:30–16:00 UTC.
+- **AVATAR FLIP GATE, 2026-09-29: HOLD. 09-21 read 21 on A, under 25, which is
+  the longer-hold branch.**
+  - **Corpus:** 646 records at d897762, today's cron. data/ was snapshotted
+    before the pull, which was already up to date.
+  - **Counts:**
+
+    | week | A | B | C |
+    |---|---|---|---|
+    | 09-14 | **47 ✓** | 31 | 92 |
+    | 09-21 | **21 ✗** | 18 | 62 |
+
+  - **Controls:** A for 09-14 is still 47, with the same 47 ids as on 09-24
+    (0 removed, 0 added). B differs from A in 6 weeks (08-17: 71 vs 38).
+  - **Cause:** there was no tournament-channel batch that week. ndyTv,
+    Toledo Locals, Unrivaled and KML all posted 0, against 7–15 each in a
+    batch week. STiLL fell from 17 to 5. The catalogue carried C: 44 of the
+    62 were tournament VODs.
+  - **Is 21 a pipeline artifact? No.** The instrument was audited over RSS,
+    with no API quota used. All 32 channel feeds read, 0 failed. They show 35
+    Avatar-marked uploads from 09-21 to 09-27, and 15 of those are absent from
+    the corpus. Twelve are shorts, highlights, commentary, or titles that
+    name fewer than two characters. **Three are real matches the parser
+    missed:**
+    - aegisEsports `cDYmOGtYE-U`, "(Ziad vs Arinkarin) … Korra vs Ozai",
+      refused as no-vs;
+    - redVsFantasy `EPdOonB923c`, "(RED Korra vs GoneMad Kyoshi)", refused as
+      no-vs;
+    - redVsFantasy `yTnhbp0-uqA`, "… RED (Korra) vs Cow (Toph)", refused as
+      no-handle, because commentary text precedes the handle.
+
+    None of the three duplicates a counted record. **With all three the week
+    reaches 24**, still under 25, so the verdict does not depend on the parser.
+    Those grammar gaps are open work of their own. Fixing them re-parses
+    history, so re-baseline 09-14 before trusting it as a control again.
+  - **The 09-28 week reads 4 so far** (Mon–Tue).
+  - **Length of the longer hold, set by the user on 09-29: the literal
+    rule.** The re-measure rule ("trailing 4-week mean ≥ 40 with no week
+    < 25") fails every window that contains 09-21: the 10-06, 10-13 and 10-20
+    windows all do. **The first window that can pass is 09-28 to 10-19,
+    measured Tue 10-27.** The trailing mean through 09-21 is 43.5, which shows
+    the "no week < 25" clause is what binds, not the average. The hold is
+    used for three things:
+    1. **Fix the three grammar gaps as an INSTRUMENT CHANGE.** Apply it to
+       every week, re-baseline the 09-14 control first, and record it before
+       10-27.
+    2. **Any deep-dive of the 62 never-examined candidate channels follows
+       the same rule:** quota budgeted, run after the day's crons, applied to
+       all weeks.
+    3. **If October keeps failing, stop rolling the rule.** That is the
+       gate's answer, and whether Avatar launches at all becomes a separate
+       decision.
+  - **INSTRUMENT CHANGE 1, recorded 2026-09-29, before the 10-27
+    measurement: the three grammar gaps are closed.**
+    - **The fixes:**
+      - aegisEsports: a mid-title marker strip after a leading handles
+        bracket, plus a bare "Replay!" suffix.
+      - redVsFantasy: a single '!' now ends the clickbait prefix.
+      - parse.ts: `soleGroupMatchup`, which unwraps a title that is one
+        bracket holding both pairs. The result is kept only when both sides
+        resolve.
+    - **Measurement:**
+      - Fresh `data:fetch` (393 units, after the day's crons), then theater
+        → parse → emit.
+      - A baseline on the unchanged code reproduced HEAD's 646 ids exactly;
+        only viewCount differed.
+      - With the fixes: **+3 records, 0 removed, 0 changed, corpus-wide**, all
+        in the 09-21 week.
+    - **Re-baselined weekly counts:**
+      - **The 09-14 control stays 47** under the new instrument; no earlier
+        title had these shapes.
+      - 09-21 A 21 → **24**, B 18 → 21, C 62 → 65. It is still under 25, so
+        the hold is unchanged.
+      - Every other week is identical on A, B and C.
+    - **Gates:**
+      - verify:gates 54/0/0 with four new mutation controls: each fix
+        disarmed, plus the unwrap's "both sides resolve" guard. The
+        handles-only bracket stays `no-vs`.
+      - e2e 70/0; typecheck and lint clean.
+    - **What 10-27 compares against:** the 09-14 control is 47 under
+      instrument 1.
+  - **Nothing moved.** Shell main is untouched. `avatar-flip` is bc9b8c0 plus
+    06239c4 (the hover loop, unpushed). The shell's engine pin stays v0.12.0.
+    Avatar's SMOKE_HOST stays on the vercel.app host.
