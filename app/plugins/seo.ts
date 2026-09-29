@@ -8,15 +8,14 @@ import { withBase } from 'ufo';
  *    of the absolute-path trap: browsers would fetch it from the origin root)
  *  - manifest.webmanifest link (file emitted at build by the static-artifacts
  *    module) + theme-color from GameConfig.manifest
- *  - WebSite (+SearchAction to Browse's real ?q= param) and Organization
- *    JSON-LD, absolute via siteUrl + base.
+ *
+ * The WebSite and Organization JSON-LD used to be here too, which put them in
+ * every page's <head>. They live on the home page now (pages/index.vue, v0.16.0).
  */
 export default defineNuxtPlugin(() => {
   const game = useGame();
   const brand = useBrandName();
-  const site = useSiteOrigin();
   const base = useRuntimeConfig().app.baseURL;
-  const abs = (path: string) => `${site}${withBase(path, base)}`;
 
   useHead({
     htmlAttrs: { lang: 'en' },
@@ -45,26 +44,4 @@ export default defineNuxtPlugin(() => {
       { rel: 'manifest', href: withBase('/manifest.webmanifest', base) },
     ],
   });
-
-  useJsonLd([
-    {
-      '@type': 'WebSite',
-      name: brand,
-      url: `${abs('/')}`,
-      potentialAction: {
-        '@type': 'SearchAction',
-        target: {
-          '@type': 'EntryPoint',
-          urlTemplate: `${abs('/')}?q={search_term_string}`,
-        },
-        'query-input': 'required name=search_term_string',
-      },
-    },
-    {
-      '@type': 'Organization',
-      name: brand,
-      url: `${abs('/')}`,
-      logo: abs('/icons/favicon-512.png'),
-    },
-  ]);
 });

@@ -59,6 +59,7 @@
 </template>
 
 <script setup lang="ts">
+import { withBase } from 'ufo';
 // Browse — the design's 1A Broadcast Grid: filter bar → active chips + count →
 // infinite-scroll card grid, with the mobile drawer and the video modal.
 // Everything inside ClientOnly (replays are client-fetched); the prerendered
@@ -109,4 +110,34 @@ useSiteMeta({
   title: `Browse — ${useBrandName()}`,
   description: `Browse ${totals.value.replays.toLocaleString('en-US')} competitive ${game.name} replays — filter by ${terms.character}, matchup, player, ${terms.patch}, and ${terms.source}.`,
 });
+
+// The site-wide WebSite (+SearchAction to Browse's real ?q= param) and
+// Organization nodes, absolute via siteUrl + base. HOME PAGE ONLY: Google reads
+// both from the home page, and while plugins/seo.ts emitted them they sat in
+// every page's <head> — ~620 B in each prerendered file (v0.16.0).
+const brand = useBrandName();
+const site = useSiteOrigin();
+const base = useRuntimeConfig().app.baseURL;
+const abs = (path: string) => `${site}${withBase(path, base)}`;
+useJsonLd([
+  {
+    '@type': 'WebSite',
+    name: brand,
+    url: `${abs('/')}`,
+    potentialAction: {
+      '@type': 'SearchAction',
+      target: {
+        '@type': 'EntryPoint',
+        urlTemplate: `${abs('/')}?q={search_term_string}`,
+      },
+      'query-input': 'required name=search_term_string',
+    },
+  },
+  {
+    '@type': 'Organization',
+    name: brand,
+    url: `${abs('/')}`,
+    logo: abs('/icons/favicon-512.png'),
+  },
+]);
 </script>
