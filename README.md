@@ -488,7 +488,8 @@ danger/warning/success = status accents (third+ source-channel styling, future
 status UI).
 
 Per-character **accents** are separate: they come from `GameConfig.accents` and
-are injected as `--accent-<characterId>` by `app/plugins/accents.ts`. Put accents
+are compiled into the entry stylesheet as `--accent-<characterId>` by
+`modules/accents-css.ts` (v0.16.0; an inline `<style>` in every page before). Put accents
 in `app.config.ts`; put the palette + fonts in `theme.css`.
 
 **Off-limits:** everything in `structural.css` — spacing, radii, the corner-cut

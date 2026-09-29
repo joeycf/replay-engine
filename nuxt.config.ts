@@ -146,6 +146,10 @@ export default defineNuxtConfig({
     // 404.html (prerendered /not-found copied over nitro's SPA fallback).
     // Absolute path so the module resolves when this config runs as a layer.
     fileURLToPath(new URL('./modules/static-artifacts.ts', import.meta.url)),
+
+    // GameConfig.accents → `--accent-<id>` variables compiled into the shared
+    // entry stylesheet (v0.16.0), rather than inlined into every page's <head>.
+    fileURLToPath(new URL('./modules/accents-css.ts', import.meta.url)),
   ],
 
   // ---- Tailwind v4 (CSS-first) via the official first-party Vite plugin ----

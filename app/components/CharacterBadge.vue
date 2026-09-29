@@ -23,8 +23,8 @@
 
 <script setup lang="ts">
 // The two-letter character badge (generalizes the shipped ChampBadge).
-// Accent tint resolves through the injected --accent-<id> variable
-// (plugins/accents.ts) via accentGradient() — never a raw hex. Full-name
+// Accent tint resolves through the --accent-<id> variable (compiled into the
+// entry stylesheet by modules/accents-css.ts) via accentGradient() — never a raw hex. Full-name
 // tooltip on hover-capable pointers via the shared HoverTip build.
 import type { Character } from '@engine/types';
 

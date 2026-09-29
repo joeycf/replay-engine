@@ -42,14 +42,14 @@ export function capWord(s: string): string {
   return s.charAt(0).toUpperCase() + s.slice(1);
 }
 
-/** CSS-identifier-safe accent id (mirrors the accents plugin's sanitizer). */
+/** CSS-identifier-safe accent id (mirrors the sanitizer in modules/accents-css.ts). */
 export function accentSafeId(id: string): string {
   return id.replace(/[^a-zA-Z0-9_-]/g, '-');
 }
 
 /**
- * Per-character accent, resolved through the injected `--accent-<id>` variable
- * (plugins/accents.ts) — never a raw hex in a component. Fallback is a
+ * Per-character accent, resolved through the `--accent-<id>` variable
+ * (modules/accents-css.ts) — never a raw hex in a component. Fallback is a
  * semantic token reference.
  */
 export function accentVar(id: string, fallback = 'var(--color-border)'): string {
