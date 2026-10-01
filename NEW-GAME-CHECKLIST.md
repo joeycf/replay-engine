@@ -825,3 +825,153 @@ channel priority and below a human's own verdict.
 _Failure: an archive that looks complete, counts correctly, passes every gate,
 and serves a dead link on one record in twelve — with nothing in the data
 saying which ones or why._
+
+### Amendments from the fifth consumer (Granblue Fantasy Versus: Rising, 2026-09-29)
+
+Reported from Stage 0 recon and the rehearsal parse, before the first backfill. Numbers
+here are GBVSR's; the rules are not. This consumer is the first whose game is a SEQUEL
+living on the same channels and the same catalogue label as its predecessor, the first
+whose dominant channel deleted its own back catalogue while still uploading daily, and
+the first built after the platform's quota was costed from code.
+
+**12l. One catalogue label can cover TWO games. Gate the entry on its date, not its label.**
+12a says re-check every row against its own declared game label. On this catalogue every
+row reads "Granblue Fantasy: Versus" — including 10,459 rows (43.8%) that are the ORIGINAL
+2020 game, not the 2023 sequel. The per-entry label gate passes all of them. Gate on the
+video's own publishedAt against the sequel's first playable day, pre-filtered on the
+catalogue's upload date before the liveness join so the old half is never hydrated. A
+title marker is not a substitute: 23 post-launch VODs call the sequel by the old name.
+_Failure: 44% of an index intake silently files the previous game's matches under the new
+one's roster, with every character resolving, because the rosters overlap._
+
+**3c. The marker for a sequel is not the franchise's short name — and it needs the date floor too.**
+`GBVS` matches 1,068 old-game uploads on the dominant channel and 1,961 on another, one of
+which titled old-game footage `[GBVS] … Granblue Fantasy Versus` on the sequel's launch
+day. The marker is `GBVSR`/Rising, never bare `GBVS` (Strive's GUILTY GEAR lesson, one
+letter shorter). And the marker is not enough alone: a pre-launch old-game title says
+"…GBVSR楽しみ…" (looking forward to it). Marker AND the first-playable-day floor.
+
+**3d. A separator word that is also in the game's name is not a separator.**
+Strive's `vs` regex accepts `versus`. Three GBVSR channels write "Granblue Fantasy VERSUS
+Rising" in every title. Separators are per-game vocabulary; measure before porting.
+
+**16b. A concentration figure measured THROUGH an index source is that index's visibility.**
+The brief carried "92% of live volume on one channel". Through the catalogue the dominant
+channel is 88.5–94% — because the catalogue indexes only it and one other. Across every
+intake it is 68.2% (top-3 96.0%). Measure concentration from the channels' own uploads
+playlists, anchored to today (10k).
+
+**7d. A slow self-deletion evades both the collapse guard and the silence alarm. Report departures.**
+The dominant channel removed a stretch of its own back catalogue at 2–3 videos a day for
+nine months (Nov 2024–Jul 2025, found as a dead-link WINDOW in the index catalogue and
+attributed by entry-id adjacency) while uploading ~10 a day. `>10% AND >20` never fires on
+2 a day; a silence alarm never fires on a channel that is not silent. Print, per intake,
+every run, the ids that left the corpus since the committed videos.json — REPORT-ONLY,
+never blocking. Visibility first; a gate for a slow pattern is a gate that cries wolf.
+
+**7e. Derive an alarm's threshold from the monitored thing's own history, with margin.**
+The dominant channel's longest silence over the preceding year was 4.42 days (363 of 366
+days carry an upload), so its silence alarm is 7 days — not a round 90 copied from a
+frozen-channel watch. State the measurement beside the constant.
+
+**12m. Liveness has more than two shapes: a deletion WINDOW is the third.**
+FF's catalogue decayed with age; Strive's had a one-year cliff; GBVSR's is neither — 0–1
+dead rows/month to 2024-10, 71–97/month Nov 2024–Jul 2025, 0 since. Name the shape you
+measured; 12h already says never inherit one.
+
+**13b. An in-character MODE is a mark on a base character, positive evidence only.**
+Ver 2.20 gave three fighters an EX mode (different moves, shared ranks, separate ranked
+records). The vendor roster and the partner site list 40 fighters, not 43. Model it as a
+game-local mark: set only when the title or catalogue says so, ABSENT otherwise (never
+"false" — a channel that never writes the mark says nothing about mode), valid only on
+the fighters that have the mode and only on/after the patch that added it; anything else
+is residue. The stat unit stays on the base fighter; the facet filters.
+
+**5u. A per-fighter release floor must use the vendor's EARLIEST statement about the build.**
+The CMS `date` field would have refused 12 real uploads of a fighter posted five days
+"before" her patch, and 3 of another posted hours before. Use the earlier of the post's
+own date and its publishedAt, across language feeds, and cross-check against the first
+footage (a CHECK, never a source). No patch body stated a release date at all.
+
+**5v. Glued bilingual names defeat a letter-boundary guard. Make the boundary script-aware.**
+`cagliostroカリオストロ` matches neither alias under `(?<![\p{L}\p{N}])…(?![\p{L}\p{N}])`
+— each half is a letter to the other. Guard Latin aliases against Latin only and CJK
+aliases against CJK only; keep the STRICT guard for aliases of two letters or fewer, or
+`IDカード` reads as a fighter named Id.
+
+**5w. On a bare grammar, a handle that IS a fighter's alias reads as a counter-pick.**
+`UNO Ferry` (a player named UNO, which is also a fighter's Japanese romanisation) parses
+as two fighters and no handle. Only the evidenced fighter-named-player list may unlock
+the reading "first span is the player" — never a heuristic, or real counter-picks become
+handles.
+
+**5x. The rejects list is where a decoration word turns out to be a PLAYER.**
+"Rookies" looked like one channel's series label ("GBVSR Rookies Versusia VS …") and went
+into the decoration vocabulary; the rehearsal parse's rejects showed it is a top player
+(IBSG | Rookies) on four channels. Read the rejects before trusting a decoration list.
+
+**10l. Cost the platform's quota from the CODE, before the backfill, and keep one recon's headroom.**
+A sibling's fetcher comment says "steady state ~9–20 units/day"; its code walks every
+playlist in full and hydrates every id, ~870/day. Every sibling does the same. The
+platform estimate from code + channel sizes was ~5,035 units/day of a shared 10,000.
+Before a new game's backfill, estimate the total, have a human confirm it against the
+console, and stop if the new game's steady state would leave less than ~2,000 units
+(one recon's worth) of headroom. Confirmed 2026-10-01: the console's "Queries per day"
+read 5,023 for a quota day holding all seven crons and nothing else — the code estimate
+was 0.2% off. GBVSR's backfill then spent 883 (estimated ~874). The console's number is
+only a full day's spend once every cron has run; check the run times first.
+
+**14b. The fourth handoff running carries a sampled-colour citation that does not reproduce.**
+The gilt "kv_logo metallic bevel" — every logo file's bevel is SILVER (zero gold-ish
+pixels); the gold exists only in the painted key visual. Also: annotations that record a
+PRE-CLIP chroma rather than the shipped hex (five here), and a 15-token handoff briefed
+as 16. Re-measure every citation, name the ones that held.
+
+**15b. A fan-kit licence that allows ONLY kit materials forbids the fallback chain; a
+revocable one needs a dormant fallback that is BUILT every run.**
+Article 1 of this vendor's kit terms prohibits reprinting any other official material, so
+the detail-page fallback Strive used would itself breach the licence. Article 3 makes the
+licence revocable. Keep the generated-tile path in the art script behind one command,
+and have verify-gates build it into a temp dir every run — a fallback nobody runs is a
+fallback that has rotted the day it is needed. Refusing to fetch does not remove art
+already committed; the command must delete every kit derivative.
+
+**12n. A ported `startSeconds` truthiness test survives in older siblings — check both ends.**
+Avatar's e2e found a `vid@0` record that lost `startSeconds: 0` to a truthiness test.
+Strive's emit still has the same test (latent there, because Strive reads `t=0` as a whole
+video). A port that ALSO fixes the `t=0`-inside-a-multi-row-VOD rule (12k) makes the
+latent defect live. Guard `videoId` and `startSeconds` together in the builder AND emit.
+
+**9d. The cron guard has to PARSE the commit step it guards — continuations and all.**
+Tekken's e2e cron guard reads the staged list off one `git add <files>` line. Every
+workflow since Strive continues that command over several lines with `\`, and against
+`git add \` the one-line regex matches nothing, so ported as-is the guard cannot check a
+single file. Two fixes, both needed: join the `\`+newline continuations before parsing,
+and cut the step's body by INDENTATION (the next step's `env:` values sit at the same
+depth as a `run: |` body; Tekken's "every 10-space line after `git config`" would run
+`SMOKE_HOST: https://…` as a command). Then derive the write set from the scripts' own
+write calls, not a restated list: on GBVSR this found `data/theater-disagreements.json`
+written by parse and never staged — and Strive's workflow omits it too (logged, not fixed
+from here).
+
+**5d addendum. opentype.js 2.0.0's `toPathData` emits NaN on exponent-form coordinates.**
+The "NaN from multi-glyph layout" Strive and CotW recorded has a concrete cause: the path
+serialiser's rounding breaks on numbers like `1.4e-14`, which depends on font SIZE, not
+layout (Cinzel Decorative's `K` at 72 px; 12,435 glyph × size combinations across four
+faces). GBVSR's og.ts writes glyph paths itself. Strive's og.ts likely carries the latent
+defect.
+
+**15c. The engine's `heroFocus` default ('70% 25%') is wrong for a flush-right splash.**
+A splash that stands the figure at the canvas's right edge needs `heroFocus: '100% 50%'`;
+under the default, a 360-wide phone hero shows none of the figure and desktop looks
+perfect. e2e must READ heroFocus from app.config.ts (engine default otherwise) and do the
+narrow-window arithmetic from it — Strive hard-coded its '100%', which is right only until
+someone re-frames the art.
+
+**2c. A character id that is also a field name: drive the engine's OWN filter core.**
+A fighter named `id` is an HTML attribute, a JSON key and a route param. Restating the
+filter in e2e proves nothing about the engine; `app/utils/filterReplays.ts` is pure and
+importable, so e2e runs `?c=id` through it against the shipped archive and asserts
+exactly the records with that id on a side (97 on the rehearsal) — plus `useFilters.ts`
+still keying characters on `c`. The same loop covers the digit-led `2b` and a nested
+`avatar-belial` against its substring `belial`.
