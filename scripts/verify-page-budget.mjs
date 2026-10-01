@@ -69,6 +69,10 @@ const BUDGETS = {
   '/ffcotw': { tailMedian: 11750, tailMax: 12500, pageMax: 18900 },
   '/ggst': { tailMedian: 11650, tailMax: 13000, pageMax: 18800 },
   '/avatar': { tailMedian: 11700, tailMax: 12300, pageMax: 17300 },
+  // GBVSR's first corpus build, 2026-10-01 (15,743 records, 2,877 player
+  // pages): one-replay median 11,208 B and max 11,981 B, page max 17,787 B —
+  // x1.05 / x1.08 / x1.08, rounded up to 50 B.
+  '/gbvsr': { tailMedian: 11800, tailMax: 12950, pageMax: 19250 },
 };
 // A base with no row (the fixtures app, a new game before its first
 // measurement) is held to the loosest shipped game until it gets one.
