@@ -975,3 +975,27 @@ importable, so e2e runs `?c=id` through it against the shipped archive and asser
 exactly the records with that id on a side (97 on the rehearsal) — plus `useFilters.ts`
 still keying characters on `c`. The same loop covers the digit-led `2b` and a nested
 `avatar-belial` against its substring `belial`.
+
+### Amendment from the featured-players rework (all eight games, 2026-10-01)
+
+**5p. Featured is a tournament result, not a replay count — and the match runs at parse time.**
+Engine v0.17.0 features a player when the registry flags them OR they rank in the top
+`GameConfig.featured.autoPercent` (default 2%) of the unflagged by appearances, floored at
+`minAppearances` (5). The flag comes from the game's pipeline: `scripts/tournaments.ts`
+(copy GGST's; only the game-constants block changes — `LIQUIPEDIA_GAME`, `SOURCE_PAGE`,
+the UA, and the game's own id normaliser) pulls Liquipedia's Tier 1–2 winners and
+runners-up into `data/tournaments.json` through the MediaWiki API — one `action=parse`
+of the TournamentCard Lua per tier, 30 s apart, gzip and a contact User-Agent, because
+the HTML pages are bot-walled and the API terms forbid scraping them. NETWORK, MANUAL,
+NEVER IN THE CRON; `../sync-tournaments.sh` paces all repos. The parse re-matches the
+file against the registry it just built and stamps `featured: true` + `extra.titles`
+(`PlayerTitle[]`), so a champion with no replay yet is featured the morning their first
+video lands. Pass the normaliser that MINTED the registry ids (GGST `playerId`, SF6/Tekken
+`resolveKey`, 2XKO the slug) or matches silently never happen; pass a roster-collision test
+so a fighter's name (Leo, Jack, Ky) is reported, never guessed — `data/tournament-aliases.json`
+is where a human decides. Gate it: `tournaments.ts --check` inside `npm run typecheck`,
+the three verify-gates controls (duplicate event, unknown alias id, unreachable upstream
+keeps the file byte-identical), and e2e asserting every titled player is featured and the
+page carries the CC BY-SA 3.0 credit. _Failure: a 25,000-replay game "features" 359
+people and five of eight games feature nobody, because the only lever was a hand-typed id
+set in one parser._
