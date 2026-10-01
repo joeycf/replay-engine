@@ -3809,3 +3809,18 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   3541–3623 on GitHub — the HOLD counts, the three grammar gaps, Instrument
   change 1) was absent here; merged in at its original position. Both
   directions verified: 0 remote lines missing, 0 of mine missing.
+- **Avatar: moving the gate date honestly (2026-10-01).** avatar-flip is
+  already rebased onto main (Avatar 8th, Coming Soon empty, the duplicate
+  hover-clip check gone; pre-rebase backup deleted, 06239c4 in the reflog).
+  The 10-27 date is arithmetic from the chosen rule: the 09-21 week (24 after
+  Instrument change 1) is under 25, so every 4-week window containing it fails
+  the no-week-under-25 clause; the first clean window is 09-28→10-19, measured
+  10-27. Two legitimate ways to earlier: (a) improve the instrument applied to
+  every week — the 62 never-examined candidate channels (473 marked titles) —
+  which is prompt-avatar-instrument-2.md (new session, after the day's crons,
+  search.list at zero, ~600-unit budget, triage → add real uploaders with the
+  standard equipment → re-parse all weeks → report what the PRE-REGISTERED
+  rule reads under Instrument 2, incl. the earliest passing window; no flip,
+  no rule change); (b) re-decide the rule in writing BEFORE the next number
+  (e.g., no week under 20, or mean-only) — the user's call, never after a
+  number. What is not fine: seeing a number and choosing the rule that passes.
