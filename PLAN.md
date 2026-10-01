@@ -3621,3 +3621,191 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   - **Nothing moved.** Shell main is untouched. `avatar-flip` is bc9b8c0 plus
     06239c4 (the hover loop, unpushed). The shell's engine pin stays v0.12.0.
     Avatar's SMOKE_HOST stays on the vercel.app host.
+- **AVATAR GATE 2026-09-29: HOLD — A read 47 (09-14 ✓) and 21 (09-21 ✗, under
+  25).** Controls passed (09-14 still 47, same 47 ids as 09-24; B ≠ A in six
+  weeks). Cause: no tournament-channel batch that week (ndyTv/Toledo/Unrivaled/
+  KML all 0 vs 7–15 in a batch week), STiLL 17 → 5; C still 62 because RT
+  carried 44 tournament VODs. **Audited as not-an-artifact at zero quota** (all
+  32 channel RSS feeds): 15 Avatar uploads absent, 12 legitimately (shorts,
+  highlights, <2 characters named), **3 real matches missed by grammar gaps**
+  (Aegis handles-in-bracket-then-characters; RED both pairs in one bracket; RED
+  commentary before the handle) — with all three the week is 24, still under
+  25, so the verdict doesn't depend on the parser. 09-28 week at 4 through Tue.
+  Lowest week ever by A (prior minimum 35). **Hold-length decision: option 1,
+  the literal rule, first measurable window 09-28→10-19 on 10-27.** Reason in
+  numbers: on the nine measured weeks, the 4-week-mean rule passes 4 of 6
+  historical windows (it measures the scene's batch/quiet rhythm), while
+  "two consecutive weeks ≥ 40" passes 2 of 8 pairs (it measures whether two
+  batches line up); option 3 would override the rule after it fired. Meanwhile:
+  fix the three grammar gaps as an INSTRUMENT change applied to every week
+  (re-baseline the 09-14 control first, record it); optionally deep-dive the
+  top of the 62 never-examined candidate channels (quota-budgeted, after the
+  crons, applied to all weeks); Granblue proceeds. If October keeps failing,
+  that is the gate's answer and the next conversation is whether Avatar
+  launches at all — a different decision from hold length.
+- **Avatar hold executed properly (2026-09-29):** the three grammar gaps closed
+  as INSTRUMENT CHANGE 1 — baseline first (fresh fetch 393 units after the
+  crons; the unchanged code reproduced HEAD's 646 ids exactly), fixes applied
+  (aegisEsports handles-first strip; redVsFantasy single-'!' clickbait cut;
+  `soleGroupMatchup` for a whole-title bracket, kept only when both sides
+  resolve, so a handles-only bracket stays `no-vs`), effect +3 records
+  corpus-wide and 0 removed/changed, all in 09-21 (21 → 24, still < 25).
+  The 09-14 control stays 47 under instrument 1. verify:gates 54/0/0 with four
+  mutation controls; pushed a7bde3d; verify:deployed matched 649 live.
+  replay-engine/PLAN.md holds the uncommitted hold note + instrument record —
+  the user's to commit.
+- **Granblue Stage 0 STOP 0.1 (2026-09-29): recon spent 481 units, zero
+  search.list, AFTER all seven crons** (the Avatar quota lesson applied).
+  **Correction owned: my prompt's "92% on one channel" was RT's view** — RT
+  indexes only the dominant channel and 格闘ゲーム研究所; across every intake
+  09-01..28 it is **68.2% top-1 / 96.0% top-3 at 14.4 uploads/day**, ~57% of
+  the day-one archive; without it the flow is 21–31/week, under Avatar's
+  40/week bar (the Invincible VS risk, stated). Orientation nearly uniform
+  (handle-outside everywhere except gbvsReplayCh's bare handle-first shape) —
+  the Strive mirror does not recur. Marker `GBVSR(?![A-Za-z])|Rising|ライジング`,
+  never bare `GBVS` (1,068 old-game uploads on the top channel; 格闘ゲーム研究所
+  posted old-game footage on launch day) + a 2023-12-11 date floor. RT `gbvs`
+  carries BOTH games under one label (43.8% original GBVS) → gated on video
+  date; **RT rows are SETS** (consecutive different-pair rows median 573 s
+  apart, splitting at counter-picks — the opposite of Strive's verdict; the
+  changelog says "sets"); liveness is a DELETION WINDOW (Nov 2024–Jul 2025,
+  644 of 681 dead Rising rows among the top channel's own uploads, none since).
+  0.2 facts already measured: roster 40 = 40 (Id shipped 09-15/17 — released,
+  not announced), JP alias traps (Fastiva/Uno/Six/Lucifer), the filter key is
+  `?c=` not `?character=`, EX variants (Gran/Djeeta/Narmaya, vendor Ver 2.20)
+  as a modeling question, handoff has 15 colour tokens not 16, **the gilt's
+  provenance is false for the third handoff running** (logo bevel is silver;
+  the gold lives in the key visual), ComboForge 38/40 derive (meg override,
+  id null), and a first-party Fan Kit covering all 40 — with Art.2 banning
+  profit use, which raises the footer tip link (a platform-wide question for
+  the queued art-licence audit). **Decisions: top channel = option 1 (guard
+  + dormancy alarm, no freeze) plus a report-only per-intake "records that
+  left since the last commit" line — the gradual back-catalogue deletion
+  this channel has already done once is invisible to both the collapse
+  guard and the alarm; the alarm threshold from its measured longest silence.
+  Dormant: freeze all four** (dormant channels are the likeliest to vanish;
+  capturing them is the archive's point); " GBVSR Replay" now uploads Tekken 8
+  (proReplays in reverse) → a separate measured Tekken recon; FG: High Level
+  Gameplay's Strive half → a separate ggst look.
+- **Granblue STOP 0.2 (2026-09-29).** 0.1 follow-ups measured: the top
+  channel's longest silence in 12 months is **4.42 days** (all-time 11.4 d,
+  Aug 2024) → the 7-day alarm stands on evidence; the handoff lacks
+  text-faint too → **six** tokens derived on its own ramp (faint-on-raised
+  checked, the pairing Avatar missed); border-subtle lands above the sibling
+  band → re-derive in Stage 1. The footer tip link is Buy Me a Coffee on every
+  page (engine SiteFooter.vue). **Decisions: EX = option 1** — the vendor's 40
+  ids stay (EX is a mode of three characters, not a roster entry; the vendor
+  roster, the Fan Kit and ComboForge are all one-to-one), EX a game-local flag
+  with facet + badge on the Avatar-supports/2XKO-fuses precedent (no engine
+  change), evidence-only (set when the source says EX, absent otherwise —
+  never false), date-floored at Ver 2.20 and limited to Gran/Djeeta/Narmaya.
+  **Art = option 2** — use the Fan Kit (all 40 incl. 2B and Id), hide the tip
+  link on /gbvsr via an additive reusable engine switch
+  (`GameConfig.hideSupportLink`, minor release) that the queued art-licence
+  audit can flip per game; crop/resize/re-encode only (Art.2 bans excessive
+  modification); "© Cygames, Inc." wherever the art appears; no kit art on
+  the shell selector card (the apex carries its own tip link); the terms
+  reading recorded in art-provenance.json with a re-check date; the
+  generated-tile path kept buildable so a revocation (Art.3) is one command.
+- **Granblue flip order decided (2026-09-29): option 1 — flip as the 7th game
+  as soon as it's live; Avatar's held flip rebases later as the 8th.**
+  Reasoning: GBVSR has no viability question — its channel flow is ~100 a week
+  against the 40 bar Avatar is held to — so coupling it to Avatar's gate (which
+  may never pass) would make a healthy game hostage to an unrelated one. Notes
+  for the flip: log GBVSR's count A for its last two complete weeks in the
+  flip commit (the same standard, visibly applied); fix shell main's stale
+  verify-shell changelog literal (35 vs 36 entries, red silently because
+  nothing runs verify-shell on shell main automatically) in its OWN commit
+  first, so the flip reverts cleanly; GBVSR's live selector card stays
+  type-and-colour per the art decision (no Fan Kit art on the apex, which
+  carries its own tip link); the empty-UPCOMING verification moves to
+  Avatar's flip; the shell's engine pin stays v0.12.0.
+- **Granblue build plan audited (2026-09-29) — approved with three changes.**
+  Corrections to the brief, measured: corpus ≈15.4k records (not 30,794) →
+  storage ≈0.6–0.8 GB (not 1–1.5); RT carries both games under one label
+  (date gate); RT rows are SETS; 15 tokens + 6 derived; `?c=` not
+  `?character=`. Patch table from the vendor's microCMS feed: 22 versioned
+  posts + 1.0, tokens in the vendor's spelling (`1.1` never "1.10"), eras
+  Season 1/Season 2 from the vendor's own words, date authority = the post
+  body then the CMS date in JST, never publishedAt (the advance post);
+  STALE_PATCH_DAYS 190 because the vendor's widest real silence was 183
+  days. A per-fighter release floor generalises the Id check. The cron-guard
+  parser strips `\`+newline (multi-line git add defeats the ported regex).
+  **Art decision as recorded: "Fan Kit, footer link kept" (the user's call,
+  not my option 2)** — so the flip section's "type-and-colour live card per
+  the art decision" rests on a reason that no longer holds (my flip-order note
+  had assumed the link would be hidden) → decide it explicitly and make the
+  reason match. **Quota, the cross-cutting find: Strive's comment claims
+  9–20 units/day while its code walks every playlist in full (~870/day);
+  nobody has measured the platform's total daily spend on the shared 10,000
+  quota, and GBVSR adds ~874 on backfill day and ~550/day after** → estimate
+  the total from each game's fetch code and confirm in the Google Cloud
+  Console before the backfill; stop if headroom is under ~2,000 (one recon's
+  worth). Also: keep the generated-tile path buildable as a dormant fallback
+  (Art.3 revocable, Art.1 leaves no other permitted source).
+- **GBVSR deployed (2026-10-01) — build/launch details pending the export.**
+  Remaining runbook from the plan: verify:deployed on the game host (game ===
+  'gbvsr', engine v0.16.0) → Web Analytics + 7-day retention → YT_API_KEY →
+  workflow_dispatch → first green cron → engine page-budget row → workspace
+  scripts (five, incl. sync-yt-cookies.sh) with the first real push → shell
+  commit 0 (stale verify-shell literals, alone) → the flip as the 7th card
+  (count A for the last two complete weeks in the message) → verify:cutover
+  → SMOKE_HOST to the apex. Open from the audit: the quota total (change 3),
+  the card decision (change 1), the dormant tile fallback (change 2). Storage
+  re-measure due today (~3.3 GB target before GBVSR's builds accrue).
+- **GRANBLUE FANTASY VERSUS: RISING LIVE (2026-10-01) — the SEVENTH game;
+  Avatar the only Coming Soon card.** 15,743 records (2023-12-11 → 2026-10-01)
+  · 2,877 players · 31,601 side appearances; verify:cutover **155/155** at the
+  live apex; first workflow_dispatch cron green (14 steps, 2m41s, smoke check
+  against the apex after the bot's commit deployed); verify-gates 71 controls
+  99/99 (tree byte-identical after); e2e 112/112; verify-shell 97/97 → 98/98
+  with the hover-clip check; page budget positive control fails / clean passes;
+  patch and roster checks CURRENT. Count A in the flip commit: **129 (09-14)
+  and 91 (09-21)** vs the 40 bar; the dominant channel alone 67–74/week.
+  **The three audit changes closed:** (1) card = a byte copy of og-default.png
+  (reuse, like the other six); (2) `data:art:revoked` = the generated-tile
+  fallback, one command; (3) **the quota estimate was confirmed against the
+  Cloud Console: 5,035 estimated vs 5,023 actual** — platform ≈5,585/day with
+  GBVSR, ~4,400 headroom above the 2,000 stop line; backfill 883 (est. 874);
+  SF6 ~1,383 · Tekken ~1,047 · **Evo Events walked FOUR times daily (~450) — a
+  cross-game inefficiency**; a standing platform spend number now exists.
+  RT: 23,909 entries, 10,488 original-game refused on their own date, 1,830
+  built, liveness 5.7% deletion window, sets (559 s median). The id control:
+  /characters/id/ prerendered, 104 records, none pre-09-15, 32 spell her bare
+  "ID" (a guard against "Player ID" would cost those — measured 0 of 33,737
+  titles). First cron's commit was view-counts only (206 records) — platform-
+  standard; quiet days still commit and deploy daily. Post-launch: a hover clip
+  (Cygames' EVO Japan 2023 trailer, 18 s, 4.68 MB on Blob) **recorded as an
+  Art.1 EXCEPTION** (not a fan-kit file) in lib/games.ts, both commit messages,
+  the README, and the revocation to-do (data:art:revoked can't reach the
+  shell's Blob) — the user's call, documented like Avatar's intro; the
+  hover-clip check (every clip requested, a real video required) ported from
+  Avatar's branch into main. Storage ≈0.6–0.9 GB → platform ≈4.0–4.2 of 10.
+  ~20 checklist amendments (12l…2c). Engine ca64b75 + 648d122. **For the
+  user:** rebase avatar-flip onto main (Avatar 8th; drop its hover-check copy;
+  branch 1 ahead of remote); **card-art-upcoming.mjs still holds Strive's
+  register — a no-arg run overwrites a live card (flagged four times now)**;
+  sync-yt-cookies.sh never listed Avatar; **the workspace scripts live in a
+  directory that is NOT a git repo — local only, no backup**; Strive's three
+  gaps (cron doesn't stage theater-disagreements.json; og.ts likely carries the
+  opentype.js NaN bug; stale 09:47 comments); the two channel investigations;
+  Granblue's blue is 7° from Tōkon's (accepted under policy). Seven games,
+  roughly 90,000 replays.
+- **Sync incident (2026-10-01): replacing the engine's PLAN.md with this
+  journal deleted passages Claude Code sessions had written directly into
+  PLAN.md** (the FF eleven-gaps record cited as PLAN.md:2734-2736, Avatar's
+  hold note + Instrument change 1, Granblue's Stage 0 notes cited at
+  3206-3268 / 3530-3540, the 25 lines seen appearing mid-session). This file
+  is append-only and complete for everything I wrote; it was never a superset
+  of PLAN.md. Recovery: `git show <before>:PLAN.md`, then re-append only my
+  entries newer than the restored file's last. **Structural fix, the
+  NEW-GAME-CHECKLIST precedent: this journal now ships as PLATFORM-JOURNAL.md
+  for a wholesale copy into the engine; PLAN.md is no longer a sync target.**
+- **Sync routine (2026-10-01, by the user's rule): PLAN.md stays the one file.
+  Before every presentation I fetch the engine's current PLAN.md from GitHub,
+  diff it against this journal, and merge in any passages written there by
+  sessions, so this file is always a superset and a wholesale replace loses
+  nothing.** First run: the Avatar session's 83-line gate record (lines
+  3541–3623 on GitHub — the HOLD counts, the three grammar gaps, Instrument
+  change 1) was absent here; merged in at its original position. Both
+  directions verified: 0 remote lines missing, 0 of mine missing.
