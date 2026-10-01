@@ -138,6 +138,19 @@ export interface GameConfig {
     metaTimelineTopN?: number;
     metaTimelineFullWidth?: boolean;
   };
+  /** Featured-player ranking knobs (additive, v0.17.0). Absent → the engine
+   *  defaults in utils/constants.ts. A player is featured when the registry
+   *  flags them (`Player.featured`, set by the game's pipeline — curated list
+   *  or a tournament placement) OR when they rank in the top `autoPercent` of
+   *  the UNFLAGGED players by appearances, ties included, and clear the
+   *  `minAppearances` floor. Percent, not a fixed count, so a 25,000-replay
+   *  game and a 650-replay game both feature a sensible handful. */
+  featured?: {
+    /** Top-N% of unflagged players auto-featured. Default 2. */
+    autoPercent?: number;
+    /** Never auto-feature below this many appearances. Default 5. */
+    minAppearances?: number;
+  };
   /** ComboForge cross-link on character pages (additive, v0.11.0). Absent → no
    *  band renders, which is the engine default and any game they don't cover.
    *

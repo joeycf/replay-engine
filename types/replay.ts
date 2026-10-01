@@ -13,10 +13,27 @@ export interface Character {
   extra?: Record<string, unknown>; // game-specific fields
 }
 
+/** One tournament placement (additive, v0.17.0). Set by a game's pipeline from
+ *  its `data/tournaments.json` (Liquipedia, CC BY-SA 3.0) onto
+ *  `Player.extra.titles`; the player page renders them with attribution. */
+export interface PlayerTitle {
+  /** Event display name, e.g. 'Evo 2026'. */
+  event: string;
+  /** 1 = winner, 2 = runner-up. */
+  place: 1 | 2;
+  /** ISO date (YYYY-MM-DD) the event ended. */
+  date: string;
+  /** Absolute URL of the event page (Liquipedia). */
+  url?: string;
+}
+
 export interface Player {
   id: string;
   handle: string;
   featured?: boolean;
+  /** Game-specific bag. Two keys are well-known to the engine:
+   *  `aliases: string[]` (alternate spellings, searched by the typeahead) and
+   *  `titles: PlayerTitle[]` (tournament placements, rendered on the player page). */
   extra?: Record<string, unknown>;
 }
 

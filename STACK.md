@@ -931,7 +931,9 @@ charactersPerSide` invariant survived only as prose, and the last four copies
   docblock already said "≈". Fixing it needs a real per-record denominator,
   which is a contract change and does not belong in a widening release. The
   consuming game pins the current behaviour with a Node-side recompute in its
-  own e2e suite.
+  own e2e suite. _(v0.17.0 narrowed the worst case: any stats entry now counts
+  as at least one appearance, so a partially-known side can under-count but can
+  no longer round a real player down to zero — see §26.)_
 - **New gate: `scripts/verify-badge-density.mjs`.** `BrowseCard.vue` has had an
   `n >= 4` badge-sizing branch since before any game used it, which means it
   was never exercised. The gate overlays the fixtures at
@@ -1312,3 +1314,44 @@ path that is not `/players` is the roster. Verified to discover all three
 spellings in use — `characters` (fixtures, GGST, Tekken, SF6), `fighters`
 (Tokon), `champions` (2XKO) — and it will not need touching when game seven
 invents a fourth.
+
+## 26. v0.17.0 — featured is a percent, and a title is data
+
+The v0.16 featured rule was `Player.featured || appearances ≥ 25`. Twenty-five
+is a sensible bar for a 6,000-replay game and an absurd one for a 25,000-replay
+game: GGST — which flags nobody — had 359 "featured" players, GBVSR 281, SF6
+230. The rail stopped meaning anything, and five of the eight games had no
+curated flags at all because the only way to set one was a hand-typed id set in
+the game's parser.
+
+Two changes, both engine-side, both additive:
+
+- **The auto rule is the top N% of the UNFLAGGED players**, ties at the cutoff
+  included, floored at a minimum appearance count. Defaults 2% / 5, overridable
+  per game via `GameConfig.featured`. The math is a pure module
+  (`app/utils/featuredRank.ts`, `rankPlayers` + `splitFeatured`) with a Node
+  test (`npm run test:featured`); `useFeaturedPlayers` only wires registries and
+  config into it. Flagged players never consume the percent and always sort
+  first. Previews at 2%: GGST 132 auto (cutoff 65 appearances), SF6 46, Tekken
+  52, 2XKO 27, GBVSR 58, CotW 44, Tōkon 13, Avatar 8.
+- **Zero-appearance registry rows are `hidden`** — a third bucket beside
+  `featured` and `rest`, listed nowhere on `/players` and counted in one muted
+  line. "Zero" means no `stats.playerCharacters` entry at all: `rankPlayers`
+  takes `Math.max(1, round(sum / perSide))` for any entry, so a partially-known
+  4-per-side player (Tōkon had eight) is one appearance, not zero. The same
+  arithmetic went into `players/[id].vue`'s match count.
+
+And one data contract: **`Player.extra.titles: PlayerTitle[]`** (`{event,
+place: 1 | 2, date, url?}`) is now a well-known key like `aliases`. The player
+page renders it as a "Tournament results" block with a Liquipedia CC BY-SA 3.0
+credit, the featured badge says why ("· 2 tournament wins"), and `/players`
+counts the tournament-placed. The engine renders; the game's pipeline decides
+who gets a title — the shipped source is Liquipedia's Tier 1–2 winner and
+runner-up tables via its MediaWiki API, matched to the game's own player ids
+at parse time, so a name with no replay yet costs nothing and auto-features the
+day its first video is ingested.
+
+Not changed: `ranked` stays the full registry (the typeahead searches hidden
+rows too — a seed player must still be findable), every player keeps a
+prerendered page, and `Player.featured` keeps its meaning. A game that wants the
+old behaviour sets `featured: { autoPercent: 100, minAppearances: 25 }`.

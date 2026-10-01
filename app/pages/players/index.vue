@@ -4,8 +4,10 @@
     <p class="mt-2 font-ui text-body text-text-secondary">
       <span class="font-mono text-text">{{ list.length.toLocaleString('en-US') }}</span>
       players indexed —
-      <span class="text-secondary">{{ featured.filter((p) => p.featured).length }} featured</span>.
-      Every player has a profile; find anyone via
+      <span class="text-secondary">{{ flaggedCount }} featured</span
+      ><template v-if="titledCount"
+        >, <span class="text-secondary">{{ titledCount }} tournament-placed</span></template
+      >. Every player has a profile; find anyone via
       <NuxtLink
         to="/"
         class="text-primary hover:underline"
@@ -62,16 +64,41 @@
     >
       Everyone on file is featured.
     </p>
+    <p
+      v-if="hidden.length"
+      class="mt-3 font-mono text-[11px] text-text-muted"
+    >
+      {{ hidden.length.toLocaleString('en-US') }} registered
+      {{ hidden.length === 1 ? 'player' : 'players' }} with no replays on file
+      {{ hidden.length === 1 ? 'is' : 'are' }} not listed.
+    </p>
+    <p
+      v-if="titledCount"
+      class="mt-6 font-mono text-[11px] text-text-muted"
+    >
+      Tournament placements via
+      <a
+        href="https://liquipedia.net/fighters/"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="underline hover:text-text"
+        >Liquipedia</a
+      >
+      (CC BY-SA 3.0).
+    </p>
   </section>
 </template>
 
 <script setup lang="ts">
-// Players index: featured players (featured flag or ≥ threshold appearances)
-// as crawlable links into the prerendered profiles; the rest sit behind a
-// client-side reveal so the prerendered HTML stays lean.
+// Players index: featured players (the registry flag, or the top N% of the
+// unflagged by appearances — see utils/featuredRank.ts) as crawlable links into
+// the prerendered profiles; the rest sit behind a client-side reveal so the
+// prerendered HTML stays lean. Zero-appearance rows are counted, not listed.
 const { list } = usePlayers();
-const { featured, rest } = useFeaturedPlayers();
+const { featured, rest, hidden } = useFeaturedPlayers();
 const showAll = ref(false);
+const flaggedCount = computed(() => featured.value.filter((p) => p.featured).length);
+const titledCount = computed(() => list.value.filter((p) => playerTitles(p).length > 0).length);
 
 useSiteMeta({
   title: `Players — ${useBrandName()}`,

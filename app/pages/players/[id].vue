@@ -19,10 +19,13 @@
             v-if="player.featured"
             class="mb-2.5 inline-flex items-center gap-2 border border-primary/50 bg-primary/15 px-[11px] py-[5px]"
           >
-            <VerifiedMark :size="12" />
-            <span class="font-ui text-[10px] font-bold uppercase tracking-label text-primary"
-              >Featured player</span
-            >
+            <VerifiedMark
+              :size="12"
+              :title="featuredLabel"
+            />
+            <span class="font-ui text-[10px] font-bold uppercase tracking-label text-primary">{{
+              featuredLabel
+            }}</span>
           </div>
           <h1
             class="break-words font-display text-[38px] font-bold uppercase leading-[.9] tracking-[-.01em] text-text md:text-[60px]"
@@ -74,6 +77,54 @@
         </div>
       </div>
     </div>
+
+    <!-- TOURNAMENT RESULTS (v0.17.0) — only when the pipeline set extra.titles -->
+    <section
+      v-if="titles.length"
+      class="mx-4 mt-[22px] border border-border-subtle bg-surface p-5 md:mx-7"
+      data-testid="player-titles"
+    >
+      <h2 class="mb-3 font-ui text-[10px] font-semibold uppercase tracking-label text-text-muted">
+        Tournament results
+      </h2>
+      <ul class="flex flex-col gap-1.5">
+        <li
+          v-for="t in titles"
+          :key="`${t.event}-${t.place}`"
+          class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5"
+        >
+          <span
+            class="inline-flex w-[82px] flex-none items-center font-ui text-[10px] font-bold uppercase tracking-label"
+            :class="t.place === 1 ? 'text-primary' : 'text-text-secondary'"
+            >{{ t.place === 1 ? 'Winner' : 'Runner-up' }}</span
+          >
+          <a
+            v-if="t.url"
+            :href="t.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="font-ui text-[13px] font-semibold text-text hover:text-primary-hover"
+            >{{ t.event }}</a
+          >
+          <span
+            v-else
+            class="font-ui text-[13px] font-semibold text-text"
+            >{{ t.event }}</span
+          >
+          <span class="font-mono text-[11px] text-text-muted">{{ t.date }}</span>
+        </li>
+      </ul>
+      <p class="mt-3 font-mono text-[10px] text-text-muted">
+        Placements from
+        <a
+          href="https://liquipedia.net/fighters/"
+          target="_blank"
+          rel="noopener noreferrer"
+          class="underline hover:text-text"
+          >Liquipedia</a
+        >, CC BY-SA 3.0.
+      </p>
+    </section>
 
     <!-- STAT RAIL -->
     <div class="grid grid-cols-1 gap-4 px-4 py-[22px] md:grid-cols-2 md:px-7">
@@ -158,8 +209,24 @@ const { byId: charById } = useCharacters();
 const perSide = Math.max(1, game.charactersPerSide);
 const charRows = computed(() => toUsageRows(stats.value.playerCharacters?.[player.id]));
 const pairRows = computed(() => toPairRows(stats.value.playerPairings?.[player.id]));
-const matches = computed(() =>
-  Math.round(charRows.value.reduce((n, r) => n + r.value, 0) / perSide),
+// Same arithmetic as utils/featuredRank.ts rankPlayers: ÷ perSide approximates
+// replays, and any stats entry at all means at least one (a partially-known
+// side must not round a real player down to zero).
+const matches = computed(() => {
+  const sum = charRows.value.reduce((n, r) => n + r.value, 0);
+  return sum === 0 ? 0 : Math.max(1, Math.round(sum / perSide));
+});
+// Tournament placements set by the game's pipeline (extra.titles), newest first.
+const titles = computed(() =>
+  [...playerTitles(player)].sort((a, b) => b.date.localeCompare(a.date) || a.place - b.place),
+);
+const wins = computed(() => titles.value.filter((t) => t.place === 1).length);
+const featuredLabel = computed(() =>
+  wins.value
+    ? `Featured player · ${wins.value} tournament ${wins.value === 1 ? 'win' : 'wins'}`
+    : titles.value.length
+      ? 'Featured player · tournament finalist'
+      : 'Featured player',
 );
 const mainChar = computed(() => (charRows.value[0] ? charById(charRows.value[0].id) : undefined));
 // One loading card per replay the grid will actually show, up to the four of a
@@ -178,9 +245,11 @@ const initials = computed(() =>
 );
 
 // generic key/value strip for game-specific metadata
+// (`aliases` and `titles` are well-known keys with their own rendering.)
 const extraRows = computed(() =>
   Object.entries(player.extra ?? {}).filter(
-    ([k, v]) => k !== 'aliases' && (typeof v === 'string' || typeof v === 'number'),
+    ([k, v]) =>
+      k !== 'aliases' && k !== 'titles' && (typeof v === 'string' || typeof v === 'number'),
   ),
 );
 
@@ -194,7 +263,7 @@ const involved = computed(() =>
 
 useSiteMeta({
   title: `${player.handle} — ${matches.value.toLocaleString('en-US')} ${game.name} replays · ${useBrandName()}`,
-  description: `${player.handle}${player.featured ? ' (featured player)' : ''} in competitive ${game.name}: ${matches.value.toLocaleString('en-US')} replays on file${mainChar.value ? `, main ${terms.character} ${mainChar.value.name}` : ''}, most-used ${terms.characters} and replay history.`,
+  description: `${player.handle}${player.featured ? ' (featured player)' : ''} in competitive ${game.name}: ${matches.value.toLocaleString('en-US')} replays on file${mainChar.value ? `, main ${terms.character} ${mainChar.value.name}` : ''}${titles.value.length ? `, ${titles.value.length} tournament ${titles.value.length === 1 ? 'placement' : 'placements'}` : ''}, most-used ${terms.characters} and replay history.`,
 });
 
 const site = useSiteOrigin();

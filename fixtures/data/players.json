@@ -1,5 +1,21 @@
 [
-  { "id": "nomad", "handle": "Nomad", "featured": true, "extra": { "aliases": ["the nomad"] } },
+  {
+    "id": "nomad",
+    "handle": "Nomad",
+    "featured": true,
+    "extra": {
+      "aliases": ["the nomad"],
+      "titles": [
+        {
+          "event": "Fixture Invitational 2026",
+          "place": 1,
+          "date": "2026-03-15",
+          "url": "https://liquipedia.net/fighters/Main_Page"
+        },
+        { "event": "Fixture Open 2025", "place": 2, "date": "2025-11-02" }
+      ]
+    }
+  },
   { "id": "echo", "handle": "Echo", "featured": true, "extra": { "region": "NA" } },
   { "id": "pilot", "handle": "Pilot" },
   { "id": "sage", "handle": "Sage", "extra": { "region": "EU", "aliases": ["sage-sama"] } }

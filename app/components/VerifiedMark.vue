@@ -5,12 +5,16 @@
       width: `${size}px`,
       height: `${size}px`,
     }"
-    title="Featured player"
+    :title="title"
   />
 </template>
 
 <script setup lang="ts">
 // The rotated-square mark for FEATURED players (the generic form of the
 // shipped "verified pro" diamond — Player.featured is the engine contract).
-withDefaults(defineProps<{ size?: number }>(), { size: 9 });
+// `title` lets a caller say WHY (v0.17.0: "… · tournament winner").
+withDefaults(defineProps<{ size?: number; title?: string }>(), {
+  size: 9,
+  title: 'Featured player',
+});
 </script>
