@@ -11,6 +11,7 @@
       v-for="row in shown"
       :key="row.id"
       :to="linkPlayerId ? { path: '/', query: { p: linkPlayerId, c: row.id } } : undefined"
+      :rel="linkPlayerId ? 'nofollow' : undefined"
       class="block"
       :class="linkPlayerId ? 'cursor-pointer' : ''"
     >
@@ -93,7 +94,10 @@
 // full    — the Stats dashboard's ranked rows (design Panel 1).
 // compact — the Player page's "Most-used characters": stacked rows
 //           (badge + name + N× header, thin bar below), optionally
-//           deep-linking each row to /?p=<player>&c=<character>.
+//           deep-linking each row to /?p=<player>&c=<character> — a real
+//           <a href> so it works without JS, rel=nofollow (v0.18.0) because
+//           every filtered Browse view canonicalises to the bare Browse page
+//           and the player pages are what crawlers should spend on.
 // Accent fills via accentBarGradient() → --accent-<id> vars only.
 import type { UsageRow } from '@engine/app/composables/useStatsRows';
 

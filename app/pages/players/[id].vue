@@ -216,6 +216,13 @@ const matches = computed(() => {
   const sum = charRows.value.reduce((n, r) => n + r.value, 0);
   return sum === 0 ? 0 : Math.max(1, Math.round(sum / perSide));
 });
+// Thin profiles stay (prerendered, linked, never a 404) but are not offered
+// for indexing (v0.18.0): below GameConfig.seo.indexMinReplays the page is
+// noindex,follow, and modules/static-artifacts reads that meta back from the
+// rendered HTML to drop the URL from the sitemap. `matches` comes from the
+// provided registries, so the server and the client agree.
+const indexable = matches.value >= (game.seo?.indexMinReplays ?? SEO_INDEX_MIN_REPLAYS);
+if (!indexable) useHead({ meta: [{ name: 'robots', content: 'noindex,follow' }] });
 // Tournament placements set by the game's pipeline (extra.titles), newest first.
 const titles = computed(() =>
   [...playerTitles(player)].sort((a, b) => b.date.localeCompare(a.date) || a.place - b.place),

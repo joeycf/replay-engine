@@ -62,12 +62,20 @@ const base =
    Tōkon run larger heroes (duo pairings, four-character sides). Change a row
    deliberately, with a measurement, never to turn a red run green. */
 const BUDGETS = {
-  '/2xko': { tailMedian: 14100, tailMax: 14800, pageMax: 26300 },
+  // 2XKO page max re-measured 2026-10-02: v0.17.0's tournament-results section
+  // put the featured profiles past the old 26,300 B (hikari 26,790 B as
+  // deployed, the largest page 27,277 B), and v0.18.0's rel=nofollow on the ten
+  // filtered-view links adds 149 B to every profile. 27,426 B × 1.08, rounded.
+  '/2xko': { tailMedian: 14100, tailMax: 14800, pageMax: 29650 },
   '/tekken': { tailMedian: 11400, tailMax: 12100, pageMax: 18700 },
   '/sf6': { tailMedian: 11400, tailMax: 12000, pageMax: 18800 },
   '/tokon': { tailMedian: 15050, tailMax: 16800, pageMax: 18800 },
   '/ffcotw': { tailMedian: 11750, tailMax: 12500, pageMax: 18900 },
-  '/ggst': { tailMedian: 11650, tailMax: 13000, pageMax: 18800 },
+  // GGST re-measured 2026-10-02 for the same two reasons as 2XKO: v0.17.0's
+  // tournament results (largest profile 25,741 B, a one-replay finalist
+  // 13,049 B as deployed) and v0.18.0's rel=nofollow (+74 B on a 1v1 profile).
+  // 13,108 × 1.08 and 25,741 × 1.08, rounded up to 50 B.
+  '/ggst': { tailMedian: 11650, tailMax: 14200, pageMax: 27800 },
   '/avatar': { tailMedian: 11700, tailMax: 12300, pageMax: 17300 },
   // GBVSR's first corpus build, 2026-10-01 (15,743 records, 2,877 player
   // pages): one-replay median 11,208 B and max 11,981 B, page max 17,787 B —

@@ -2,7 +2,8 @@ import { copyFileSync, existsSync, mkdirSync, readFileSync, writeFileSync } from
 import { dirname, join, resolve } from 'node:path';
 import { defineNuxtModule } from 'nuxt/kit';
 import { joinURL, withBase, withLeadingSlash, withoutBase } from 'ufo';
-import { loadMergedGameConfig } from '../lib/game-config';
+import { characterSegment, loadMergedGameConfig } from '../lib/game-config';
+import { loadReplayIndex } from '../lib/replay-index';
 
 /**
  * STATIC BUILD ARTIFACTS — everything the shipped 2XKO build produced with a
@@ -14,6 +15,14 @@ import { loadMergedGameConfig } from '../lib/game-config';
  *    normalized to router space in here), /health + /not-found + host
  *    fallbacks excluded, locs re-based with withBase(). Written into
  *    publicDir (see below), so it serves at <base>/sitemap.xml.
+ *    v0.18.0: a page whose rendered HTML carries a robots noindex meta is left
+ *    out too (the player page sets one below GameConfig.seo.indexMinReplays;
+ *    the hook has the HTML in `route.contents`, so the sitemap excludes exactly
+ *    what the page declares and no count logic is repeated here), and
+ *    <lastmod> is the date of the newest replay that URL shows, from
+ *    lib/replay-index.ts — not the build date, which every URL claimed on
+ *    every daily rebuild. No robots.txt Disallow for noindexed pages: a
+ *    noindex is only honoured on a page the crawler is allowed to fetch.
  *  • robots.txt — allow-all + the excluded routes, Sitemap: absolute URL.
  *    Written into publicDir (serves at <base>/robots.txt — correct for root
  *    deployments; in subpath mode the SHELL owns the domain's robots.txt and
@@ -49,14 +58,22 @@ export default defineNuxtModule({
     if (nuxt.options.dev) return;
 
     const NOT_FOUND_MARKER = 'No data at this route';
+    const ROBOTS_META = /<meta\b[^>]*\bname="robots"[^>]*>/;
+    const isNoindexed = (html: string | undefined): boolean => {
+      const tag = html?.match(ROBOTS_META)?.[0];
+      return !!tag && /noindex/.test(tag);
+    };
 
     nuxt.hook('nitro:init', (nitro) => {
       const prerendered: string[] = [];
+      const noindexed: string[] = [];
 
       nitro.hooks.hook('prerender:route', (route) => {
         if (route.error) return;
         if (!route.fileName?.endsWith('.html')) return;
         prerendered.push(route.route);
+        // `contents` is the rendered HTML (a getter over nitro's buffer)
+        if (isNoindexed(route.contents)) noindexed.push(route.route);
       });
 
       nitro.hooks.hook('prerender:done', async () => {
@@ -89,25 +106,50 @@ export default defineNuxtModule({
         // same page can be collected in both forms; de-base BEFORE dedupe or a
         // subpath build emits duplicate <loc>s and the exclusion set misses
         // the prefixed forms (verified on the /sub/ and /tekken/ builds).
+        const toRouterSpace = (r: string) => withLeadingSlash(withoutBase(r, base));
         const excluded = new Set(['/health', '/not-found', '/200.html', '/404.html']);
-        const publicRoutes = [
-          ...new Set(prerendered.map((r) => withLeadingSlash(withoutBase(r, base)))),
-        ]
+        const hidden = new Set(noindexed.map(toRouterSpace));
+        const publicRoutes = [...new Set(prerendered.map(toRouterSpace))]
           // path routes only: crawled ?query deep-links (filtered Browse views)
           // are duplicate content and would need XML-escaping — not sitemap
-          // material (the shipped build listed entity routes only)
-          .filter((r) => !excluded.has(r) && !r.includes('?'))
+          // material (the shipped build listed entity routes only). A page
+          // that declares itself noindex is not sitemap material either.
+          .filter((r) => !excluded.has(r) && !r.includes('?') && !hidden.has(r))
           .sort();
 
         // ── sitemap.xml (locs re-enter URL space: site + withBase) ──────────
+        // <lastmod> per URL from the replay data: a player or character page
+        // changed when its newest replay landed; every other page (Browse,
+        // stats, the indexes) when the newest replay of all did. The build
+        // date is the fallback only when there is no replays.json at all.
         const today = new Date().toISOString().slice(0, 10);
+        const index = loadReplayIndex(nuxt);
+        const segment = characterSegment(game);
+        const decode = (s: string) => {
+          try {
+            return decodeURIComponent(s);
+          } catch {
+            return s;
+          }
+        };
+        const lastmod = (r: string): string => {
+          const player = r.match(/^\/players\/(.+)$/);
+          if (player) return index.latestByPlayer[decode(player[1]!)] ?? index.latest ?? today;
+          const character = r.startsWith(`/${segment}/`) ? r.slice(segment.length + 2) : '';
+          if (character) {
+            return index.latestByCharacter[decode(character)] ?? index.latest ?? today;
+          }
+          return index.latest ?? today;
+        };
+        // for the log: the pages that opted out, not /health and /not-found
+        const noindexedPages = [...hidden].filter((r) => !excluded.has(r)).length;
         const sitemap =
           `<?xml version="1.0" encoding="UTF-8"?>\n` +
           `<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n` +
           publicRoutes
             .map(
               (r) =>
-                `  <url><loc>${site}${withBase(r, base)}</loc><lastmod>${today}</lastmod></url>`,
+                `  <url><loc>${site}${withBase(r, base)}</loc><lastmod>${lastmod(r)}</lastmod></url>`,
             )
             .join('\n') +
           `\n</urlset>\n`;
@@ -192,8 +234,9 @@ export default defineNuxtModule({
         }
 
         console.log(
-          `✓ static artifacts: sitemap (${publicRoutes.length} urls) + robots.txt + ` +
-            `manifest.webmanifest + designed 404.html`,
+          `✓ static artifacts: sitemap (${publicRoutes.length} urls, ${noindexedPages} noindexed ` +
+            `pages left out, lastmod from ${index.total ? `${index.total} replays` : 'the build date'}) ` +
+            `+ robots.txt + manifest.webmanifest + designed 404.html`,
         );
       });
     });

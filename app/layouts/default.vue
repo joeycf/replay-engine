@@ -47,16 +47,26 @@
             <NuxtLink
               v-else
               :to="item.to!"
-              class="relative whitespace-nowrap md:whitespace-normal md:py-1 md:transition-colors md:duration-normal"
-              :class="
-                isActive(item.to!) ? 'text-text' : 'text-text-muted md:hover:text-text-secondary'
-              "
+              custom
             >
-              {{ item.label }}
-              <span
-                v-if="isActive(item.to!)"
-                class="absolute inset-x-0 -bottom-[19px] hidden h-0.5 bg-primary md:block"
-              />
+              <template #default="{ href, navigate }">
+                <a
+                  :href="bareHref(href)"
+                  class="relative whitespace-nowrap md:whitespace-normal md:py-1 md:transition-colors md:duration-normal"
+                  :class="
+                    isActive(item.to!)
+                      ? 'text-text'
+                      : 'text-text-muted md:hover:text-text-secondary'
+                  "
+                  @click="navigate"
+                >
+                  {{ item.label }}
+                  <span
+                    v-if="isActive(item.to!)"
+                    class="absolute inset-x-0 -bottom-[19px] hidden h-0.5 bg-primary md:block"
+                  />
+                </a>
+              </template>
             </NuxtLink>
           </template>
         </nav>
@@ -139,6 +149,14 @@ const nav: { label: string; to?: string; href?: string; partner?: PartnerSite }[
   // the only crawlable link to /dev — is absent from the shipped output.
   ...(import.meta.dev ? [{ label: 'Dev', to: '/dev' }] : []),
 ];
+
+// The router renders the Browse link as '<base>/' ('/2xko/'), and the shell's
+// trailingSlash:false answers that with a 308 to '/2xko' — one redirect hop in
+// every page's nav for a crawler (v0.18.0). Rendered bare, like every canonical
+// and sitemap <loc> already is (ufo's withBase drops the slash); `navigate`
+// keeps the client-side routing.
+const bareHref = (href: string | null) =>
+  href && href.length > 1 ? href.replace(/\/$/, '') : (href ?? undefined);
 
 const isActive = (to: string) =>
   to === '/' ? route.path === '/' : route.path === to || route.path.startsWith(`${to}/`);

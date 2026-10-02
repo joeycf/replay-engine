@@ -663,6 +663,34 @@ prerendered route list, `robots.txt`, `manifest.webmanifest` from `GameConfig`
 plugin injects the icon set + manifest link + theme-color head tags, all through
 `withBase()`.
 
+### Indexing policy (v0.18.0)
+
+What a build offers a crawler, and why:
+
+- **Thin player pages are `noindex,follow`.** Below `GameConfig.seo.indexMinReplays`
+  (default 5, `utils/constants.ts`) a player page is still prerendered and linked —
+  never a 404 — but carries `<meta name="robots" content="noindex,follow">`, and
+  `static-artifacts` reads that meta back from the rendered HTML to leave the URL
+  out of the sitemap. Three quarters of the platform's ~19k sitemap URLs were
+  one-to-four-replay profiles of ~88 words; Search Console filed 3,702 of them
+  under "Crawled – currently not indexed" and the indexed count fell from ~4,000
+  to 381 (September 2026). A player crosses the threshold on the next build.
+- **Browse and character pages prerender real replay text.** `lib/replay-index.ts`
+  reads the app's `data/replays.json` once per generate; `modules/replay-index.ts`
+  writes the newest 36 (and 8 per character) as a build template that
+  `useRecentReplays()` imports on the server only. `RecentReplaysList` renders
+  them until the client's own fetch resolves — in place of "Loading replays…".
+- **`<lastmod>` is per URL**: a player or character page's newest replay, the
+  newest replay of all for everything else. The build date only when there is no
+  replays.json.
+- **Filtered-view links are `rel=nofollow`** (usage bars, pairings, the modal's
+  `?v=`): every `?query` view canonicalises to the bare Browse page.
+- **Nav links render bare** (`/2xko`, not `/2xko/`), so the shell's
+  `trailingSlash:false` has nothing to redirect.
+
+Gate: `npm run verify:indexing` (fixtures) or
+`node scripts/verify-indexing.mjs ../<game>/.vercel/output/static` before a pin push.
+
 ## The `/dev` tool index (v0.8.0)
 
 Games carry their own hand-curation and diagnostic pages at `app/pages/dev/*.vue`.

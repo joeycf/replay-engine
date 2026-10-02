@@ -10,6 +10,7 @@
       v-for="p in rows"
       :key="p.key"
       :to="pairTo(p)"
+      rel="nofollow"
       :data-pair="p.key"
       class="flex w-full cursor-pointer items-center gap-2.5 border border-border-subtle bg-surface-sunken px-[11px] py-[9px] text-left transition-colors hover:border-primary/40"
     >
@@ -52,6 +53,7 @@
       v-for="p in rows"
       :key="p.key"
       :to="pairTo(p)"
+      rel="nofollow"
       :data-pair="p.key"
       class="block w-full cursor-pointer text-left"
     >
@@ -93,6 +95,7 @@
       v-for="p in rows"
       :key="p.key"
       :to="pairTo(p)"
+      rel="nofollow"
       :data-pair="p.key"
       class="block w-full cursor-pointer text-left"
     >
@@ -172,8 +175,9 @@ const { byId } = useCharacters();
 const name = (id: string) => byId(id)?.name ?? id;
 const mateOf = (p: PairRow) => (p.a === props.soloFor ? p.b : p.a);
 
-// real <a href> deep-links (NuxtLink), not JS-only click handlers — crawlers
-// follow these into the filtered Browse views
+// real <a href> deep-links (NuxtLink), not JS-only click handlers, so they
+// work without JS; rel=nofollow (v0.18.0) because every filtered Browse view
+// canonicalises to the bare Browse page and is not a page to spend crawl on
 const pairTo = (p: PairRow) => {
   const query: Record<string, string> = {
     c: `${p.a},${p.b}`,

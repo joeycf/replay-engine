@@ -8,6 +8,10 @@ export const FEATURED_AUTO_PERCENT = 2;
  *  feature people with two replays. `GameConfig.featured.minAppearances`. */
 export const FEATURED_FLOOR_APPEARANCES = 5;
 
+/** A player page below this many replays is noindex,follow and out of the
+ *  sitemap (v0.18.0). `GameConfig.seo.indexMinReplays`. See types/game.ts. */
+export const SEO_INDEX_MIN_REPLAYS = 5;
+
 /** Cards rendered per infinite-scroll page. */
 export const GRID_PAGE_SIZE = 36;
 

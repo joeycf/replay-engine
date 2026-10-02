@@ -1355,3 +1355,58 @@ Not changed: `ranked` stays the full registry (the typeahead searches hidden
 rows too — a seed player must still be findable), every player keeps a
 prerendered page, and `Player.featured` keeps its meaning. A game that wants the
 old behaviour sets `featured: { autoPercent: 100, minAppearances: 25 }`.
+
+## 27. v0.18.0 — offer a crawler only what it can weigh
+
+Search Console on 2026-10-01: no manual action, nothing blocked, the homepage
+indexed — and the indexed count down from ~4,000 to 381 since the first week of
+September, with 3,702 URLs in "Crawled – currently not indexed". That bucket is
+Google fetching a page and deciding it isn't worth keeping. The platform's
+sitemaps listed ~19k URLs; 18,676 were player pages, and of those 9,734 had
+exactly one replay and 4,657 two to four — ~88 words of shell each. The Browse
+pages, the only place the 94,330 replays live, prerendered "Loading replays…".
+Every `<lastmod>` was the build date, on every daily rebuild. The dates line up
+with the CotW (09-03) and GGST (09-09) launches adding ~8,800 such URLs.
+
+Four changes, all engine-side, one release:
+
+- **Thin player pages are `noindex,follow`.** Below `GameConfig.seo.indexMinReplays`
+  (default 5, `utils/constants.ts`) the page is still prerendered and linked — a
+  404 or a redirect would only move the bucket to "Not found" and dead-end every
+  player chip — but carries the robots meta. `modules/static-artifacts.ts` reads
+  that meta back from `route.contents` in the `prerender:route` hook, so the
+  sitemap excludes exactly what the HTML declares and the count logic lives in
+  one place. No robots.txt `Disallow`: a noindex is honoured only on a page the
+  crawler may fetch. First builds: 2XKO 375 URLs (1,043 out), Tekken 560 (2,125
+  out), GGST 1,546 (5,084 out).
+- **Browse and character pages prerender real replay text.** `lib/replay-index.ts`
+  reads the app's `data/replays.json` once per generate (the `public/data/` copy
+  for the fixtures app); `modules/replay-index.ts` writes the newest 36 and 8 per
+  character as `#build/replay-engine/recent.json`; `useRecentReplays()` imports it
+  on the server only, so it rides the page payload into hydration and the client
+  bundle never carries it; `RecentReplaysList` renders it where the skeletons
+  were, until the client's own fetch resolves. Browse also gets its `<h1>` and a
+  sentence of context. The Browse page grows from ~13 KB to ~60 KB and a
+  character page by ~10 KB — a few dozen files per game, not one per player.
+- **`<lastmod>` is per URL**, from the same index: a player or character page
+  changed when its newest replay landed, everything else when the newest replay
+  of all did. The build date only when there is no replays.json.
+- **Crawl hygiene.** `rel=nofollow` on every filtered-view link (usage bars,
+  pairings, the modal's `?v=`), since every `?query` view canonicalises to the
+  bare Browse page; the nav's Browse link renders bare (`/2xko`, not `/2xko/`),
+  which the shell's `trailingSlash:false` had been answering with a 308 on
+  every page.
+
+Gates: `npm run test:replay-index` (the pure index), `npm run verify:indexing`
+(noindex and sitemap agree, Browse carries the list, lastmod is per-URL, no
+trailing-slash locs) — run against a game's build before its pin push, like
+`verify:page-budget`. The 2XKO and GGST page ceilings in that script were
+re-measured here: v0.17.0's tournament-results block had already put the
+featured profiles past them as deployed, and the nofollow attributes add 59–149 B.
+
+What a release does NOT do: it cannot make Google re-evaluate faster. After the
+seven pins deploy, resubmit `https://replaydatabase.com/sitemap.xml` and request
+indexing on `/` and the seven Browse pages; "Excluded by noindex" should climb
+toward ~14,000 over the following weeks while "Crawled – currently not indexed"
+falls, and brand/game-query impressions are the lagging signal — judge at eight
+weeks, not two.

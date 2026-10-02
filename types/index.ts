@@ -6,6 +6,6 @@
 export type { DevToolMeta } from './devtool';
 export type { GameConfig, PatchGroup, PatchGroupChild } from './game';
 export type { PartnerSite } from './partner';
-export type { Character, Player, PlayerTitle, Side, Replay, Stats } from './replay';
+export type { Character, Player, PlayerTitle, RecentReplay, Side, Replay, Stats } from './replay';
 export type { ReviewCounts, ReviewQueue, ReviewResolution, ReviewState } from './review';
 export type { KnownStats } from './stats';

@@ -189,13 +189,30 @@
         >
       </div>
       <ClientOnly>
+        <RecentReplaysList
+          v-if="pending && recent.length"
+          :items="recent"
+          class="-mx-4 md:-mx-7"
+        />
         <ReplayGrid
+          v-else
           :list="involved"
           :pending="pending"
         />
         <VideoModal />
+        <!-- prerendered fallback (v0.18.0): this character's newest replays as
+             text — real content for a crawler — or skeletons when the app has
+             no replays.json -->
         <template #fallback>
-          <div class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+          <RecentReplaysList
+            v-if="recent.length"
+            :items="recent"
+            class="-mx-4 md:-mx-7"
+          />
+          <div
+            v-else
+            class="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4"
+          >
             <BrowseCardSkeleton
               v-for="i in 4"
               :key="i"
@@ -291,6 +308,8 @@ const involved = computed(() =>
     .filter((r) => r.sides.some((s) => s.characters.includes(character.id)))
     .sort((a, b) => b.date.localeCompare(a.date)),
 );
+// the newest few of those, prerendered (lib/replay-index.ts → useRecentReplays)
+const recent = useRecentReplays(character.id);
 
 const splash = character.imgSplash ? useAssetUrl(character.imgSplash) : '';
 

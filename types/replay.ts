@@ -102,6 +102,20 @@ export interface Replay {
   channelName?: string;
 }
 
+/** The prerender-safe slice of a Replay (additive, v0.18.0): what the Browse
+ *  and character pages carry in their HTML for the newest few records, built
+ *  once per generate by lib/replay-index.ts. No thumb, views or channel — the
+ *  client-fetched Replay supersedes this list the moment replays.json lands. */
+export interface RecentReplay {
+  id: string;
+  title: string;
+  date: string; // ISO
+  patch?: string;
+  event?: string;
+  /** every listed player and character per side, in side order */
+  sides: { players: string[]; characters: string[] }[];
+}
+
 export interface Stats {
   totals: { replays: number; characters: number; players: number };
   [k: string]: unknown; // usage tables, matchup matrix, etc.

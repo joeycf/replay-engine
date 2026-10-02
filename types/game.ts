@@ -138,6 +138,19 @@ export interface GameConfig {
     metaTimelineTopN?: number;
     metaTimelineFullWidth?: boolean;
   };
+  /** Indexing policy (additive, v0.18.0). A player page with fewer replays
+   *  than `indexMinReplays` is still prerendered and linked — never a 404 —
+   *  but carries `<meta name="robots" content="noindex,follow">` and is left
+   *  out of the sitemap (modules/static-artifacts reads the meta back from the
+   *  rendered HTML, so the two can't disagree). Absent → the engine default in
+   *  utils/constants.ts (5). Why: three quarters of the platform's ~19k sitemap
+   *  URLs were one-to-four-replay profiles of ~88 words, and Search Console
+   *  filed 3,702 of them under "Crawled – currently not indexed" while the
+   *  indexed count fell from ~4,000 to 381 (September 2026). Crossing the
+   *  threshold un-noindexes a player on the next build. */
+  seo?: {
+    indexMinReplays?: number;
+  };
   /** Featured-player ranking knobs (additive, v0.17.0). Absent → the engine
    *  defaults in utils/constants.ts. A player is featured when the registry
    *  flags them (`Player.featured`, set by the game's pipeline — curated list

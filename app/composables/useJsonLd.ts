@@ -1,9 +1,11 @@
 /**
  * Inject prerenderable JSON-LD structured data (each node gets @context).
  *
- * Deliberately NO VideoObject anywhere on the site: replay metadata is
- * client-fetched from /data/replays.json and absent from the prerendered
- * HTML, so a VideoObject would describe content crawlers can't see.
+ * Deliberately NO VideoObject anywhere on the site. The full replay list is
+ * client-fetched from /data/replays.json; since v0.18.0 the Browse and
+ * character pages prerender their newest few records as text, but a replay
+ * still has no page of its own — it opens in the ?v= modal — and a VideoObject
+ * needs a URL that is a page.
  */
 export function useJsonLd(nodes: Record<string, unknown>[]) {
   useHead({

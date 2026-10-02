@@ -147,6 +147,12 @@ export default defineNuxtConfig({
     // Absolute path so the module resolves when this config runs as a layer.
     fileURLToPath(new URL('./modules/static-artifacts.ts', import.meta.url)),
 
+    // The newest replays, overall and per character, as a build template
+    // (v0.18.0) — what the Browse and character pages prerender as real text
+    // in place of "Loading replays…". Derived once from the app's replays.json
+    // by lib/replay-index.ts, which also gives the sitemap its per-URL lastmod.
+    fileURLToPath(new URL('./modules/replay-index.ts', import.meta.url)),
+
     // GameConfig.accents → `--accent-<id>` variables compiled into the shared
     // entry stylesheet (v0.16.0), rather than inlined into every page's <head>.
     fileURLToPath(new URL('./modules/accents-css.ts', import.meta.url)),
