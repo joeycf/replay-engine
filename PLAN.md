@@ -3848,3 +3848,104 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   decides the verdict at the margin; (3) the shadow counts are information,
   not a lever — the admission bar stands even if a sub-bar channel has a
   09-21 record.
+- **AVATAR INSTRUMENT CHANGE 2, recorded 2026-10-03, before the 10-27
+  measurement: Stage 0's 153 never-deep-dived channels were triaged and none
+  meets the bar, so the instrument is unchanged.**
+  - **The change:**
+    - **Universe:** the 09-17 sweep's 62 (473 marked) plus the 09-16 first
+      pass's 91 below its deep-dive line (561 marked). Both were re-derived
+      from the recon journals, and none is an intake channel.
+    - **The bar:** the brief's, adopted in writing at about 05:00 UTC, before
+      any API call or triage number. HEAD's 09-21 = 24 was already known.
+      - at least 10 records through the real pipeline since 07-23 (two players
+        and two fighters in the title, the shipped gate and parser, at least
+        120 s), the newest on or after 09-03;
+      - an older newest record enters live with a freezeWatch;
+      - 1–9 records are shadow counts and are not added.
+    - **Triage**, after all eight 10-03 crons had completed (the last, gbvsr,
+      at 14:30 UTC per the runs API):
+      - RSS for 153 feeds (0 units), `channels.list` 4, the uploads playlists
+        walked down to 07-23 wherever the feed did not reach (205 pages), and
+        `videos.list` 1. That is **210 units, with search.list at 0**.
+      - 8,479 uploads since launch read, 843 of them marked.
+      - Every title went through the shipped gate, the matcher and
+        `parseTitle` under all four slot orders.
+    - **V1:**
+      - Three blind reviewers split the 153. A fourth re-read the 66 channels
+        holding any loose or parsed title (2,957 run-1 titles). The most
+        fighter-named sets any of them found on one channel is 6.
+      - The reviewers did see Stage 0's own prior labels.
+      - An auditor re-derived the universe, the run-1 ledger (198 units) and
+        all 153 coverage claims: 0 failed. It flagged DotoDoya and Street
+        Fighter HUB TV.
+      - Both were then walked to 07-23: 12 units, 528 more uploads, 0 marked.
+    - **The empty add-list** was frozen at 21:19 UTC, after triage and V1 and
+      before the Instrument-2 parse.
+    - **Session quota:** 615 units in total (fetch 405, theater 0, triage 210).
+    - **The sweep's 62 hold nothing this definition counts.**
+      - 410 marked uploads since launch and 0 records.
+      - QueueMan, Kavalan, AWanderingTanuki and MicroDuck carry 220 of them,
+        all no-vs.
+      - The only fighter-named sets are UnsafeonHit 6 and DeeVi04 5, all
+        unmarked.
+      - Other real matches sit in uploader-POV clips and VOD chapters (OzHadou,
+        QCS Archive), which a per-upload title cannot count.
+    - **The first pass's 91,** apart from Toulouse, post fighter-named sets in
+      ones and twos: 18 channels, 22 uploads, at most 3.
+    - **Toulouse VS Fighters** has 15 real single sets with no fighter in the
+      title; the game is named only in the description (a start.gg slug and a
+      trailing #AvatarLegends). It fails the definition, not the volume.
+    - **The index overlap:** 17 of the index's 27 whole-video rows are uploads
+      by 9 of the 153. Any future admission must check them against the pin,
+      which is set before dedupe.
+    - **Information, not a lever:**
+      - In the 09-21 week one sub-bar record exists outside the corpus: Barry
+        Beak Driver jVgNVRfcOI8 (marked, parsed, 3,098 s).
+      - Admitting it would read 09-21 = 25 and reopen 09-07→09-28 for 10-06,
+        which would then need 09-28 at 25 or more.
+      - The bar forbids it, and it is not admitted.
+      - Also in that week: PrincessSlim GRfLwshY8Z0 (real but unmarked),
+        Toulouse's 11 and dekillsage 0Gj1N2naa5M (no fighter).
+      - In the 09-28 week: DeeVi04 5 (unmarked) and JiggyNYC 2 (already index
+        rows).
+  - **Measurement:**
+    - Fresh `data:fetch` (405 units, after the day's crons), then theater (0
+      units) → parse → emit.
+    - A baseline on the unchanged code reproduced HEAD's 675 ids exactly; only
+      viewCount differed (127).
+    - A second parse of the unchanged code was identical in place, apart from
+      report.md's timestamp (no copy kept).
+    - With the change (comments only), against the same raw/ and committed
+      state: **+0 records, 0 removed, 0 changed, corpus-wide**, and 0 fields
+      differing. Every output is byte-identical except report.md's timestamp.
+  - **Re-baselined weekly counts:**
+    - **The 09-14 control stays 47** under both instruments, with the same 47
+      ids as 09-29.
+    - Every week is identical on A, B and C.
+      - 09-21 reads A **24**, B 21, C 74. C was 65 on 09-29; the index keeps
+        backfilling.
+      - 09-28 reads A 16, B 14, C 20 through Sat 10-03 (partial).
+  - **What the pre-registered rule reads** (exact arithmetic, mean ≥ 40 as
+    sum ≥ 160 with every week ≥ 25, both instruments):
+    - Under the current instrument every window holding 09-21 has failed,
+      because 24 is a complete week under 25. No further instrument change is
+      pending.
+    - The first open window is 09-28→10-19, measured **10-27**. It passes only
+      if each of its weeks is at least 25 and the four sum to at least 160.
+    - If 09-28 ends under 25, which the 10-05 cron will show, that window
+      fails at once. Whenever it fails, the next is 10-05→10-26, measured
+      11-03.
+    - **10-27 stands; nothing in this session moves it.**
+    - The 09-28 week completes with the 10-05 cron; recount A on that commit
+      at zero quota.
+  - **Gates:**
+    - verify:gates `--no-network` 58/0/1. The skip is the tournaments
+      alias-row control, which has no rows to corrupt. Identical to the
+      baseline.
+    - typecheck, lint and prettier clean.
+  - **Commits** (local; the user pushes):
+    - avatar ba82bf0, comment-only: the `scripts/channels.ts` header and a
+      "STAGE-0 LEFTOVERS, TRIAGED" ledger;
+    - this entry, as its own docs-only engine commit.
+  - **Nothing else moved:** no channel added, no flip, no shell change, no
+    rule change.
