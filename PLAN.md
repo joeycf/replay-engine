@@ -3824,3 +3824,27 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   no rule change); (b) re-decide the rule in writing BEFORE the next number
   (e.g., no week under 20, or mean-only) — the user's call, never after a
   number. What is not fine: seeing a number and choosing the rule that passes.
+- **Avatar Instrument change 2 plan audited (2026-10-03) — approved with
+  three additions.** Pre-registered in writing before any number: run today
+  after all eight crons; admission bar = ≥ 10 records through the REAL
+  pipeline since 07-23 (newest ≥ 09-03 live, else dormant), 1–9 reported as
+  shadow counts and NOT added; dormant channels enter live with freezeWatch
+  (repo precedent, code-only commit); universe widened to **153 channels**
+  (the sweep's 62 + the first pass's 91 never deep-dived). HEAD under
+  Instrument 1: **09-21 = 24, one record under the 25 floor**; 09-28 = 15
+  through Friday. Anti-bias design: rule OUT loosely, rule IN only through
+  the real pipeline; a blind adversarial re-classification; **the add-list
+  frozen with a timestamp BEFORE any Instrument-2 week is computed**; a stop
+  rule tightened to zero unwalked upper bound in 09-21 and 09-28 (outcome-
+  neutral completeness). Hazards pre-caught: the theater pin (a new channel
+  parsing an id held as a whole-video RT record passes today and throws
+  tomorrow — 26 such records; next-cron simulations S1–S3), a 404 killing
+  the whole fetch, the e2e NAME SYNC regex. Recon cap 300 review / 600 stop,
+  search.list 0. **Additions:** (1) commit INSTRUMENT CHANGE 2 to PLAN.md as
+  its own docs-only engine commit — an uncommitted session entry is invisible
+  to the GitHub check that guards the PLAN.md replace; (2) windows.mts uses
+  exact arithmetic and the rule's comparisons as written — under Instrument
+  1, 63 + 47 + 25 + 25 = 160 is a mean of exactly 40.0, so the convention
+  decides the verdict at the margin; (3) the shadow counts are information,
+  not a lever — the admission bar stands even if a sub-bar channel has a
+  09-21 record.
