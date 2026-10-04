@@ -172,7 +172,9 @@ export function useStats(): {
  * The whale file — the replay list. ALWAYS client-fetched (`server: false`)
  * from public/data/replays.json under the base path, exactly like the original
  * build's videos.json: never bundled, never serialized into payloads.
- * Prerendered pages show skeletons until this resolves on the client.
+ * Prerendered pages show skeletons until this resolves on the client; on Browse
+ * and character pages those skeletons cover a prerendered text list of the
+ * newest replays (v0.18.0 list, v0.18.1 cover; RecentReplaysList).
  */
 export function useReplays() {
   const { data, pending, error } = useAsyncData<Replay[]>(

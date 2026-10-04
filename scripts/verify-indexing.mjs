@@ -13,6 +13,9 @@
  *     the sitemap; every other prerendered page IS (health/not-found/dev aside);
  *   - the Browse page prerenders the recent-replays list (data-testid=
  *     "recent-replays") with at least one entry, and no "Loading replays…";
+ *   - the skeleton cover over that list (v0.18.1) is switched on ONLY by a
+ *     script: the prerendered <html> never carries rdb-js, the cover is
+ *     aria-hidden and holds no text, and its head script is present;
  *   - <lastmod> is per-URL data, not one build date, when the app has a
  *     replays.json (more than one distinct value);
  *   - no <loc> ends with a slash (the shell 308s those).
@@ -120,9 +123,42 @@ if (hasReplays) {
   if (home.includes('Loading replays'))
     fail('Browse page still says "Loading replays…"', 'index.html');
   if (!/<h1\b/.test(home)) fail('Browse page has no <h1>', 'index.html');
+  // the cover (v0.18.1): a crawler that doesn't run JS must read the list
+  // uncovered, so the class that shows the cover may only come from a script
+  if (/rdb-js/.test(home.match(/<html\b[^>]*>/)?.[0] ?? ''))
+    fail(
+      '<html> is prerendered with rdb-js — the cover would be up for every crawler',
+      'index.html',
+    );
+  const cover = divBlock(home, home.search(/<div[^>]*class="[^"]*\brecent-cover\b/));
+  if (!cover) fail('Browse page has no recent-cover', 'index.html');
+  else {
+    if (!/^<div[^>]*aria-hidden="true"/.test(cover))
+      fail('recent-cover is not aria-hidden', 'index.html');
+    const text = cover
+      .replace(/<!--[\s\S]*?-->/g, '')
+      .replace(/<[^>]+>/g, '')
+      .trim();
+    if (text) fail(`recent-cover holds text ("${text.slice(0, 40)}")`, 'index.html');
+    if (!home.includes("classList.add('rdb-js')"))
+      fail('recent-cover without the head script that turns it on', 'index.html');
+  }
   if (lastmods.size < 2 && locs.length > 2) {
     fail(`every <lastmod> is the same value (${[...lastmods][0]}) — not per-URL data`);
   }
+}
+
+/** The outer <div …>…</div> starting at `at`, nesting counted; '' if none. */
+function divBlock(html, at) {
+  if (at < 0) return '';
+  const tag = /<div\b|<\/div>/g;
+  tag.lastIndex = at;
+  let depth = 0;
+  for (let m; (m = tag.exec(html));) {
+    depth += m[0] === '</div>' ? -1 : 1;
+    if (depth === 0) return html.slice(at, tag.lastIndex);
+  }
+  return '';
 }
 
 console.log(
@@ -144,4 +180,6 @@ if (failures.length) {
   }
   process.exit(1);
 }
-console.log('✓ noindex and sitemap agree, Browse carries replay text, lastmod is per-URL');
+console.log(
+  '✓ noindex and sitemap agree, Browse carries replay text under a script-gated cover, lastmod is per-URL',
+);

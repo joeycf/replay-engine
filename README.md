@@ -58,11 +58,11 @@ export default defineNuxtConfig({
   // clones the layer with NO node_modules, and the engine's runtime deps
   // (@tailwindcss/vite, ufo, …) fail to resolve at build (verified in the
   // Phase-3 remote-layer check).
-  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.17.0', { install: true }]],
+  extends: [process.env.ENGINE_PATH || ['github:joeycf/replay-engine#v0.18.1', { install: true }]],
 });
 ```
 
-`v0.17.0` is the current pin for a new consumer; every shipped game is on
+`v0.18.1` is the current pin for a new consumer; every shipped game is on
 `v0.13.3` or later. (This line read `v0.10.0` for two releases while all six
 consumers had moved on — the pin is stated here AND in each game's
 `nuxt.config.ts`, so treat the games as the truth and this as the guide.)
@@ -680,6 +680,12 @@ What a build offers a crawler, and why:
   writes the newest 36 (and 8 per character) as a build template that
   `useRecentReplays()` imports on the server only. `RecentReplaysList` renders
   them until the client's own fetch resolves — in place of "Loading replays…".
+- **…and a visitor sees skeletons over it (v0.18.1).** `RecentReplaysList` paints a
+  skeleton grid over the list until the grid replaces it. Only JavaScript turns
+  the cover on: an inline head script adds `rdb-js` to `<html>`, so a crawler
+  that doesn't run scripts reads the list uncovered. The list itself is never
+  `display:none` or `visibility:hidden`, even for one that does run them. If the
+  app never mounts, a CSS failsafe lifts the cover after 8 s.
 - **`<lastmod>` is per URL**: a player or character page's newest replay, the
   newest replay of all for everything else. The build date only when there is no
   replays.json.

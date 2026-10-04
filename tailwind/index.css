@@ -57,6 +57,36 @@
   top: 12px;
 }
 
+/* The skeleton cover over the prerendered recent-replays list
+   (components/RecentReplaysList.vue, v0.18.1). Off unless a script has put
+   rdb-js on <html>, so a crawler that doesn't run JS reads the list uncovered;
+   the list underneath is never hidden, only painted over. The animation is the
+   failsafe for an app that never mounts: the cover lifts after 8 s and the list
+   shows. .is-live (set on mount) cancels it, so a slow replays.json keeps the
+   skeletons. The reduced-motion rule below shortens the duration, not the delay. */
+.recent-cover {
+  display: none;
+}
+html.rdb-js .recent-cover {
+  display: grid;
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  /* rows at the cards' height, not stretched to the list's */
+  align-content: start;
+  overflow: hidden;
+  background: var(--color-bg);
+  animation: recent-cover-failsafe 0s 8s forwards;
+}
+html.rdb-js .recent-cover.is-live {
+  animation: none;
+}
+@keyframes recent-cover-failsafe {
+  to {
+    visibility: hidden;
+  }
+}
+
 /* Honor prefers-reduced-motion for all card/drawer/modal transitions. */
 @media (prefers-reduced-motion: reduce) {
   *,

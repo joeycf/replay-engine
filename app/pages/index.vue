@@ -59,8 +59,8 @@
       <VideoModal />
 
       <!-- prerendered fallback: the newest replays as real text (the same list
-           the client shows until its fetch resolves), or static skeletons when
-           the app has no replays.json -->
+           the client shows until its fetch resolves, under its skeleton cover),
+           or static skeletons when the app has no replays.json -->
       <template #fallback>
         <RecentReplaysList
           v-if="recent.length"
@@ -94,6 +94,8 @@ import { withBase } from 'ufo';
 // prerendered HTML carries (v0.18.0): the <h1> + intro above, and the newest
 // RECENT_LIMIT replays as text — built once per generate (lib/replay-index.ts),
 // read here through useRecentReplays(), shown until the client fetch resolves.
+// A visitor with JS sees skeleton cards painted over it instead (v0.18.1,
+// RecentReplaysList); a crawler that doesn't run JS reads the list.
 const game = useGame();
 const terms = useGameTerms();
 const { pending } = useReplays();

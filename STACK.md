@@ -1410,3 +1410,54 @@ indexing on `/` and the seven Browse pages; "Excluded by noindex" should climb
 toward ~14,000 over the following weeks while "Crawled – currently not indexed"
 falls, and brand/game-query impressions are the lagging signal — judge at eight
 weeks, not two.
+
+## 28. v0.18.1 — a visitor sees skeletons, a crawler still reads the list
+
+v0.18.0's recent-replays list is for crawlers, but every visitor saw it too: it
+sat in the prerendered Browse page from first paint until the client's
+`replays.json` fetch resolved (8.4 MB on GGST), and then the card grid replaced
+it, a text list flashing into a different layout. Before v0.18.0 that space held
+skeleton cards.
+
+The list now has a skeleton grid painted over it, and only JavaScript turns the
+grid on:
+
+- **The gate is a class that only a script adds.** `RecentReplaysList` registers an
+  inline head script (`useHead`, keyed `rdb-js`, `tagPriority: 'critical'`) that
+  puts `rdb-js` on `<html>` before the body is parsed, so the cover is up at
+  first paint. `.recent-cover` is `display:none` without that class
+  (`tailwind/index.css`). A crawler that doesn't run scripts (a first-pass fetch,
+  DDG, the AI crawlers, link unfurlers) never gets the class and reads the list
+  uncovered. Because the script is registered by the component, it ships only on
+  the pages that render the list. Player pages are byte-identical.
+- **Over the list, never instead of it.** The cover is a sibling, positioned
+  absolutely over the list. The list itself is never `display:none` or
+  `visibility:hidden`, so a renderer that does run JS still has the text in its
+  DOM. The client's `pending` branch keeps rendering the same component, so the
+  list and its cover carry across the `ClientOnly` fallback → default-slot
+  switch without a flash.
+- **The cover holds no text.** It contains only `aria-hidden` `BrowseCardSkeleton`s,
+  8 on Browse and 4 on a character page, padded like the grid that replaces
+  it (`coverClass`), so the swap doesn't jump. `align-content: start` keeps the
+  rows at card height instead of stretching them to the list's.
+- **A failsafe for an app that never mounts.** A stale page whose hashed chunks
+  404 mid-deploy can't remove a cover by itself, so a CSS animation (`0s` with
+  an `8s` delay, `visibility: hidden`, fill `forwards`) lifts it and the text
+  list shows. The component sets `.is-live` on mount, which cancels the
+  animation, so a slow `replays.json` keeps the skeletons up rather than flipping
+  back to the list. The global reduced-motion rule shortens durations, not
+  delays, so it leaves the failsafe alone.
+
+Cost: Browse +~5 KB (the cover is 4.9 KB, the script 83 B), a character page
++~2.6 KB, player pages 0 B.
+
+Gate: `verify:indexing` now also fails if the prerendered `<html>` carries
+`rdb-js` (the cover would be up for every crawler), if the cover isn't
+`aria-hidden` or holds any text, or if its head script is missing. Checked in
+Chrome against a local GGST build (`ENGINE_PATH=../replay-engine`): with
+`replays.json` held, the cover is up and the list is in the DOM and computed
+visible. The cover is still up 9.5 s in, the fetch resolving swaps in the grid,
+and the list and cover go together. With JS off there's no `rdb-js`, no cover,
+and the list is readable. With `/_nuxt/*.js` aborted, the cover is up at 2 s
+and lifted by 9.5 s. On a character page the cover sits at both widths exactly
+where the grid lands.

@@ -192,6 +192,8 @@
         <RecentReplaysList
           v-if="pending && recent.length"
           :items="recent"
+          :skeletons="4"
+          cover-class="px-4 md:px-7"
           class="-mx-4 md:-mx-7"
         />
         <ReplayGrid
@@ -207,6 +209,8 @@
           <RecentReplaysList
             v-if="recent.length"
             :items="recent"
+            :skeletons="4"
+            cover-class="px-4 md:px-7"
             class="-mx-4 md:-mx-7"
           />
           <div
