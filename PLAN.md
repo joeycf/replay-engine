@@ -3949,3 +3949,31 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
     - this entry, as its own docs-only engine commit.
   - **Nothing else moved:** no channel added, no flip, no shell change, no
     rule change.
+- **Avatar INSTRUMENT CHANGE 2: NULL RESULT (2026-10-03; avatar ba82bf0
+  comment-only, engine 44b2af0 PLAN.md entry — both pushed).** 153 channels
+  triaged at 210 units (search.list 0), the add-list frozen before any
+  Instrument-2 week, a blind adversarial pass agreeing: **zero channels met
+  the bar.** The sweep's 62 hold 410 marked uploads and 0 records (QueueMan,
+  Kavalan, AWanderingTanuki, MicroDuck = 220 ranked clips/let's-plays/stream
+  VODs); the first pass's 91 post real sets in ones and twos (18 channels,
+  22 uploads, ≤ 3 each). **Count A was the census all along, not a floor** —
+  the "floor, not a census" caveat retired. **The pre-registration held at
+  the exact point it was tested: one under-bar record (Barry Beak Driver,
+  jVgNVRfcOI8, marked, parsed, 51 min) would have made 09-21 = 25 and
+  reopened 10-06 — not admitted, per addition 3.** Windows (exact
+  arithmetic, identical under both instruments): 09-07→09-28 = 150/4 = 37.50
+  min 16 (FAIL); 09-14→10-05 and 09-21→10-12 fail on 09-21; 09-28→10-19
+  (10-27) open, needs every week ≥ 25 and sum ≥ 160 — but **09-28 stood at 16
+  through Saturday**: if it ends under 25 (Monday's zero-quota recount), the
+  10-27 window has already failed and the earliest next is 11-03. Toulouse VS
+  Fighters: 15 real sets (11 on 09-24, 4 on 08-18) whose titles name players
+  but no fighters — reading them needs a start.gg bracket-API tier, a new
+  source type: worth judging platform-wide on its own merits, NOT as an
+  Avatar gate lever (we already know where its sets fall). Session honesty:
+  "census" and "noise" overclaims softened; the bar adopted before any API
+  call but with 09-21 = 24 already known — said so. **Two consecutive weeks
+  under 25 with a complete census is the trend the floor exists to catch —
+  the 09-29 framing applies: the next conversation is whether/how Avatar
+  goes on the door, an owner's decision (keep the bar and wait for the scene,
+  or override openly with a stated reason and an honest changelog), never a
+  new rule engineered to pass.**
