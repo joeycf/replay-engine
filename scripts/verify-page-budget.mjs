@@ -67,23 +67,47 @@ const BUDGETS = {
   // deployed, the largest page 27,277 B), and v0.18.0's rel=nofollow on the ten
   // filtered-view links adds 149 B to every profile. 27,426 B × 1.08, rounded.
   '/2xko': { tailMedian: 14100, tailMax: 14800, pageMax: 29650 },
-  '/tekken': { tailMedian: 11400, tailMax: 12100, pageMax: 18700 },
-  '/sf6': { tailMedian: 11400, tailMax: 12000, pageMax: 18800 },
+  // Tekken re-measured 2026-10-05: v0.17.0's tournament-results section put
+  // 30 profiles past the old 18,700 B and seven titled one-replay pages past
+  // 12,100 B. Each fits the old row with its titles taken out (the section,
+  // badge and description text, 1.1–9.0 KB; none ride the payload). As
+  // deployed: mulgold 26,365 B (17 placements), usama-abbasi 12,907 B (two, on
+  // one replay). 26,365 × 1.08 and 12,907 × 1.08, rounded up to 50 B. A
+  // placement is ~500 B: room for ~4 more on mulgold, ~2 on a one-replay page.
+  '/tekken': { tailMedian: 11400, tailMax: 13950, pageMax: 28500 },
+  // SF6 re-measured 2026-10-05, the same cause: 52 profiles past 18,800 B and
+  // eight one-replay pages past 12,000 B as deployed, each within the old row
+  // with its titles taken out. As deployed (a build without
+  // NUXT_PUBLIC_SITE_URL is 26 B short): menard 24,987 B (14 placements), gama
+  // 13,845 B (four, on one replay). 24,987 × 1.08 and 13,845 × 1.08, rounded
+  // up to 50 B.
+  '/sf6': { tailMedian: 11400, tailMax: 15000, pageMax: 27000 },
   '/tokon': { tailMedian: 15050, tailMax: 16800, pageMax: 18800 },
-  '/ffcotw': { tailMedian: 11750, tailMax: 12500, pageMax: 18900 },
+  // FFCotW re-measured 2026-10-05, the same cause: 16 profiles past 18,900 B
+  // and four one-replay pages past 12,500 B, each within the old row with its
+  // titles taken out. As deployed: go1 22,859 B (nine placements), el-maza
+  // 16,506 B (nine, on one replay). 22,859 × 1.08 and 16,506 × 1.08, rounded
+  // up to 50 B.
+  '/ffcotw': { tailMedian: 11750, tailMax: 17850, pageMax: 24700 },
   // GGST re-measured 2026-10-02 for the same two reasons as 2XKO: v0.17.0's
   // tournament results (largest profile 25,741 B, a one-replay finalist
   // 13,049 B as deployed) and v0.18.0's rel=nofollow (+74 B on a 1v1 profile).
   // 13,108 × 1.08 and 25,741 × 1.08, rounded up to 50 B.
   '/ggst': { tailMedian: 11650, tailMax: 14200, pageMax: 27800 },
   '/avatar': { tailMedian: 11700, tailMax: 12300, pageMax: 17300 },
-  // GBVSR's first corpus build, 2026-10-01 (15,743 records, 2,877 player
-  // pages): one-replay median 11,208 B and max 11,981 B, page max 17,787 B —
-  // x1.05 / x1.08 / x1.08, rounded up to 50 B.
-  '/gbvsr': { tailMedian: 11800, tailMax: 12950, pageMax: 19250 },
+  // GBVSR's median is from its first corpus build, 2026-10-01 (15,743
+  // records, 2,877 player pages): 11,208 B × 1.05. Its maxes, then 11,981 B
+  // and 17,787 B × 1.08, were re-measured 2026-10-05 for the same cause as
+  // Tekken: 20 profiles past 19,250 B and vivi past 12,950 B, each within the
+  // old row with its titles taken out. As deployed: kojicoco 23,773 B (11
+  // placements), vivi 13,138 B (two, on one replay). 23,773 × 1.08 and
+  // 13,138 × 1.08; all rounded up to 50 B.
+  '/gbvsr': { tailMedian: 11800, tailMax: 14200, pageMax: 25700 },
 };
 // A base with no row (the fixtures app, a new game before its first
-// measurement) is held to the loosest shipped game until it gets one.
+// measurement) is held to the loosest ceilings of 2026-09-28, before tournament
+// titles: Tōkon's one-replay pair and 2XKO's page max. Titled profiles have
+// since lifted some rows past these, so measure a new game, don't leave it here.
 const DEFAULT = { tailMedian: 15050, tailMax: 16800, pageMax: 26300 };
 const row = BUDGETS[base] ?? DEFAULT;
 const ceiling = {
