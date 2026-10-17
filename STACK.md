@@ -97,8 +97,8 @@ beyond the node-driven scripts (revisit when Phase 2 grows real component logic)
 - Bumps happen engine-first with the `engines.node` field updated and the full gate
   battery re-verified (positive controls included), then propagate via the engine pin.
   A Node major bump touches **`engines.node` + `.nvmrc` in every repo**, plus
-  `node-version` in the two game repos' `.github/workflows/data-refresh.yml` (the engine
-  and shell ship no workflows).
+  `node-version` in every game repo's `.github/workflows/data-refresh.yml` and in the
+  engine's own `.github/workflows/platform-freshness.yml` (the shell ships no workflows).
 
 ---
 
@@ -244,6 +244,7 @@ not sameness. Run it before cutting an engine tag and after adopting one.
 | `test:filters`                           | Pure-logic filter semantics (facets, search, sort) against the fixture dataset                                                        |
 | `test:registry`                          | Registry-provisioning store semantics incl. the fetch-fallback (unprovided) state                                                     |
 | `verify:replication`                     | The §1/§2 replication contract across every sibling consuming repo (see below)                                                        |
+| `verify:platform`                        | Nightly (`platform-freshness.yml`): every game's newest data commit, served vs committed `summary.json`, and its schedule's state     |
 | `fonts:update`                           | Refresh committed neutral fonts from `@fontsource-*`                                                                                  |
 | `scripts/fixtures-data.mjs`              | Derives fixture stats.json from replays (pipeline parity); `--1v1` emits the rank-ladder variant                                      |
 | `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base; `--artifacts <output dir> [base]` gates BUILD placement (§15)       |
@@ -1319,8 +1320,7 @@ invents a fourth.
 
 The v0.16 featured rule was `Player.featured || appearances ≥ 25`. Twenty-five
 is a sensible bar for a 6,000-replay game and an absurd one for a 25,000-replay
-game: GGST — which flags nobody — had 359 "featured" players, GBVSR 281, SF6
-230. The rail stopped meaning anything, and five of the eight games had no
+game: GGST — which flags nobody — had 359 "featured" players, GBVSR 281, SF6 230. The rail stopped meaning anything, and five of the eight games had no
 curated flags at all because the only way to set one was a hand-typed id set in
 the game's parser.
 

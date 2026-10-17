@@ -1083,6 +1083,83 @@ subpath-vs-subdomain decision a config flip.
 
 ---
 
+## Platform freshness
+
+Every game's "Daily data refresh" can only report the mornings it ran. It cannot
+report the morning it never started, was held before its commit, was disabled, or
+deployed a build that is not the commit — and a game whose chores fail by design
+sits red next to one that is holding data. `npm run verify:platform`
+(`scripts/verify-platform.mjs`) is the outside view, run nightly by
+[`.github/workflows/platform-freshness.yml`](./.github/workflows/platform-freshness.yml)
+(cron `17 22 * * *`). Plain Node — `node:` builtins, `fetch` and the runner's
+`git`, no `npm ci`. Per game it checks that:
+
+- the **newest commit touching `data/videos.json`** (the file every refresh
+  rewrites) is younger than the ceiling — HEAD of `main` via `git ls-remote`,
+  then one `commits?path=` call;
+- the **served `summary.json` equals the committed one** at that commit (the
+  SHA-pinned raw file vs `<host>/<slug>/data/summary.json`, polled every 20 s for
+  up to 180 s with cache-busting, keys sorted before comparing), and the served
+  `game` is this game's app.config id — Tekken's is `tekken8`, not its slug — so
+  a deployment mounted at the wrong base path reads red at once;
+- the game's **`data-refresh.yml` is `active`** (a public repo's schedules are
+  disabled after 60 idle days), with the latest run's conclusion for the log.
+
+It also checks its own game table against the shell's `lib/games.ts`: a
+`summaryUrl` in the shell's `GAMES` with no row, a row in neither `GAMES` nor
+`UPCOMING`, or a live game checked on a host other than the apex is a red
+(Avatar is checked on its vercel.app alias until the avatar-flip merge; that
+override goes red the day the shell lists it live). One job-summary table, every
+red named with how far over it is, and exit 1 — a red means exactly one thing: a
+game is stale, held, disabled or mis-served.
+
+**22:17 UTC and 26 h, measured.** Over 30 days GitHub started the games' 06:17–09:47
+crons 3h55m–9h44m late and the latest run ended 19:25 UTC, so at 22:17 the worst
+healthy age is 21.0 h while the smallest single missed day reads 26.9 h; 26 h sits
+5 h above the one and 0.9 h under the other, with zero false reds over the 30 days
+replayed. If the Monday drift carries the latest end past ~20:15 UTC, tighten to
+24 h.
+
+```bash
+npm run verify:platform                              # the nightly check, by hand
+PLATFORM_MAX_AGE_HOURS=0 npm run verify:platform     # positive control: every game reads stale → red
+PLATFORM_GAMES=2xko,tekken npm run verify:platform   # a subset (list integrity still runs over all rows)
+```
+
+| env                           | default | meaning                                                         |
+| ----------------------------- | ------- | --------------------------------------------------------------- |
+| `PLATFORM_MAX_AGE_HOURS`      | `26`    | the ceiling; also the workflow's `max_age_hours` dispatch input |
+| `PLATFORM_TIMEOUT_SEC`        | `180`   | served-vs-committed poll deadline                               |
+| `PLATFORM_INTERVAL_SEC`       | `20`    | poll interval                                                   |
+| `PLATFORM_ACTIVITY_WARN_DAYS` | `50`    | warn when the engine's own last push is this old (see below)    |
+| `PLATFORM_SUMMARY_URL_<SLUG>` | —       | full served URL for one game (the controls)                     |
+| `PLATFORM_GAMES`              | all     | comma list of slugs to poll                                     |
+| `GITHUB_TOKEN`                | —       | optional; the workflow passes `github.token`                    |
+
+Unset and empty both mean the default: on a scheduled run the dispatch input
+arrives as `""`, and `Number("")` is `0`, the positive-control value, so the
+script treats `""` as unset rather than turning every scheduled run red. Any
+other value must be a finite number ≥ 0 or the script exits 1 naming it before
+any network call.
+
+**API budget.** 1 + 8 × 3 = 25 `api.github.com` calls per run (the engine's
+`pushed_at`, then per game the newest data commit, the workflow's state and its
+latest run), spaced ≥ 1 s apart; `git ls-remote` and `raw.githubusercontent.com`
+are free. Unauthenticated that is 60/hour per IP — two full runs — so local
+controls use `PLATFORM_GAMES` subsets; the footer prints the calls made and the
+last `x-ratelimit-remaining`.
+
+**The schedule's own survival.** The workflow lives in a public repo, so GitHub
+disables it after 60 days without repository activity. Two layers: the run prints
+`Engine pushed N days ago` in its footer and emits a `::warning` at 50 days (land
+any commit), and every game's "Pending work" workflow reads this workflow's
+`state` and goes red when it is not `active`. To re-enable: the engine's Actions
+tab → "Platform freshness" → **Enable workflow**, or
+`PUT /repos/joeycf/replay-engine/actions/workflows/platform-freshness.yml/enable`
+with a token that has `actions: write`.
+
+---
+
 ## Notable engineering decisions (divergences from the prompt/PLAN, and why)
 
 1. **Tailwind v4 via `@tailwindcss/vite`, not `@nuxtjs/tailwindcss`.** The

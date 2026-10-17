@@ -1,0 +1,58 @@
+name: Platform freshness
+
+# EVERY GAME'S CRON, CHECKED FROM OUTSIDE EVERY GAME'S JOB. A game's own
+# workflow cannot report the morning it never ran, was held before its commit,
+# was disabled, or deployed a build that is not the commit. This asks two
+# outside-readable questions per game and refuses to go green on anything less:
+#   1. did a data commit land in the last 26 hours (the newest commit touching
+#      data/videos.json — the file every refresh rewrites), and
+#   2. does the served summary.json equal the committed one, on the right base
+#      path (checklist 10h)?
+# Plus each game's data-refresh.yml must be `active`: a public repo's schedules
+# are disabled after 60 days without activity — including this one, which is
+# why every game's "Pending work" run checks THIS workflow's state in return.
+#
+# 22:17 UTC, measured not chosen: over 30 days GitHub started the platform's
+# 06:17–09:47 slots 3h55m–9h44m late (11:01–19:21 UTC) and the latest run ended
+# 19:25 UTC. At zero lag this slot is 2h52m after that; at the worst measured
+# lag it starts 08:01 UTC, 3 h before the earliest data run. The 26 h ceiling
+# clears the worst healthy age in that window (21.0 h) by 5 h and the smallest
+# single missed day (26.9 h, gbvsr) by 0.9 h. If the Monday drift carries the
+# latest end past ~20:15 UTC, tighten to 24 h (PLATFORM_MAX_AGE_HOURS below).
+on:
+  schedule:
+    - cron: '17 22 * * *'
+  workflow_dispatch:
+    inputs:
+      max_age_hours:
+        description: 'Freshness ceiling in hours (0 = positive control: every game reads stale and this run must go red)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+
+concurrency:
+  group: platform-freshness
+  cancel-in-progress: false
+
+jobs:
+  freshness:
+    name: Platform freshness — red means a game is stale, held, disabled or mis-served
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          # matches engines.node (the platform's Node policy — STACK.md §1)
+          node-version: 24
+      # No `npm ci`: node: builtins and the runner's git only.
+      - name: Check every game's newest data commit and served summary
+        env:
+          # Reads of PUBLIC repos; the token only buys the 1,000/hour budget.
+          GITHUB_TOKEN: ${{ github.token }}
+          # On a scheduled run, and on a default dispatch, this is "" (not unset).
+          # The script reads unset and empty alike as 26 — Number("") would be 0,
+          # the positive-control value — and exits 1 on anything non-numeric.
+          PLATFORM_MAX_AGE_HOURS: ${{ inputs.max_age_hours }}
+        run: node scripts/verify-platform.mjs

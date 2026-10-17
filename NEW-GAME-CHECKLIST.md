@@ -717,8 +717,10 @@ shipped its first build mounted at the PREVIOUS game's base path because
 `NUXT_APP_BASE_URL` came along with the copy); the project name resolving to the bare
 `<slug>-replay-database.vercel.app` alias; retention; and the analytics toggle. Add
 the assertion that catches the copy: before the flip, read
-`<game-host>/<slug>/data/summary.json` and require `game === <slug>`. `verify:deployed`
-cannot catch it — it reads `replays.json` and never looks at `summary.json`.
+`<game-host>/<slug>/data/summary.json` and require `game === <the app.config id>` — the
+id, not the slug: Tekken's served summary says `"game": "tekken8"` while its slug is
+`tekken`, so a slug comparison fails a correct deployment. `verify:deployed` cannot
+catch it — it reads `replays.json` and never looks at `summary.json`.
 
 **10i. The deploy fingerprint needs the CODE version, not only the data.**
 A pin-only change moves no record and no content hash, so the smoke check matched a
@@ -764,8 +766,7 @@ This list tells a fourth consumer to decide from "trajectory and channel spread"
 gives nothing to decide against, so every threshold gets improvised and the precedent
 gets misquoted — the figure carried between briefs for the reference launch ("105
 records across 5 channels") is the recon table's parseable count, not the shipped
-corpus, which measures 10 records / 1 channel at week 4, 35/6 at week 6, 314/7 at week
-8. State the bar: measure the reference game's OWN corpus at the same week offset,
+corpus, which measures 10 records / 1 channel at week 4, 35/6 at week 6, 314/7 at week 8. State the bar: measure the reference game's OWN corpus at the same week offset,
 report records, contributing channels, top-1 and top-3 concentration, and the weekly
 series with event dumps and backlog flushes separated out — then commit to the
 number that would change the answer, in advance.
@@ -920,6 +921,19 @@ console, and stop if the new game's steady state would leave less than ~2,000 un
 read 5,023 for a quota day holding all seven crons and nothing else — the code estimate
 was 0.2% off. GBVSR's backfill then spent 883 (estimated ~874). The console's number is
 only a full day's spend once every cron has run; check the run times first.
+
+**10m. Add the game's row to the platform freshness check — a game the shell lists with
+no row goes red there.**
+`replay-engine/scripts/verify-platform.mjs` restates every game as `{ slug, id, repo,
+host }` and is run nightly by the engine's `platform-freshness.yml`, from outside the
+game's own job: the newest commit touching `data/videos.json` must be under the ceiling,
+the served `summary.json` must equal the committed one on the right base path (with the
+app.config id, 10h), and `data-refresh.yml` must be `active`. It cross-checks that table
+against the shell's `lib/games.ts`: a `summaryUrl` in the shell's `GAMES` with no row is
+a red, a row in neither `GAMES` nor `UPCOMING` is a red, and a live game checked on any
+host but the apex is a red. Add the row when the game enters `UPCOMING` (on its
+vercel.app alias, since the apex path is the shell's 404 until the flip), and drop the
+host override in the same change that flips it live.
 
 **14b. The fourth handoff running carries a sampled-colour citation that does not reproduce.**
 The gilt "kv_logo metallic bevel" — every logo file's bevel is SILVER (zero gold-ish
