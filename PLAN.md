@@ -3977,3 +3977,136 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   goes on the door, an owner's decision (keep the bar and wait for the scene,
   or override openly with a stated reason and an honest changelog), never a
   new rule engineered to pass.**
+- **Engine v0.17.0 → v0.18.1 and the page-budget re-measure (10-01 → 10-14),
+  recorded from the commit messages (not audited in this conversation).**
+  v0.17.0 (8b8a5af): featured = the top `featured.autoPercent` (2%) of
+  UNFLAGGED players by appearances, floored at `minAppearances` 5 (the old
+  `featured || ≥ 25` promoted 359 GGST and 281 GBVSR players); zero-appearance
+  rows become a `hidden` bucket; `Player.extra.titles` renders tournament
+  results with the Liquipedia CC BY-SA 3.0 credit; checklist 5p (b705bf7).
+  **v0.18.0 (af13a81): Search Console on 10-01 showed indexed pages down from
+  ~4,000 to 381 since early September, with 3,702 "Crawled – currently not
+  indexed".** The sitemaps listed ~19k URLs, 18,676 of them player pages (9,734
+  one-replay), at ~88 words of shell each; Browse prerendered "Loading
+  replays…"; every lastmod was the build date. Fixes: player pages under
+  `seo.indexMinReplays` (5) carry noindex,follow and leave the sitemap (read
+  back from the rendered meta, so the two can't disagree; no robots Disallow);
+  Browse and character pages prerender their newest replays as text; per-URL
+  lastmod from the newest replay; rel=nofollow on filtered-view links; the
+  nav's Browse link is bare (no 308). Gates: test:replay-index and
+  verify:indexing. First builds: 2XKO 375 sitemap URLs / 1,043 noindexed,
+  Tekken 560 / 2,125, GGST 1,546 / 5,084. v0.18.1 (297a91f): a skeleton cover
+  over that list for JS visitors (rdb-js head script, 8 s failsafe, player
+  pages +0 B). e4b5080 (10-14): verify-page-budget MAX ceilings re-measured on
+  Tekken, SF6, FFCotW and GBVSR after v0.17.0's titles block breached them
+  (2XKO and GGST on 10-02); tailMedian unchanged. The cost was recorded: an
+  untitled outlier must now grow 18–54% to trip a max, and FFCotW's one-replay
+  ceiling (el-maza) is likely next. **The structural fix, subtracting the
+  titles block before comparing, is NOT done.** Shell 5b95486 (10-04): pin
+  v0.18.1, WebSite/Organization JSON-LD kept on its home page (the 09-29
+  requirement met). Pins: the seven live games and the shell on v0.18.1;
+  Avatar on v0.17.0 (held). Only Avatar and GBVSR emit summary.json `engine`.
+  For A′: v0.18.0 already noindexes the tail, so stubs no longer cost search.
+- **Four red crons, one holding data (10-07 → 10-16; session log audited
+  10-16).** Tekken's pre-commit "Refuse redirect drift" held its data from
+  10-12 to 10-14 (bot commits: 10-11, then none until 10-15). "Xcc" flipped
+  canonical to "X c c" (titles: "X C C" 159, "XCC" 82, "Xcc" 4), and parse.ts's
+  ledger filter (keep a row only while its destination is live) dropped two
+  rows → xcc instead of retargeting them. **That is the lost-row class the
+  09-29 drift gate was built for, and the gate worked.** Root fix dcaa4bf:
+  ledger rows follow merges (Tōkon the same); Xcc pinned, so the URL stays;
+  e2e 212/0. The 10-15 cron landed the held data (16,134 → 16,188). **Hidden
+  second failure: Roger Jr.'s expiry (due 10-12) never ran, because the job
+  stopped at the drift gate.** Re-dated to 11-11 (early access). **Avatar, Tōkon
+  and SF6 were red BY DESIGN ("Flag due expiries", after commit and push), and
+  Tōkon had been red since 10-07, five days before Tekken's real failure: a
+  by-design red had normalised red, and the one run holding data looked like
+  three that weren't.** Cleared: SF6 Arjun (32 fighters, accent #FC854F
+  derived by the Yasmine method, patch 2.05 dated 10-12). Tōkon: quiet feed
+  confirmed; Phoenix Cyclops re-dated 11-02 (Pacific time, so the cron fires
+  one run early by design); Year-1 slots named Thor (Jane Foster), Venom and
+  Jubilee (gated). Avatar: Patch 3.0 (10-07) had been missing, because the
+  checker couldn't read the post and advised dismissing it. Now it's read;
+  STALE_PATCH_DAYS 30 → 40 per its own re-measure note; BUILDS_OK actually read
+  (declared 09-18, never read); the vendor's web patch notes a one-way surface;
+  the 10-13 build excused after a full negative sweep; supports 36/36 (Hakoda,
+  Guru Pathik); a full index reconcile refiled 80 replays under 3.0; the
+  roster scrape hardened (Akamai had served a Next.js prefetch payload, not a
+  changed site); gates 78/0. 82 GB of scratch copies freed (rsync now
+  --exclude cache). Next alarms: Tōkon quiet feed ~10-25, Avatar DLC review
+  10-27, Phoenix Cyclops 11-02, Roger Jr. 11-11.
+- **Avatar gate, 10-16: the 10-27 date is gone.** Count A on the committed
+  corpus (846 records; the 09-14 control still reads 47): 09-21 24 · 09-28
+  **21** · 10-05 **14** · 10-12 20 so far (uploads through Thursday). The 10-27
+  window (09-28 → 10-19) failed on 09-28; the 11-03 window on 10-05. The
+  earliest possible is 11-10 (10-12 → 11-02), which needs four weeks ≥ 25
+  summing to ≥ 160, after four averaging ~20. **Cause by intake: STiLL, the only
+  steady uploader (10–17/week in Aug–Sep), posted 5, 3, 0, 0; Aegis 0, 0.** What
+  remains is tournament channels posting in batches (Toledo Locals 6/7, ndyTv
+  8). **New context, same measure for every game** (all records by upload week,
+  09-21/09-28/10-05): Avatar 87/76/54 · Tōkon 90/76/52 (169 on 08-31, a steady
+  ~20%/week post-launch decay) · 2XKO 50/53/34 · FFCotW 90/79/59. The gate's
+  purpose was "won't look abandoned next to the other games". Its instrument
+  (A ≥ 40, channels only) was calibrated on Avatar's first weeks, when the live
+  games ran higher, and it deliberately excludes Replay Theater, a third
+  party's index that is now ~70% of Avatar's visible flow. **Owner's decision,
+  pending: hold under the rule (realistically until a DLC wave or a new steady
+  uploader), launch as an OPEN OVERRIDE with the failure stated, or withdraw
+  the Coming Soon card.** My recommendation: the open override, stated as
+  such, plus one freshness floor for every listed game going forward. Before
+  any flip: rebase avatar-flip again (shell main has moved 4 commits since
+  ac61561: pin v0.18.1, the front-door name and h1) and bump Avatar's own pin
+  to v0.18.1.
+- **Next: cron health — one meaning per red, and a freshness check from
+  outside the jobs (prompt-cron-health.md).** (1) Split every
+  data-refresh.yml. Steps meaning "the archive is stale or wrong" stay (fetch,
+  parse and emit; the collapse, frozen and stale-raw guards; redirect drift;
+  commit/push; the post-deploy smoke check). Steps meaning "a person has work"
+  move to a "Pending work" workflow on workflow_run (due expiries, patch and
+  roster checks, a decision on the retirement guard), so a held data run can
+  no longer hide a due expiry. (2) A scheduled platform freshness check outside
+  every game's job: each game's newest data commit under a measured age, and
+  the served summary equal to the committed one. It catches held commits, a
+  disabled workflow, failed deploys and scheduler outages; `updated` can't be
+  the signal, because it is content-derived. (3) The `engine` field ported to
+  the six games without it. Positive controls for all three.
+- **Cron-health plan audited (2026-10-17) — approved with five changes.**
+  Research: four researchers, four refuters and a planner (815 tool calls)
+  over all ten repos, the GitHub docs and 30 days of the runs API. User
+  decisions: freshness hosted in replay-engine; Tekken's retirement guard moves
+  to Pending work in a new `--retired-since <sha>` mode (baseline =
+  workflow_run.head_sha); the registry invariant stays a pre-commit DATA gate;
+  heartbeat at 22:17 UTC, ceiling 26 h. Routine calls: Avatar's and GBVSR's
+  "Validate the patch table" steps are deleted (Emit already runs validate()
+  before any write, and no check in it goes valid→invalid with the clock);
+  verify:deployed exits 1 on STALE BUILD (archive matches, engine ≠ pin) in all
+  eight; bump_pins re-emits summary.json with the pin. **Finding: Tekken's
+  retirement guard has never run in CI.** The cron checks out at depth 1, so
+  HEAD~1 doesn't exist, `baseline()` returns null and the guard prints
+  "retirement check skipped" (redirects.ts:101-137, verified here). The 10-12
+  → 10-14 reds of "Flag stale redirects" were its drift arms repeating the
+  gate. That makes the open item "Tekken's retirement guard catches these, but
+  only post-deploy" false; in Pending work it runs for real, and its first
+  reds will be real retirement decisions. **Replayed over 30 days, the 26 h
+  ceiling gives 0 false reds and flags three real incidents on day one: Tekken
+  10-12 (32.7 h), plus two misses nobody noticed, SF6 09-18 (33.6 h) and GBVSR
+  10-07 (30.0 h; a GBVSR run has sat "queued" with 0 jobs since then — cancel
+  it).** Measured cron starts: 11:00–19:21 UTC (3h55m–9h44m late); latest end
+  19:25; the Monday runs drift later each week (16:10 → 19:25). Every bot
+  commit touched data/videos.json (234/234), so that is the daily signal;
+  summary.updated is content-derived. GitHub facts: workflow_run matches the
+  workflow NAME as a glob, fires only from the default branch, and is never
+  disabled by the 60-day rule (so each Pending work run checks the freshness
+  schedule's state in return); scheduled-run failure mail goes to whoever last
+  edited the cron line (the user, in all eight). **Changes required:**
+  (1) PLATFORM_MAX_AGE_HOURS arrives as "" on scheduled and default-dispatch
+  runs (`${{ inputs.max_age_hours }}`). Number("") is 0, the positive-control
+  value, so a naive read turns every scheduled run red, and `|| 26` would break
+  the 0 control. Rule: unset or empty → 26; otherwise a finite number ≥ 0;
+  otherwise exit 1. New control: '' → 8 green. (2) Checklist label 10m; 10j,
+  10k and 10l are taken. (3) Bound the four to-EOF cron-guard extractors at the
+  next step instead of a "do not add env:" rule. (4) bump_pins refuses to run
+  when behind origin/main. (5) State the retirement guard's CI history plainly,
+  and sweep for other git-history checks that skip under a depth-1 checkout.
+  For the Avatar flip, verify-platform.mjs's Avatar host override must be
+  dropped: list integrity turns red at the merge until then.
