@@ -4110,3 +4110,42 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   and sweep for other git-history checks that skip under a depth-1 checkout.
   For the Avatar flip, verify-platform.mjs's Avatar host override must be
   dropped: list integrity turns red at the merge until then.
+- **Cron health SHIPPED (2026-10-18 → 10-20): nine repos pushed; two full
+  automatic cycles green (48 runs, no red).** Engine 5c66da6 (Platform
+  freshness workflow + verify-platform.mjs + docs, checklist 10m); the eight
+  games each got pending-work.yml, a renamed data run whose last step is the
+  smoke check, the e2e "two workflows agree" assertion, and (the six) the
+  summary.json `engine` field with verify:deployed exiting 1 on STALE BUILD.
+  Tekken's retirement guard now runs for real (`--retired-since`, baseline =
+  the data run's head_sha). **Day-one incident, the session's own: the
+  template that wrote pending-work.yml collapsed `${{ … }}` to `${ … }` in
+  three lines, so every Pending work run died at step 2 with a bash "bad
+  substitution" before any chore ran** — the data runs were green all along,
+  and the user read "all of the daily runs failed". Fixed in all eight (2xko
+  ae18388 … gbvsr 23c44cc) with a new e2e assertion (no `${ ` in either
+  workflow file), positive-controlled by collapsing one brace. The user
+  dispatched Pending work ×8 and Platform freshness at ceiling 0 (red, all
+  eight named); the first scheduled freshness run (00:13 UTC, 1h56m lag)
+  passed — both controls in the history. FFCotW's first dispatch hung 20+
+  minutes in npm ci (a runner, not the repo; the re-dispatch took 17 s).
+  Monday's run-level durations of 13–34 min against 6–11 min jobs were
+  GitHub's stamping on the Ubuntu 26 migration day. Follow-ups: timeout-minutes
+  on the Pending work job; actions/checkout and setup-node v4 → v5 (Node 20
+  forcing); the alive step doesn't say which token path it took. Next real
+  red: FFCotW Pending work on 10-22 (Mikey/Draken rows due) — the design.
+- **AVATAR FLIPS AS AN OPEN OVERRIDE (decided 2026-10-20; prompt-avatar-flip.md).**
+  Fresh count A at 883 records: 09-14 47 · 09-21 24 · 09-28 21 · 10-05 14 ·
+  10-12 22 (all sources 108/87/76/54/68); STiLL 17 → 5 → 3 → 0 → 0. The rule
+  cannot pass before 11-10. The owner launches anyway, stated in the flip
+  commit and here; the gate is not reworded. Order, in one window after the
+  day's Avatar cron and before 22:17 UTC: (1) Avatar's pin v0.17.0 → v0.18.1
+  first, its own commit, green on the vercel.app host (port GBVSR's 8d2dc5f /
+  a46234c e2e deltas; verify:indexing + page-budget on the build; bump_pins
+  re-emits summary.json); (2) rebase avatar-flip onto main (four behind:
+  3f89f76, 5b95486, c227af4, 9c12959), re-freeze the changelog, UPCOMING → [],
+  verify:shell → merge → push → verify:cutover at the apex; (3) engine:
+  verify-platform.mjs drops Avatar's vercel.app host override (else the next
+  freshness run's list-integrity check goes red); (4) Avatar's SMOKE_HOST
+  override removed. Still open, and now the honest way to hold every listed
+  game to one standard: a per-game flow floor in Platform freshness (a
+  warning, not a red) — e.g. under 10 new replays a week for four weeks.
