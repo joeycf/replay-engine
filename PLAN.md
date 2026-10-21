@@ -4149,3 +4149,29 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   override removed. Still open, and now the honest way to hold every listed
   game to one standard: a per-game flow floor in Platform freshness (a
   warning, not a red) — e.g. under 10 new replays a week for four weeks.
+- **Avatar flip plan audited (2026-10-21) — approved with one addition.**
+  Corrections the plan made to my prompt, all right: **the earliest pass is
+  11-17, not 11-10** (the 10-12 week closed at 22, under 25, so the window
+  measured 11-10 already fails; the first clean window is 10-19 → 11-09);
+  Tōkon's 10-05 week reads 53 since a32f16a; GBVSR's two pin bumps carried no
+  e2e deltas, and Avatar's suite passes on v0.18.1 unchanged (the sitemap goes
+  541 → 111 URLs; 430 of 525 profiles become noindex,follow); my K5 control as
+  written could never fire (a wrong SMOKE_HOST reads an HTML 404 and times out)
+  — the plan's version points SMOKE_HOST at 2XKO's summary and fails on poll 1
+  with `game "2xko"; this project is "avatar"`; the engine's `npm run
+  verify:*` scripts ignore a path argument, so the gates run with `node` on
+  Avatar's build. Found: **Avatar's verify-deployed lacks the pin-only refusal
+  the six ported games got** (ported in step 1; GBVSR has the same gap, a
+  follow-up); **shell main's verify:shell has been red since 9c12959 (10-04) on
+  the hero regex** — the second gate found red on main with nobody looking
+  (the changelog literal in September was the first); the shell is the only
+  repo with no workflow. Every number in the changelog draft re-measured here
+  on the committed data: 883 records, 525 players, 12 fighters, 32 channels
+  with records (+ the catalogue = 33 intakes), earliest footage 07-24 (release
+  07-23), 536 replays naming a support, 410 of them from the catalogue, 15
+  channels ever stating one, 285 new replays in the four weeks to 10-18, 192
+  of them catalogue rows with a timestamp. D = the day the shell push lands;
+  the commit keeps both "Decided 2026-10-20" and the override sentence dated D.
+  **Addition: a shell workflow that runs typecheck + generate + verify:shell on
+  every push to main (a check, not a deploy) — listed as a follow-up with the
+  GBVSR refusal, the /avatar budget row and the flow floor.**
