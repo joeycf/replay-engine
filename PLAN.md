@@ -4175,3 +4175,23 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   **Addition: a shell workflow that runs typecheck + generate + verify:shell on
   every push to main (a check, not a deploy) — listed as a follow-up with the
   GBVSR refusal, the /avatar budget row and the flow floor.**
+- **AVATAR LIVE AS AN OPEN OVERRIDE (2026-10-22; avatar 21f0b20, shell 5b0d7b5).**
+  Count A at 883 records (avatar 165f2ea), unchanged at 0687c7a (902 records):
+  09-14 47 · 09-21 24 · 09-28 21 · 10-05 14 · 10-12 22 (all sources
+  108/87/76/54/68); STiLL 17 → 5 → 3 → 0 → 0. "The gate is not met; launched as
+  the owner's override on 2026-10-22." The rule cannot pass before **Tue
+  11-17** (10-19 → 11-09): the 11-10 window failed when 10-12 closed at 22. The
+  shell commit's comparison carries Tōkon 90/76/53 (53 since a32f16a). Avatar
+  21f0b20 pins v0.18.1 (431 of 529 profiles noindex,follow; sitemap 545 → 114
+  URLs) and ports the pin-only refusal the six siblings had; shell 5b0d7b5
+  lists Avatar live with UPCOMING empty, its changelog entry frozen at 0687c7a
+  and its hero regex following 9c12959's h1; this commit drops
+  verify-platform's vercel.app override and fixes checklist 10m (the override
+  goes in the engine commit after the shell flip, not in the same change).
+  Controls: pin-only → verify:deployed exit 1 at once; verify-indexing red on
+  the 10-01 build; Avatar row deleted / fake UPCOMING / h1 altered / stale
+  literal → verify:shell red, each restored; the override against the flipped
+  shell → list integrity red, the first time it fired. Follow-ups: GBVSR's
+  missing pin-only refusal; the /avatar page-budget row, never re-measured; the
+  per-game flow floor; a shell workflow running typecheck + generate +
+  verify:shell on every push to main (a check, not a deploy).

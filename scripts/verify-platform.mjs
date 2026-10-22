@@ -75,15 +75,7 @@ const GAMES = [
   { slug: 'ffcotw', id: 'ffcotw', repo: 'ffcotw-replay-database', host: APEX },
   { slug: 'ggst', id: 'ggst', repo: 'ggst-replay-database', host: APEX },
   { slug: 'gbvsr', id: 'gbvsr', repo: 'gbvsr-replay-database', host: APEX },
-  // Avatar is UPCOMING in the shell: the apex /avatar/ is the shell's 404 page until the
-  // avatar-flip merge, so it is checked on its own alias. When the shell lists avatar in
-  // its live GAMES, the list-integrity check turns this override red until it is dropped.
-  {
-    slug: 'avatar',
-    id: 'avatar',
-    repo: 'avatar-replay-database',
-    host: 'https://avatar-replay-database.vercel.app',
-  },
+  { slug: 'avatar', id: 'avatar', repo: 'avatar-replay-database', host: APEX },
 ];
 
 // ── env ─────────────────────────────────────────────────────────────────────

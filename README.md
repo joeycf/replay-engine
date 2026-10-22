@@ -1107,11 +1107,9 @@ sits red next to one that is holding data. `npm run verify:platform`
 
 It also checks its own game table against the shell's `lib/games.ts`: a
 `summaryUrl` in the shell's `GAMES` with no row, a row in neither `GAMES` nor
-`UPCOMING`, or a live game checked on a host other than the apex is a red
-(Avatar is checked on its vercel.app alias until the avatar-flip merge; that
-override goes red the day the shell lists it live). One job-summary table, every
-red named with how far over it is, and exit 1 — a red means exactly one thing: a
-game is stale, held, disabled or mis-served.
+`UPCOMING`, or a live game checked on a host other than the apex is a red. One
+job-summary table, every red named with how far over it is, and exit 1 — a red
+means exactly one thing: a game is stale, held, disabled or mis-served.
 
 **22:17 UTC and 26 h, measured.** Over 30 days GitHub started the games' 06:17–09:47
 crons 3h55m–9h44m late and the latest run ended 19:25 UTC, so at 22:17 the worst

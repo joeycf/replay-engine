@@ -933,7 +933,8 @@ against the shell's `lib/games.ts`: a `summaryUrl` in the shell's `GAMES` with n
 a red, a row in neither `GAMES` nor `UPCOMING` is a red, and a live game checked on any
 host but the apex is a red. Add the row when the game enters `UPCOMING` (on its
 vercel.app alias, since the apex path is the shell's 404 until the flip), and drop the
-host override in the same change that flips it live.
+host override in the engine commit that follows the shell flip, before the next 22:17
+UTC run: list integrity reads the shell's main, so it is red in between.
 
 **14b. The fourth handoff running carries a sampled-colour citation that does not reproduce.**
 The gilt "kv_logo metallic bevel" — every logo file's bevel is SILVER (zero gold-ish
