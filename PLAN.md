@@ -4195,3 +4195,38 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   missing pin-only refusal; the /avatar page-budget row, never re-measured; the
   per-game flow floor; a shell workflow running typecheck + generate +
   verify:shell on every push to main (a check, not a deploy).
+- **Avatar flip verified from here (2026-10-21 night, EDT).** All four commits
+  pushed: avatar 21f0b20 (pin v0.18.1 + the pin-only refusal), shell 5b0d7b5
+  (the flip, one squashed commit, no rebase conflicts), engine 73e7b6a (Avatar
+  on the apex in verify-platform; checklist 10m; the entry above), avatar
+  c2e1b1d (SMOKE_HOST at the apex). Live: verify:cutover 170/0 at the apex;
+  /avatar/sitemap.xml in the index (114 URLs); the card shows its own count
+  (902); Coming Soon appears 0×; the front door reads 96,012 replays across 8
+  games; verify:platform 8 of 8 fresh at v0.18.1 · v0.18.1 with list integrity
+  intact. The user chose to flip the night before the planned window (no
+  freshness run until 10-22 22:17Z, no Avatar cron before ~13:00Z, numbers
+  final) — so D became 2026-10-22 UTC while it was still 10-21 in EDT, and the
+  changelog, the override sentence and the verify-shell literals all say 10-22,
+  with "Decided 2026-10-20" kept beside it. The session's K-lit control bit its
+  own restore (verify-shell.mjs reverted to the WIP date) and was caught by
+  re-running the idempotent re-freeze before the squash. Pending: Avatar's
+  10-22 cron (the first smoke check at the apex) and the 10-22 22:17Z freshness
+  run with Avatar on the apex. origin/avatar-flip (559afd6) is stale — delete
+  it. The coming-soon machinery (UPCOMING, card-art-upcoming.mjs's registers,
+  the badge, the empty-state checks) is now idle at zero for the first time
+  since 07-30; it stays, exercised by the empty-state checks.
+- **Next (prompt-post-launch-hygiene.md): the per-game flow floor in Platform
+  freshness** (trailing 4-week mean of new replays, all sources, by the
+  generic `date`, under 10/week → a ::warning, never a red; the table every
+  night; Avatar's A ≥ 40 retired as the instrument, a new game's launch keeps
+  its own bar), **a "Shell checks" workflow** (typecheck + generate +
+  verify:shell on push to main; the shell was the only repo with no workflow
+  and its gate sat red 10-04 → 10-22), and five debts: GBVSR's pin-only
+  refusal, timeout-minutes 15 on Pending work, actions v4 → v5, the stale
+  comments, delete origin/avatar-flip. Deferred, recorded: the page-budget
+  structural fix, A′ stubs (storage only now), the art-licence audit, the
+  start.gg tier, Strive's gaps, the two channel investigations. Expected
+  tomorrow (10-22): Avatar's first smoke check at the apex, the first
+  freshness run with Avatar on the apex, and **FFCotW's Pending work going red
+  by design (Mikey and Draken due)** — cleared by the new-character runbook or
+  a re-date, never by deleting the step.
