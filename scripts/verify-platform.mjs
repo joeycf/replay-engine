@@ -34,11 +34,34 @@
  * table names every stale game and by how much. The ceiling (26 h) and the slot
  * (22:17 UTC) were measured, not chosen — the workflow file's header has the numbers.
  *
+ * THE FLOW FLOOR: one standard for every listed game, read where this check already
+ * looks. New replays per ISO week, all sources, from each game's committed
+ * data/replays.json at the HEAD resolved below (a raw GET, SHA-pinned, no API call),
+ * bucketed by the UTC Monday of each record's `date`. A trailing mean over the last 4
+ * complete weeks under 10 a week is a ::warning naming the game with its four weeks and
+ * mean, NEVER a red: the red above keeps its one meaning. 10 is the level at which a
+ * visitor who comes back monthly finds the game standing still, and it is one number for
+ * every game. It retires Avatar's launch-gate numbers (count A ≥ 40, channels only) as
+ * the instrument for a listed game; a new game's launch keeps its own viability bar
+ * (NEW-GAME-CHECKLIST 16), so a row the shell lists as UPCOMING is printed, not held.
+ * A week is complete once it ended at least 20 h before the run: the 22:17 slot fires
+ * 2–3 h late, so Sunday's run executes on Monday 00:xx, before the data runs that
+ * commit Sunday's uploads (11:01–19:21 UTC). A week still grows after that (late
+ * uploads, and Avatar dates a `still` record by the day it was played), so the newest
+ * week reads low, never high. A warning notifies nobody: the floor is read in the run's
+ * annotations and in the second job-summary table, which prints every night, red or
+ * green, with each game's index share (records whose `source` is the index's token;
+ * "—" where replays.json does not carry it — Tekken files its index under
+ * `tournament` — or where the window holds no records).
+ *
  * Overrides, all optional:
  *   PLATFORM_MAX_AGE_HOURS       26   (0 = positive control: every game reads stale)
  *   PLATFORM_TIMEOUT_SEC         180  served-vs-committed poll deadline
  *   PLATFORM_INTERVAL_SEC        20   poll interval (floored at 1 s)
  *   PLATFORM_ACTIVITY_WARN_DAYS  50   warn when the engine's last push is this old
+ *   PLATFORM_FLOW_FLOOR          10   new replays a week, trailing 4-week mean (0 = off;
+ *                                     a huge value is the control: every game warned,
+ *                                     still exit 0)
  *   PLATFORM_SUMMARY_URL_<SLUG>       full served URL for one game (the controls)
  *   PLATFORM_GAMES                    comma list of slugs to poll (debugging, and the
  *                                     controls' API budget); list integrity ALWAYS
@@ -46,10 +69,13 @@
  *   GITHUB_TOKEN                      optional; 1,000 req/h instead of 60/h per IP
  *
  * Budget per full run: 1 + 8 × 3 = 25 api.github.com calls (git ls-remote and
- * raw.githubusercontent.com are free), 9 raw GETs, 8–72 served GETs.
+ * raw.githubusercontent.com are free), 17 raw GETs (8 of them data/replays.json, about
+ * 31 MB together), 8–80 served GETs.
  *
  * Run: npm run verify:platform
  *      PLATFORM_MAX_AGE_HOURS=0 npm run verify:platform      (the control — must go red)
+ *      PLATFORM_FLOW_FLOOR=100000 npm run verify:platform    (the flow control — every
+ *                                                            game warned, still exit 0)
  *      PLATFORM_GAMES=2xko,tekken npm run verify:platform    (a subset: 1 + 2 × 3 calls)
  */
 import { execFileSync } from 'node:child_process';
@@ -103,6 +129,9 @@ const MAX_AGE_HOURS = numberEnv('PLATFORM_MAX_AGE_HOURS', 26, 'hours');
 const TIMEOUT_SEC = numberEnv('PLATFORM_TIMEOUT_SEC', 180, 'seconds');
 const INTERVAL_SEC = numberEnv('PLATFORM_INTERVAL_SEC', 20, 'seconds');
 const ACTIVITY_WARN_DAYS = numberEnv('PLATFORM_ACTIVITY_WARN_DAYS', 50, 'days');
+// "" is the scheduled run's value here too, and read as 0 it would switch the floor off
+// without a word — numberEnv reads it as the default.
+const FLOW_FLOOR = numberEnv('PLATFORM_FLOW_FLOOR', 10, 'replays a week');
 // Never a tight loop against the edge: an interval of 0 still waits a second.
 const INTERVAL_MS = Math.max(1, INTERVAL_SEC) * 1000;
 
@@ -129,10 +158,13 @@ const RAW = 'https://raw.githubusercontent.com';
 const SHELL_GAMES_TS = `${RAW}/${OWNER}/replay-database-shell/main/lib/games.ts`;
 const FETCH_TIMEOUT_MS = 15_000;
 
-/** One GET. A thrown network error (DNS, reset, the 15 s timeout) reads as status 0. */
-async function get(url, init = {}) {
+/**
+ * One GET. A thrown network error (DNS, reset, the timeout — 15 s unless the caller
+ * passes its own, which also covers the body) reads as status 0.
+ */
+async function get(url, init = {}, timeoutMs = FETCH_TIMEOUT_MS) {
   try {
-    const res = await fetch(url, { ...init, signal: AbortSignal.timeout(FETCH_TIMEOUT_MS) });
+    const res = await fetch(url, { ...init, signal: AbortSignal.timeout(timeoutMs) });
     return { status: res.status, text: await res.text(), headers: res.headers };
   } catch (err) {
     return { status: 0, text: '', headers: new Headers(), error: err?.message ?? String(err) };
@@ -225,9 +257,9 @@ const mmdd = (iso) => (iso ? iso.slice(5, 10) : '—');
 const hhmm = (epoch) => `${new Date(epoch * 1000).toISOString().slice(11, 16)}Z`;
 
 const warnings = [];
-const warn = (text) => {
-  warnings.push(text);
-  console.log(`::warning title=Platform freshness::${text}`);
+const warn = (text, title = 'Platform freshness', sink = warnings) => {
+  sink.push(text);
+  console.log(`::warning title=${title}::${text}`);
 };
 const ok = (text) => console.log(`  ✓ ${text}`);
 
@@ -300,6 +332,8 @@ async function checkGame(game) {
   console.log(`[${game.slug}]`);
   const row = {
     slug: game.slug,
+    repo: game.repo,
+    head: null, // the flow floor reads data/replays.json at this same SHA
     reds: [], // { cell, short, detail }
     commit: '—',
     age: '—',
@@ -316,6 +350,7 @@ async function checkGame(game) {
 
   // 1. HEAD of main — git, no quota.
   const head = headOfMain(game.repo);
+  row.head = head;
   const head7 = head?.slice(0, 7) ?? '—';
   if (!head) red('HEAD of main unreadable', `git ls-remote ${game.repo} refs/heads/main failed`);
   else ok(`HEAD of main ${head7}`);
@@ -407,13 +442,15 @@ async function checkGame(game) {
  * One raw GET of the shell's games.ts at main. The `export const GAMES` and
  * `export const UPCOMING` blocks are cut as TEXT (to the next top-level `export`), and
  * every `slug: '<x>'` and `summaryUrl: '/<x>/data/summary.json'` in each is read.
- * Unreadable → a warning, never a red (a network blip must not be a red).
+ * Unreadable → a warning, never a red (a network blip must not be a red). Returns the
+ * problems and the UPCOMING slugs (null when unreadable), which the flow floor prints
+ * as not held.
  */
 async function listIntegrity() {
   const res = await get(SHELL_GAMES_TS, { headers: { 'User-Agent': UA } });
   if (res.status !== 200) {
     warn(`shell lib/games.ts unreadable (${httpLabel(res)}) — list integrity not checked`);
-    return [];
+    return { problems: [], upcoming: null };
   }
   const block = (name) => {
     const at = res.text.indexOf(`export const ${name}`);
@@ -431,7 +468,7 @@ async function listIntegrity() {
     warn(
       `shell lib/games.ts has no \`export const ${live === null ? 'GAMES' : 'UPCOMING'}\` block — list integrity not checked (update the extractor)`,
     );
-    return [];
+    return { problems: [], upcoming: null };
   }
   const liveSlugs = slugsIn(live);
   const liveUrls = urlSlugsIn(live);
@@ -440,7 +477,7 @@ async function listIntegrity() {
     warn(
       'shell lib/games.ts: no summaryUrl found in GAMES — list integrity not checked (update the extractor)',
     );
-    return [];
+    return { problems: [], upcoming: null };
   }
 
   const problems = []; // { slug, text }
@@ -471,7 +508,7 @@ async function listIntegrity() {
   if (problems.length === 0)
     ok(`every shell summaryUrl has a row, every row is listed, every live row is on ${APEX}`);
   for (const p of problems) console.log(`  ✗ ${p.text}`);
-  return problems;
+  return { problems, upcoming: upcomingSlugs };
 }
 
 // ── the engine's own 60-day clock ───────────────────────────────────────────
@@ -503,6 +540,163 @@ function scheduledCron() {
   }
 }
 
+// ── the flow floor: new replays a week, one floor for every listed game ─────
+// See the header. A ::warning, never a red: nothing here touches a row's reds, the list
+// problems or the exit code, and every throw is caught, so a bug in this section costs
+// its own table and never the freshness verdicts above it.
+const INDEX_SOURCE = 'replayTheater'; // the index's `source` token in the generic schema
+const FLOW_TIMEOUT_MS = 60_000; // GGST's replays.json is 8.5 MB, and the limit covers the body
+const DAY_MS = 86_400_000;
+// A week counts once it ended at least 20 h before the run. The data runs started
+// 11:01–19:21 UTC and the latest ended 19:25 (the workflow header's 30 days), and the
+// 22:17 slot fires 2–3 h late: Sunday's slot runs on Monday 00:xx, before the data runs
+// that commit Sunday's uploads have started.
+const FLOW_SETTLE_MS = 20 * 3_600_000;
+const FLOW_DATE = /^\d{4}-\d{2}-\d{2}(T\d{2}:\d{2}:\d{2}(\.\d+)?Z)?$/;
+
+/** 00:00 UTC on the Monday of the ISO week holding `ms`. */
+function utcMonday(ms) {
+  const d = new Date(ms);
+  d.setUTCHours(0, 0, 0, 0);
+  return d.getTime() - ((d.getUTCDay() + 6) % 7) * DAY_MS;
+}
+
+/** One game's four weekly counts and index share, from its replays.json at `row.head`. */
+async function flowOf(row, weeks) {
+  const res = await get(
+    `${RAW}/${OWNER}/${row.repo}/${row.head}/data/replays.json`,
+    { headers: { 'User-Agent': UA } },
+    FLOW_TIMEOUT_MS,
+  );
+  if (res.status !== 200) return { error: httpLabel(res) };
+  const records = asJson(res.text);
+  if (!Array.isArray(records)) {
+    return { error: records === undefined ? 'not JSON' : 'not a JSON array' };
+  }
+  const counts = [0, 0, 0, 0];
+  let index = 0;
+  let carried = false;
+  let malformed = 0;
+  for (const r of records) {
+    const date = r?.date;
+    const day =
+      typeof date === 'string' && FLOW_DATE.test(date)
+        ? Date.parse(`${date.slice(0, 10)}T00:00:00Z`)
+        : Number.NaN;
+    if (!Number.isFinite(day)) {
+      malformed += 1;
+      continue;
+    }
+    const fromIndex = r.source === INDEX_SOURCE;
+    if (fromIndex) carried = true;
+    const w = weeks.indexOf(utcMonday(day));
+    if (w < 0) continue;
+    counts[w] += 1;
+    if (fromIndex) index += 1;
+  }
+  const total = counts.reduce((a, b) => a + b, 0);
+  return {
+    counts,
+    mean: total / 4,
+    // null prints "—": the token is not in this replays.json (Tekken), or the window is empty
+    share: carried && total ? index / total : null,
+    malformed,
+    bytes: Buffer.byteLength(res.text),
+  };
+}
+
+/**
+ * The second table: every polled game's last 4 complete weeks, mean, the floor and its
+ * index share, plus one ::warning naming every game under the floor and one naming any
+ * game it could not measure. Returns the job-summary lines; never throws.
+ */
+async function flowFloor(rows, upcoming) {
+  if (FLOW_FLOOR === 0) {
+    console.log('[flow floor]\n  · off (PLATFORM_FLOW_FLOOR=0), nothing fetched');
+    return ['## Flow floor — off (PLATFORM_FLOW_FLOOR=0)'];
+  }
+  const flowWarnings = [];
+  const flowWarn = (text) => warn(text, 'Flow floor', flowWarnings);
+  try {
+    const weeks = [4, 3, 2, 1].map((n) => utcMonday(Date.now() - FLOW_SETTLE_MS) - n * 7 * DAY_MS);
+    const label = (ms) => mmdd(new Date(ms).toISOString());
+    const span = `4 complete weeks ${label(weeks[0])} → ${label(weeks[3] + 6 * DAY_MS)}`;
+    const pct = (x) => `${(x * 100).toFixed(1)}%`;
+    const head7 = (row) => row.head?.slice(0, 7) ?? '—';
+    console.log(`[flow floor] ${span} · floor ${FLOW_FLOOR}`);
+
+    const results = [];
+    let fetched = 0;
+    for (const row of rows) {
+      let f;
+      if (upcoming?.includes(row.slug)) f = { upcoming: true };
+      else if (!row.head) f = { error: 'no HEAD' };
+      else {
+        fetched += 1;
+        try {
+          f = await flowOf(row, weeks);
+        } catch (err) {
+          f = { error: `threw: ${err?.message ?? err}` };
+        }
+      }
+      results.push({ row, ...f });
+      const said = f.upcoming
+        ? 'upcoming in the shell, not held (checklist 16)'
+        : f.error
+          ? `unmeasured (${f.error})`
+          : `${f.counts.join(' · ')} = ${f.mean.toFixed(1)} · index ${f.share === null ? '—' : pct(f.share)}${f.mean < FLOW_FLOOR ? ` · UNDER ${FLOW_FLOOR}` : ''}`;
+      console.log(`  · ${row.slug.padEnd(8)} ${said}`);
+    }
+
+    const measured = results.filter((f) => f.counts);
+    const under = measured.filter((f) => f.mean < FLOW_FLOOR);
+    if (under.length) {
+      flowWarn(
+        `Under ${FLOW_FLOOR} new replays a week (${span}): ${under
+          .map((f) => `${f.row.slug} ${f.counts.join(' · ')} = ${f.mean.toFixed(1)}`)
+          .join('; ')}`,
+      );
+    }
+    const unmeasured = results.filter((f) => f.error);
+    if (unmeasured.length) {
+      flowWarn(`Unmeasured: ${unmeasured.map((f) => `${f.row.slug} (${f.error})`).join('; ')}`);
+    }
+    const bytes = measured.reduce((a, f) => a + f.bytes, 0);
+    return [
+      `## Flow floor — new replays a week · ${span} · floor ${FLOW_FLOOR}`,
+      '',
+      `| game | at | ${weeks.map(label).join(' | ')} | mean | floor | index share |`,
+      '|---|---|---|---|---|---|---|---|---|',
+      ...results.map((f) =>
+        f.counts
+          ? `| ${f.row.slug} | ${head7(f.row)} | ${f.counts.join(' | ')} | ${f.mean.toFixed(1)}${
+              f.mean < FLOW_FLOOR ? ' ⚠' : ''
+            } | ${FLOW_FLOOR} | ${f.share === null ? '—' : pct(f.share)} |`
+          : `| ${f.row.slug} | ${head7(f.row)} | — | — | — | — | ${
+              f.upcoming ? 'upcoming, not held (checklist 16)' : `unmeasured (${f.error})`
+            } | ${FLOW_FLOOR} | — |`,
+      ),
+      '',
+      [
+        `${fetched} raw GET${fetched === 1 ? '' : 's'} · ${(bytes / 1e6).toFixed(1)} MB`,
+        ...measured
+          .filter((f) => f.malformed)
+          .map(
+            (f) =>
+              `${f.row.slug}: ${f.malformed} malformed record${f.malformed === 1 ? '' : 's'} skipped`,
+          ),
+        ...(polled.length < GAMES.length
+          ? [`polled ${polled.length} of ${GAMES.length} games`]
+          : []),
+      ].join(' · '),
+      ...(flowWarnings.length ? ['', ...flowWarnings.map((w) => `- ⚠ ${w}`)] : []),
+    ];
+  } catch (err) {
+    flowWarn(`the flow floor did not finish (threw: ${err?.message ?? err})`);
+    return ['## Flow floor — not measured', '', ...flowWarnings.map((w) => `- ⚠ ${w}`)];
+  }
+}
+
 // ── run ─────────────────────────────────────────────────────────────────────
 console.log(
   `platform freshness — ceiling ${MAX_AGE_HOURS} h · poll ${TIMEOUT_SEC} s every ${INTERVAL_MS / 1000} s · ${polled.length} of ${GAMES.length} games · ${hadToken ? 'GITHUB_TOKEN set' : 'unauthenticated (60 req/h per IP)'}\n`,
@@ -511,7 +705,10 @@ console.log(
 const pushedDays = await enginePushed();
 const rows = [];
 for (const game of polled) rows.push(await checkGame(game));
-const listProblems = await listIntegrity();
+const { problems: listProblems, upcoming: shellUpcoming } = await listIntegrity();
+const flowMd = await flowFloor(rows, shellUpcoming).catch((err) => [
+  `## Flow floor — not measured (threw: ${err?.message ?? err})`,
+]);
 
 const stamp = `${new Date().toISOString().slice(0, 16).replace('T', ' ')}Z`;
 const cron = scheduledCron();
@@ -546,6 +743,9 @@ const md = [
   ...(warnings.length ? ['', ...warnings.map((w) => `- ⚠ ${w}`)] : []),
   '',
   footer,
+  // The second table, here so it prints and reaches the summary on red nights too.
+  '',
+  ...flowMd,
 ];
 console.log(`\n${md.join('\n')}\n`);
 if (process.env.GITHUB_STEP_SUMMARY) {

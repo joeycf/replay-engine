@@ -11,6 +11,8 @@ name: Platform freshness
 # Plus each game's data-refresh.yml must be `active`: a public repo's schedules
 # are disabled after 60 days without activity — including this one, which is
 # why every game's "Pending work" run checks THIS workflow's state in return.
+# It also prints every game's new replays a week against one floor (10, trailing
+# 4-week mean): under it is a ::warning in the second summary table, never a red.
 #
 # 22:17 UTC, measured not chosen: over 30 days GitHub started the platform's
 # 06:17–09:47 slots 3h55m–9h44m late (11:01–19:21 UTC) and the latest run ended
@@ -28,6 +30,10 @@ on:
         description: 'Freshness ceiling in hours (0 = positive control: every game reads stale and this run must go red)'
         required: false
         default: ''
+      flow_floor:
+        description: 'Flow floor in new replays a week (0 = off; 100000 = control: every game warned, and this run must stay green)'
+        required: false
+        default: ''
 
 permissions:
   contents: read
@@ -41,8 +47,8 @@ jobs:
     name: Platform freshness — red means a game is stale, held, disabled or mis-served
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           # matches engines.node (the platform's Node policy — STACK.md §1)
           node-version: 24
@@ -55,4 +61,7 @@ jobs:
           # The script reads unset and empty alike as 26 — Number("") would be 0,
           # the positive-control value — and exits 1 on anything non-numeric.
           PLATFORM_MAX_AGE_HOURS: ${{ inputs.max_age_hours }}
+          # The same trap, worse: "" read as 0 would switch the floor off silently.
+          # The script reads unset and empty alike as 10.
+          PLATFORM_FLOW_FLOOR: ${{ inputs.flow_floor }}
         run: node scripts/verify-platform.mjs

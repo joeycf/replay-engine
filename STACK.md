@@ -88,17 +88,19 @@ beyond the node-driven scripts (revisit when Phase 2 grows real component logic)
 
 - **Runtime = the newest major that is both Active LTS and available for Vercel builds**
   (currently **24**; `engines.node: ">=24 <25"` in package.json).
-- **`.nvmrc` holds the bare major (`24`)** and is replicated in all four repos (engine,
-  shell, both games) — part of the §1 replication contract. Major only, deliberately: it
-  mirrors the `engines.node` range and the game workflows' `node-version: 24`, so a patch
-  release can never put the file out of step with the artifacts it tracks. `nvm use`
-  resolves it to the newest installed 24.x (v24.16.0 as tested above).
+- **`.nvmrc` holds the bare major (`24`)** and is replicated in every repo (the engine,
+  the shell and the eight games) — part of the §1 replication contract. Major only,
+  deliberately: it mirrors the `engines.node` range and the game workflows'
+  `node-version: 24`, so a patch release can never put the file out of step with the
+  artifacts it tracks. `nvm use` resolves it to the newest installed 24.x (v24.16.0 as
+  tested above).
 - `@types/node` always tracks the runtime major (types a major ahead permit phantom APIs).
 - Bumps happen engine-first with the `engines.node` field updated and the full gate
   battery re-verified (positive controls included), then propagate via the engine pin.
   A Node major bump touches **`engines.node` + `.nvmrc` in every repo**, plus
-  `node-version` in every game repo's `.github/workflows/data-refresh.yml` and in the
-  engine's own `.github/workflows/platform-freshness.yml` (the shell ships no workflows).
+  `node-version` in every game repo's `.github/workflows/data-refresh.yml` and
+  `pending-work.yml`, in the engine's own `.github/workflows/platform-freshness.yml`,
+  and in the shell's `.github/workflows/verify.yml`.
 
 ---
 
@@ -244,7 +246,7 @@ not sameness. Run it before cutting an engine tag and after adopting one.
 | `test:filters`                           | Pure-logic filter semantics (facets, search, sort) against the fixture dataset                                                        |
 | `test:registry`                          | Registry-provisioning store semantics incl. the fetch-fallback (unprovided) state                                                     |
 | `verify:replication`                     | The §1/§2 replication contract across every sibling consuming repo (see below)                                                        |
-| `verify:platform`                        | Nightly (`platform-freshness.yml`): every game's newest data commit, served vs committed `summary.json`, and its schedule's state     |
+| `verify:platform`                        | Nightly (`platform-freshness.yml`): each game's newest data commit, served vs committed `summary.json`, schedule state, flow floor    |
 | `fonts:update`                           | Refresh committed neutral fonts from `@fontsource-*`                                                                                  |
 | `scripts/fixtures-data.mjs`              | Derives fixture stats.json from replays (pipeline parity); `--1v1` emits the rank-ladder variant                                      |
 | `scripts/verify-subpath.mjs`             | Base-path resilience probe — asserts no request escapes the base; `--artifacts <output dir> [base]` gates BUILD placement (§15)       |

@@ -1014,3 +1014,31 @@ keeps the file byte-identical), and e2e asserting every titled player is feature
 page carries the CC BY-SA 3.0 credit. _Failure: a 25,000-replay game "features" 359
 people and five of eight games feature nobody, because the only lever was a hand-typed id
 set in one parser._
+
+### Amendment from the post-launch hygiene work (all eight games, 2026-10-23)
+
+**10n. A listed game is held to the flow floor; a launch keeps its own bar.**
+Platform freshness (10m) also prints every listed game's new replays per ISO week
+(all sources, from `data/replays.json` at the HEAD it already reads, bucketed by the
+UTC Monday of `date`, complete weeks only) and warns when the trailing 4-week mean is
+under 10 a week: one `::warning`, never a red, so the freshness red keeps its one
+meaning. Once a game is listed, that floor is its standard, one number measured the
+same way for every game every night, in place of whatever gate it launched against.
+It does not replace 16: a new game's launch still needs its own written viability bar,
+measured on its own corpus and committed in advance, and a row the shell lists as
+`UPCOMING` is printed in the flow table but not held to the floor. There is nothing to
+add per game; the floor reads the row 10m already asks for. _Failure: Avatar went live
+on 2026-10-22 as the owner's open override of a count-A gate (A ≥ 40, channels only)
+that the games already on the front door would not have passed either, because
+nothing measured them against it — an instrument for one launch, mistaken for a
+standard._
+
+**Correction to 10h**, carried here rather than rewritten in place: "`verify:deployed`
+cannot catch it — it reads `replays.json` and never looks at `summary.json`" has not
+been true for any game since 2026-10-17. Avatar's `verify:deployed` read the served
+`summary.json` from its first commit (2026-09-18), Granblue's from 2026-09-30, and the
+other six's since 2026-10-17: each reads it first on every poll and fails at once on
+a `game` that is not the app.config id, and all eight hold the committed copy to the
+pin before polling (Granblue since 2026-10-23). The pre-flip read of
+`<game-host>/<slug>/data/summary.json` that 10h asks for is still the check to run
+before a flip.

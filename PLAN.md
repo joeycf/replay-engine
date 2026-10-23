@@ -4230,3 +4230,42 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   freshness run with Avatar on the apex, and **FFCotW's Pending work going red
   by design (Mikey and Draken due)** — cleared by the new-character runbook or
   a re-date, never by deleting the step.
+- **Flow floor in Platform freshness (2026-10-23; prompt-post-launch-hygiene.md).**
+  verify-platform.mjs prints a second table every night: each polled game's
+  new replays per ISO week (all sources, data/replays.json raw at the HEAD it
+  already resolves, by the UTC Monday of `date`) over the last 4 complete
+  weeks, with the mean, the floor and the index share. A mean under 10 is ONE
+  `::warning title=Flow floor` naming every game under it, plus one naming any
+  game it could not measure; never a red, never the exit code, every throw
+  caught (a bug costs the table, not the freshness verdicts). A week counts
+  once it ended ≥ 20 h before the run, because the 22:17 slot runs on Monday
+  00:xx for Sunday, before Sunday's uploads are committed. UPCOMING rows print
+  "not held" (checklist 16 keeps the launch bar; 10n added, and a correction to
+  10h). `PLATFORM_FLOW_FLOOR` (10; 0 = off; "" = 10, the empty-string trap) and
+  a `flow_floor` dispatch input; actions v7 in the workflow. First table (10-23
+  18:31Z, weeks 09-21 → 10-12): 2XKO 50·53·34·26 = 40.8 (the lowest, four times
+  the floor), Tekken 112.0, SF6 98.8, Tōkon 64.5 (index 2.7%), FFCotW 74.8
+  (0.3%), GGST 123.5, GBVSR 84.3 (5.0%), Avatar 84·75·54·85 = 74.5 (index
+  74.2%; its 10-12 week grew 68 → 85 between the 10-22 and 10-23 data
+  commits); Tekken's share is "—" (its index rides `tournament`). No game
+  warns; the floor is a backstop, not a ranking. **Avatar's count-A gate is
+  retired as the instrument**: the 11-17 re-measure is no longer a gate, and
+  the floor holds every listed game. Controls, local, before this commit: floor
+  "" → 8 of 8 fresh, no warning, every row equal to a recomputation from git at
+  the same SHA; floor 100000 → one warning naming all eight, exit 0 (warned and
+  green); floor 0 → "off", nothing fetched; abc → exit 1 before any call;
+  ceiling 0 + floor 100000 → exit 1 with both tables and the warning still
+  printed; a scratch copy with a 404, a throw, a non-array and two malformed
+  records → each named unmeasured or skipped, exit 0; a row the shell lists as
+  UPCOMING → not held, not fetched. The same session, in their own repos: Shell
+  checks (typecheck needs the engine beside the shell — TS2307 without it — so a
+  second checkout at the pinned tag; a runner rehearsal on a scratch branch
+  before main), GBVSR's pin-only refusal (8 of 8 now), Pending work timeout 15
+  and actions v7 in all eight (Avatar first, as a STOP canary), and the stale
+  prose. Still open: the /avatar page-budget row (never re-measured) and the
+  alive step's token path; GBVSR verify-deployed's collapse comment still
+  quotes Avatar's Stage 0 corpus (367 records), though its constants (10% and
+  20) are the platform's, identical in all eight and in its own parse guard —
+  a prose follow-up, reported with the derived values. Deferred, as recorded: the
+  page-budget structural fix, A′ stubs, the art-licence audit, the start.gg
+  tier, Strive's gaps, the two channel investigations.

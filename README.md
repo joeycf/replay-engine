@@ -3,7 +3,7 @@
 A **base-path-aware Nuxt 4 layer** that holds all shared UI, composables, page
 scaffolding, layouts, design tokens, and the **data contract** for the Replay
 Database multi-game platform. It is a **library, not a deployed site** — each
-consuming app (`2xko-replay-database`, `tekken-replay-database`,
+consuming app (the eight `<slug>-replay-database` games and
 `replay-database-shell`) `extends` a pinned tag of this repo and supplies only
 its data, its `app.config.ts`, its art, and its theme.
 
@@ -22,7 +22,13 @@ the neutral "Replay Database" look for its own development.
 > Part of the **Replay Database** platform — [replaydatabase.com](https://replaydatabase.com) ·
 > [shell](https://github.com/joeycf/replay-database-shell) ·
 > [2XKO](https://github.com/joeycf/2xko-replay-database) ·
-> [Tekken](https://github.com/joeycf/tekken-replay-database)
+> [Tekken](https://github.com/joeycf/tekken-replay-database) ·
+> [SF6](https://github.com/joeycf/sf6-replay-database) ·
+> [Tōkon](https://github.com/joeycf/tokon-replay-database) ·
+> [CotW](https://github.com/joeycf/ffcotw-replay-database) ·
+> [Strive](https://github.com/joeycf/ggst-replay-database) ·
+> [Granblue Rising](https://github.com/joeycf/gbvsr-replay-database) ·
+> [Avatar](https://github.com/joeycf/avatar-replay-database)
 
 ## Stack
 
@@ -777,12 +783,12 @@ Four rules, each of them load-bearing:
    opening anything.
 
 **This layer ships no `server/api/*` and no auto-imported server code.** A route
-here would register in all seven consuming apps and enter every production build
-whether that game wanted it or not, so the engine exports helpers and the apps
-own their routes. Apps import by path (`@engine/server/utils/…`) rather than
-leaning on nitro's layer auto-import: the mechanism works, but nothing
-load-bearing should rest on a bundler behaviour that is invisible at the call
-site.
+here would register in every consuming app (the eight games and the shell) and
+enter every production build whether that game wanted it or not, so the engine
+exports helpers and the apps own their routes. Apps import by path
+(`@engine/server/utils/…`) rather than leaning on nitro's layer auto-import: the
+mechanism works, but nothing load-bearing should rest on a bundler behaviour
+that is invisible at the call site.
 
 **One exception, and it is deliberate: `server/middleware/dev-guard.ts`
 (v0.15.0).** Middleware is precisely the invisible machinery the rule above
@@ -1097,7 +1103,7 @@ sits red next to one that is holding data. `npm run verify:platform`
 - the **newest commit touching `data/videos.json`** (the file every refresh
   rewrites) is younger than the ceiling — HEAD of `main` via `git ls-remote`,
   then one `commits?path=` call;
-- the **served `summary.json` equals the committed one** at that commit (the
+- the **served `summary.json` equals the committed one** at HEAD (the
   SHA-pinned raw file vs `<host>/<slug>/data/summary.json`, polled every 20 s for
   up to 180 s with cache-busting, keys sorted before comparing), and the served
   `game` is this game's app.config id — Tekken's is `tekken8`, not its slug — so
@@ -1107,9 +1113,10 @@ sits red next to one that is holding data. `npm run verify:platform`
 
 It also checks its own game table against the shell's `lib/games.ts`: a
 `summaryUrl` in the shell's `GAMES` with no row, a row in neither `GAMES` nor
-`UPCOMING`, or a live game checked on a host other than the apex is a red. One
-job-summary table, every red named with how far over it is, and exit 1 — a red
-means exactly one thing: a game is stale, held, disabled or mis-served.
+`UPCOMING`, or a live game checked on a host other than the apex is a red. The
+first job-summary table names every red with how far over it is, and the run
+exits 1 — a red means exactly one thing: a game is stale, held, disabled or
+mis-served. The second table is the flow floor below, which never turns a run red.
 
 **22:17 UTC and 26 h, measured.** Over 30 days GitHub started the games' 06:17–09:47
 crons 3h55m–9h44m late and the latest run ended 19:25 UTC, so at 22:17 the worst
@@ -1118,32 +1125,61 @@ healthy age is 21.0 h while the smallest single missed day reads 26.9 h; 26 h si
 replayed. If the Monday drift carries the latest end past ~20:15 UTC, tighten to
 24 h.
 
+**The flow floor.** The same run prints each listed game's new replays per ISO week
+— all sources, from `data/replays.json` at the HEAD it already resolved (a raw GET,
+no API call), bucketed by the UTC Monday of each record's `date` — over the last 4
+complete weeks, with the mean, the floor and the game's index share. A trailing mean
+under **10 a week** is one `::warning` naming every game under it with its four
+weeks and mean. It is never a red, and a warning notifies nobody: read the floor in
+the run's annotations and its job summary. 10 is the level at which a visitor who
+comes back monthly finds the game standing still. It is a backstop, not a ranking:
+the lowest mean today is 2XKO's 40.8 (50 · 53 · 34 · 26 for the weeks of 09-21 to
+10-12), four times the floor. For a game already listed it replaces the per-launch
+gate — Avatar's count-A gate (A ≥ 40, channels only, PLAN.md) is retired as the
+instrument — while a new game's launch still gets its own viability bar
+(NEW-GAME-CHECKLIST 16 and 10n), so a row the shell lists as `UPCOMING` is printed,
+not held. A week counts once it ended at least 20 h before the run, because the
+22:17 slot runs on Monday 00:xx for Sunday, before the data runs that commit
+Sunday's uploads. A week can still grow after that (late uploads; Avatar dates a
+`still` record by the day it was played, and its 10-12 week grew from 68 to 85
+between the 10-22 and 10-23 data commits), so the newest week reads low, never
+high. The share column counts records whose `source` is the index's token: 0.0%
+means the game carries the index but nothing in the window came from it, and —
+means its `replays.json` cannot say (Tekken files the index under its shared
+`tournament` source) or the window is empty. 2XKO's active development ends in
+December 2026 ([Riot, 2026-08-20](https://www.riotgames.com/en/news/2xko-active-development-ends-december-2026));
+its servers stay up, so this is the table where its flow will be seen to thin.
+
 ```bash
 npm run verify:platform                              # the nightly check, by hand
 PLATFORM_MAX_AGE_HOURS=0 npm run verify:platform     # positive control: every game reads stale → red
+PLATFORM_FLOW_FLOOR=100000 npm run verify:platform   # flow control: every game warned, still exit 0
 PLATFORM_GAMES=2xko,tekken npm run verify:platform   # a subset (list integrity still runs over all rows)
 ```
 
-| env                           | default | meaning                                                         |
-| ----------------------------- | ------- | --------------------------------------------------------------- |
-| `PLATFORM_MAX_AGE_HOURS`      | `26`    | the ceiling; also the workflow's `max_age_hours` dispatch input |
-| `PLATFORM_TIMEOUT_SEC`        | `180`   | served-vs-committed poll deadline                               |
-| `PLATFORM_INTERVAL_SEC`       | `20`    | poll interval                                                   |
-| `PLATFORM_ACTIVITY_WARN_DAYS` | `50`    | warn when the engine's own last push is this old (see below)    |
-| `PLATFORM_SUMMARY_URL_<SLUG>` | —       | full served URL for one game (the controls)                     |
-| `PLATFORM_GAMES`              | all     | comma list of slugs to poll                                     |
-| `GITHUB_TOKEN`                | —       | optional; the workflow passes `github.token`                    |
+| env                           | default | meaning                                                                                           |
+| ----------------------------- | ------- | ------------------------------------------------------------------------------------------------- |
+| `PLATFORM_MAX_AGE_HOURS`      | `26`    | the ceiling; also the workflow's `max_age_hours` dispatch input                                   |
+| `PLATFORM_TIMEOUT_SEC`        | `180`   | served-vs-committed poll deadline                                                                 |
+| `PLATFORM_INTERVAL_SEC`       | `20`    | poll interval                                                                                     |
+| `PLATFORM_ACTIVITY_WARN_DAYS` | `50`    | warn when the engine's own last push is this old (see below)                                      |
+| `PLATFORM_FLOW_FLOOR`         | `10`    | the flow floor in new replays a week (`0` = off); also the workflow's `flow_floor` dispatch input |
+| `PLATFORM_SUMMARY_URL_<SLUG>` | —       | full served URL for one game (the controls)                                                       |
+| `PLATFORM_GAMES`              | all     | comma list of slugs to poll                                                                       |
+| `GITHUB_TOKEN`                | —       | optional; the workflow passes `github.token`                                                      |
 
-Unset and empty both mean the default: on a scheduled run the dispatch input
-arrives as `""`, and `Number("")` is `0`, the positive-control value, so the
-script treats `""` as unset rather than turning every scheduled run red. Any
+Unset and empty both mean the default: on a scheduled run each dispatch input
+arrives as `""`, and `Number("")` is `0` — for the ceiling the positive-control
+value, which would turn every scheduled run red, and for the floor "off", which
+would switch it off without a word — so the script treats `""` as unset. Any
 other value must be a finite number ≥ 0 or the script exits 1 naming it before
 any network call.
 
 **API budget.** 1 + 8 × 3 = 25 `api.github.com` calls per run (the engine's
 `pushed_at`, then per game the newest data commit, the workflow's state and its
 latest run), spaced ≥ 1 s apart; `git ls-remote` and `raw.githubusercontent.com`
-are free. Unauthenticated that is 60/hour per IP — two full runs — so local
+are free (the flow floor's eight `replays.json` reads come to about 31 MB a
+night). Unauthenticated that is 60/hour per IP — two full runs — so local
 controls use `PLATFORM_GAMES` subsets; the footer prints the calls made and the
 last `x-ratelimit-remaining`.
 
