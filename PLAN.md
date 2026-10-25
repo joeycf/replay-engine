@@ -4230,6 +4230,43 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   freshness run with Avatar on the apex, and **FFCotW's Pending work going red
   by design (Mikey and Draken due)** — cleared by the new-character runbook or
   a re-date, never by deleting the step.
+- **Post-launch hygiene plan audited (2026-10-23) — approved with three
+  additions.** User decisions: stale-comment scope = everything found; a
+  runner rehearsal for Shell checks on a scratch branch before main; actions
+  **v7** (checkout v7.0.1, setup-node v7.1.0, both node24; the breaking
+  changes assessed: credentials via an includeIf file, cache saved only on
+  success, fork-PR refusal under workflow_run — none bites here). **Measured:
+  no game is near the floor on any view** — trailing 4 complete weeks (09-21
+  → 10-18), all sources by `date`: 2XKO 50·53·34·26 = 40.8 (lowest), Tekken
+  112.0, SF6 98.8, Tōkon 64.5, FFCotW 74.8, GGST 123.5, GBVSR 84.3, Avatar
+  84·75·54·68 = 70.3 (channel-only 21·20·14·22 = 19.3; index share 72.6%). My
+  "expect Avatar and probably 2XKO near or under" was wrong at 10; the floor
+  stays a backstop and the README should say so. Design wins by the session:
+  **a week counts only once it ended ≥ 20 h before the run** (the 22:17 slot
+  executes Monday ~00:xx while Sunday's late uploads land in Monday's data
+  runs; "the most recent Sunday" would undercount every Monday-night run by
+  1–10 records); late growth (Avatar's `still` dates records by play day)
+  means the newest week reads low, never high — documented; Tekken files its
+  index records under the shared `tournament` source, so its share reads "—"
+  (its index records are all 2024-02 → 2025-03); the count-A gate lives in
+  PLAN.md:3383-3411, not the checklist → 10n appended, with a correction to
+  10h (verify:deployed reads summary.json first in all eight); shell typecheck
+  resolves `@engine` to ../replay-engine → Shell checks makes a second
+  checkout of the engine at the pinned tag for types only, ENGINE_PATH unset;
+  verify-shell drives /usr/bin/google-chrome-stable, present on both
+  ubuntu-latest images (Chrome 155). Found, not fixed: **GBVSR's
+  verify-deployed.ts:90-99 carries Avatar's collapse-threshold numbers** — a
+  behaviour question for the smoke check at 15.9k records, reported with its
+  derivation. Additions: (1) the v7 canary is a STOP — no further game push
+  until Avatar's dispatched data run has committed and pushed under checkout
+  v7 and its Pending work is green; rollback = the version strings; (2) the
+  GBVSR threshold report must carry the numbers and the sibling-derived
+  values so the fix is one line; (3) the README's floor paragraph states
+  today's lowest mean (2XKO 40.8, four times the floor) so no reader mistakes
+  the floor for a ranking. Tōkon's push carries the user's two unpushed
+  commits (6c4485c footage reads, 0aaa95c data refresh) — rebase on the bot's
+  files if its cron lands first. FFCotW's Pending work went red on 10-22 by
+  design (Mikey and Draken due) — the first real red through the split.
 - **Flow floor in Platform freshness (2026-10-23; prompt-post-launch-hygiene.md).**
   verify-platform.mjs prints a second table every night: each polled game's
   new replays per ISO week (all sources, data/replays.json raw at the HEAD it
