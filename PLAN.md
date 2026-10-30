@@ -4306,3 +4306,40 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   a prose follow-up, reported with the derived values. Deferred, as recorded: the
   page-budget structural fix, A′ stubs, the art-licence audit, the start.gg
   tier, Strive's gaps, the two channel investigations.
+- **The week of 10-23 → 10-30: the split told the truth; the human loop
+  lagged.** Hygiene shipped 10-23 (engine df890ef flow floor, shell f83482a
+  Shell checks, gbvsr 856732b + the other seven: pin-only refusal, Pending
+  work timeout 15, actions v7). **GBVSR's collapse thresholds are the
+  platform's (10% and 20), identical in all eight; only the comment quoted
+  Avatar's corpus** — my 10-23 worry resolved as prose. Then on 10-29 the user
+  read "a lot of the game repos and engine are failing": **one real red** —
+  GGST's parse held the day from 10-25 on a single fighter-named handle
+  ("Plugging on ram" → Ramlethal; allow-listed with the video as evidence, the
+  record is a person playing Ky; 25,485 → 25,574 on the hand-started run,
+  green, smoke-checked) — and the engine's freshness red that correctly named
+  GGST at 122 h; **three by-design TASK reds**: Avatar (six DLC reviews due
+  10-27 → re-dated 11-18 after Patch 4.0's notes opened the Year One Pass vote
+  with no winner or dates; Patch 4.0 itself, 10-28, had been UNREADABLE to the
+  checker — a POST_DATE_OK row, a web-notes-backed label rule with two new
+  mutation gates, and the row added one day late), Tōkon (quiet feed
+  confirmed through 10-29 over eight non-patch Steam posts; next ~11-08),
+  FFCotW (Mikey and Draken due 10-22 and still pending — their matches sit in
+  review, "absent from the site, never guessed"; Ver.3.3.2, 10-19, was missing
+  from the patch table and is in). Two lessons: (1) **Platform freshness
+  flagged GGST on day one; the response came on day four** — the alerting
+  works, the inbox step is unverified; (2) **the registry invariant refuses the
+  whole day for one unconfirmed handle** — right about the record, wrong about
+  the day; the fix is to route the record to the review queue and surface it
+  as a TASK (prompt-registry-hold.md). Next due: 2XKO Samira 10-31, Tōkon
+  Phoenix Cyclops 11-02 Pacific (accent `#FF9D57` already derived), Tōkon
+  quiet feed ~11-08, Tekken Roger Jr. 11-11, Avatar review 11-18.
+- **Next (prompt-new-fighters.md): three promotions in four days** — FFCotW
+  Mikey & Draken (overdue; ids to confirm against SNK's index; aliases from
+  the residue/review text; count the records published from review), 2XKO
+  Samira (10-31; the Lux runbook incl. step 6; the patch date from the post
+  body, not publishedAt), Tōkon Phoenix Cyclops (after 11-02 Pacific; art via
+  the wiki bridge; careful with bare "Cyclops"/"Phoenix"). **Decision in the
+  prompt: accents derived in-session by the handoff's method with the user
+  picking from candidates — the Yasmine/Lux/Arjun/Champion practice — and the
+  runbook text updated to say so**, instead of "never invent one", which has
+  blocked FFCotW for eight days on a step every prior addition did in-session.
