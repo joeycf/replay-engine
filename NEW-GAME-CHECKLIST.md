@@ -537,6 +537,39 @@ _Failure: one game shipped a player page and a character page at the same id, bo
 prerendered, with nothing warning; another put fighter names in the player field
 on 26 records with every count, schema and gate green._
 
+**Refuse the record, not the day.** A hit on a NEW record (one not in the
+committed archive) goes to the review queue as `fighter-named-handle`, carrying
+the title, the video id, the side, the handle and what it resolves to. It stays
+out of the archive and the player registry, and the rest of the day publishes.
+"Pending work" goes red naming each handle and its record count. Confirming is
+still a CONFIRMED row with a video id, and the next parse publishes the record.
+Rejecting (the handle IS the fighter) is a `sides` override, like any queue
+verdict. An e2e check asserts the result on the built site: no published side's
+player resolves to a fighter without a row, through the same predicate the hold
+uses. Two things stay a hard stop:
+- a hit on an ALREADY-PUBLISHED record. Holding it would unpublish a live page
+  with exit 0, after the collapse guard has run, and the only ways there are a
+  roster or alias edit, a removed row, or a parser regression;
+- a hit on a frozen channel's record, which is carried from the committed file
+  and pinned.
+
+There is no player-id-versus-character-route check to keep: `/players/<id>` and
+`/characters/<id>` are separate routes.
+
+Two traps come with the hold:
+- **A held index record has no later dump.** The pull is a cursor, so the
+  committed queue must carry the record and parse must re-read it every
+  morning, or the hold becomes a deletion.
+- **The index pin must count what SHIPS.** A pin that counts a held record
+  refuses the next failed pull. A record released on a failed pull must enter
+  the pin as it publishes, or the morning after refuses.
+
+_Failure: one game's parse held a whole day for one new handle, a Ky player
+called "Plugging on ram", and published nothing for four days (2026-10-25).
+The alerting named it on day one; the queue would have kept the other 88 new
+records live. The first cut of the hold left a record released on a failed pull
+out of the pin, and only a control forced onto the carry branch caught it._
+
 **5o. Hydrate the video metadata before quoting a parse rate.**
 A parse rate computed from titles alone omits every miss class that needs a
 duration or a live flag — on one game that was 251 records and an entire gate. It
@@ -594,7 +627,10 @@ position, because a channel that writes `Fighter/Support` and a channel that wri
 outright; and the emitted record keeps supports OUT of `Side.characters`, or the stat
 unit, the character pages and the prerender set all inherit a second roster. The
 engine has no field for this: model it game-locally (the 2XKO `fuses` precedent) plus
-a facet and a badge override, and leave `charactersPerSide` at 1.
+a facet and a badge override, and leave `charactersPerSide` at 1. The
+registry invariant (5n) and its review-queue hold cover BOTH namespaces: a
+handle that resolves to a support is held the same way as one that resolves to
+a fighter.
 _Failure: the ported index reader folds the support into the side as a counter-pick,
 the residue gate drowns in 36 unresolvable names, and the one support that is also a
 fighter mints a second fighter on that side — all with every count green._
