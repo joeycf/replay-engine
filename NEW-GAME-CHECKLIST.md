@@ -1042,3 +1042,36 @@ a `game` that is not the app.config id, and all eight hold the committed copy to
 pin before polling (Granblue since 2026-10-23). The pre-flip read of
 `<game-host>/<slug>/data/summary.json` that 10h asks for is still the check to run
 before a flip.
+
+### Amendment from the first roster growth past a handoff (Fatal Fury: CotW, 2026-10-30)
+
+**14c. A fighter the handoff predates gets an accent DERIVED in-session, by the
+handoff's own method, and a human picks it.**
+Every runbook said "accent from a Claude Design session — never invent one", and that
+held FFCotW's Mikey and Draken back for eleven days after they shipped (Ver.3.3.2,
+2026-10-19), with Pending work red and 129 of their matches off the site. In practice
+no accent added since launch came from a session; each was derived in-session and
+picked from candidates (SF6's Yasmine and Arjun, 2XKO's Lux, Tōkon's Champion). Write
+the rule that is actually followed:
+derive by the handoff's method from the vendor's official art. The anchor hue is
+sampled from the character's key art, never guessed. Snap it into the team or tone
+band. Require Δhue ≥ 8–12° against every roster neighbour, else split by ΔL ≥ .12 or
+chroma, and document the split. Require AA ≥ 4.5:1 on `--color-surface`. Present 3–4
+candidates with the anchor evidence; the user picks; record the derivation in
+tokens.css marked DERIVED (a design session may replace it).
+Three things the first run showed:
+- Sample the key art itself, not the roster tile. CotW's Tokyo Revengers tiles carry
+  a collab-branding red band across their top sixth that no other tile has; taken as
+  the anchor it would have dressed both fighters in a colour they do not wear.
+- Two fighters from one costume family need the split rule, not two hues. Both
+  renders are mostly the black Toman uniform; Draken took the embroidery gold as
+  sampled (`#E4DC3B`) and Mikey the pale-blond highlight with chroma lifted
+  (`#F0E2B8`), separated by ΔL .27 rather than by hue.
+- Check the candidates against the near-whites as well as the hue neighbours. At low
+  chroma a hue difference stops reading, so a pale candidate is held to ΔS against
+  the steel and lilac whites (Billy, `--color-info`, Andy) or it will not register.
+A handoff that already derived a DLC accent (Tōkon's Phoenix Cyclops, `#FF9D57`)
+needs no derivation, but re-verify its contrast and separation on the day: the roster
+has moved since the handoff was written. _Failure: a rule nobody follows, written
+where the runbook is read, holds a shipped fighter's records off the site while
+everyone waits for a session the rule's own history shows never happens._
