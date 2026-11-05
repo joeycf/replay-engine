@@ -564,6 +564,13 @@ Two traps come with the hold:
   refuses the next failed pull. A record released on a failed pull must enter
   the pin as it publishes, or the morning after refuses.
 
+**Measure the predicate's width on the published registry before porting it.**
+"Contains a fighter as a word" (`Plugging on ram` → Ram) and "IS fighter names,
+nothing left over" (`DANGER`) are both 5n. The wider one, run against a registry
+that never had it, hard-stops on day one for every published handle it newly
+covers: four on one corpus (`Hulk Mash`, `KID CARNaGE`, `MAJIN GOBLIN`,
+`CHAMPION EYEZ`), each a person. Count the hits, then choose.
+
 _Failure: one game's parse held a whole day for one new handle, a Ky player
 called "Plugging on ram", and published nothing for four days (2026-10-25).
 The alerting named it on day one; the queue would have kept the other 88 new
@@ -672,6 +679,11 @@ residue on each side is empty; a real title contains a PERSON that nothing else
 explains. Refuse a side whose residue is empty after the fighter span and the
 decoration vocabulary are removed. The rule generalizes to every showcase and CPU
 network (one multi-game network here publishes 20+ games this way).
+It applies where the title has NO fighter slot. With a slot, a fighter-named handle
+is a person who may really be called that, and 5n's hold asks a human; use one
+predicate for both, so a side is never a person in one check and a fighter in the
+other. Refuse it as a named miss with the literal title in the report. Never queue
+it: no reviewer can supply a name the title does not carry.
 _Failure: 16 fabricated records per channel, each naming two real fighters, with no
 player attached and nothing in any count to show for it._
 

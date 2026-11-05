@@ -4343,3 +4343,72 @@ their APIs. Recorded here so §2–§5 are read with these in mind:
   picking from candidates — the Yasmine/Lux/Arjun/Champion practice — and the
   runbook text updated to say so**, instead of "never invent one", which has
   blocked FFCotW for eight days on a step every prior addition did in-session.
+- **The promotions week (10-30 → 11-04): three games, five fighters, and the
+  hold shipped.** FFCotW a9bf033: Mikey and Draken (SNK's index pages them
+  mikey.php / draken.php, so the guessed ids stand; `released` 10-19 per the
+  patch page, as for Kaphwan) — **129 matches published (23 from review, 106
+  from misses), 2 misfiles repaired** (FERNO's Draken filed as Ken under a
+  fake player "ryuguji"); aliases mined from every raw title (Mikey ×144,
+  Draken ×120, never a handle; bare "Ken" stays Ken Masters); accents DERIVED
+  in-session from SNK's character_main_*.webp, three candidates each, the user
+  picked (ken-ryuguji #E4DC3B 12.7:1; manjiro-sano #F0E2B8 14.1:1, split from
+  the golds by ΔL .27); two parse rules each measured as a whole-corpus diff
+  (a paren restating the named fighter is a nickname; the colon-less DLC-day
+  suffix is decoration); roster-check's entry regex let mikey.php swallow
+  draken.php (32 vs 33) — fixed with a control. **Engine 817204c, checklist
+  14c: a fighter the handoff predates gets an accent derived in-session by the
+  handoff's method from the vendor's key art, candidates shown, a human picks,
+  marked DERIVED** — the rule actually followed since Yasmine; "never invent
+  one" had held Mikey and Draken off the site for eleven days. **The hold
+  (GGST 130717f, Avatar 3371f4c, GBVSR a537bfe; engine 2d0b9bc = checklist
+  5n): a registry hit on a NEW record goes to the review queue as
+  `fighter-named-handle` (title, side, handle, the fighter it resolves to, the
+  record), stays out of videos/players/the site, and the day publishes;
+  report.md and the parse log name it; Pending work's `expiries --check` is red
+  while anything is held.** Measured first: the invariant had fired twice in
+  GGST's cron (JOHNNY RED 09-15/16, two runs; Plugging on ram 10-25 → 29, five
+  runs), never in GBVSR or Avatar. It stays a hard stop for a hit on an
+  already-published or frozen-channel record (holding those would unpublish
+  live pages with exit 0 after the collapse guard). Two traps closed: a held
+  index record is in no later cursor dump, so parse carries it from the
+  committed queue; the theater pin counts what ships. e2e: "no published side
+  names a fighter-named handle without a CONFIRMED row". Controls: the 10-25
+  morning replayed in a worktree (HEAD exits 1; new code exits 0 with 25,589,
+  the record queued and absent, expiries red naming it; row back → 25,590,
+  green); verify:gates 46/0 on the new code and 36/9 on HEAD's. First three
+  days in production: nothing held. **2XKO 6c6e331: Sett AND Samira** (1.3.3,
+  2026-10-27 — the post's title and URL, not the 10-26 publish time, the Lux
+  trap again; Sett had no expiry row at all — only data:roster-check saw him,
+  so "Samira is the last champion" was wrong); accents per 14c from four
+  candidates each (Samira #EB506C, Sett #D26A47); セト one edit from セナ → both
+  exact-match-only in hud-read; nameplate templates cropped in the same commit
+  (runbook step 6, 36 templates); 65 records repaired, low-confidence 83 → 18,
+  fuse fill 99.6%. **Tōkon 329f961: Phoenix Cyclops** (accent the handoff's
+  own #FF9D57; spellings "P. Cyclops"/"P.Cyclops", never bare "Cyclops" or
+  "Phoenix" — UMvC3 uploads carry both); 23 published, 13 already-published
+  gained him; **the Marvel wiki changed since August: the asset host 403s
+  without a fandom Referer, and a full data:art run would have re-picked every
+  fighter's art — `--only` now MERGES into art-provenance.json**; Sony's Hero
+  Select lists Thor/Venom/Jubilee as cards before release → the roster check
+  reads gated rows as gated (vendorSlug), bounded at the next <section>. Both
+  promotions were rebased onto the cron's 11-04 refresh and regenerated on
+  fresh dumps, never hand-merged. **Open: Tōkon "DANGER" (XvlWpCke4Go, 10-26) —
+  a fighter-named handle PUBLISHED, e2e 190/191 — Tōkon has no hold path;
+  fightingStationX's "X vs Y ▰ Online Match" titles since 11-02 (13 queued as
+  `character-completion` with the fighters read as the people) — checklist 5r
+  (handle recoverability) says refuse, not queue; Tōkon's invariant is e2e-only
+  (`CONFIRMED_FIGHTER_HANDLES` inside the test, one DEADPOOL row) — the DANGER
+  title is the same clean handle/paren class, a real person; GGST e2e's
+  09-11 literal (6934 of 8264, expected 6915); comboforge.gg answers HTTP 429
+  (Vercel checkpoint) to the verifier — verify:comboforge UNVERIFIED everywhere,
+  five fighters on nulls nobody checked.** Next due: Roger Jr. 11-11 (Tekken,
+  per 14c), Avatar review 11-18.
+- **Next (prompt-loose-ends-nov.md):** the invariant matrix for all eight and
+  the hold ported to Tōkon with the DANGER row; the Online Match shape routed
+  to a named miss per 5r, measured against the flow table; GGST's
+  computed check; a `--from` manual mode for verify:comboforge, a UA and a 429
+  backoff, and a note to the partner asking for an allowlist. **Then
+  (prompt-art-licence-audit.md): the read-only audit of every game's art
+  against its vendor's terms, the tip link's status per game, a STOP at the
+  table, and only the owner's chosen changes after.** Journal now also written
+  to the "Replay Database" project as PLAN.md on each presentation.
