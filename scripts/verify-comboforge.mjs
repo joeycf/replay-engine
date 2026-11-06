@@ -19,14 +19,27 @@
  * Network-dependent, so it is NOT wired into typecheck — run it by hand before
  * a release, like verify:override and verify:subpath.
  *
- * WHEN COMBOFORGE ANSWERS 429. Since 2026-11-02 comboforge.gg puts a Vercel
- * checkpoint in front of these requests, so the live check could not run and
- * five fighters went out on links nobody had looked at. Two answers, and
- * neither is to get past the checkpoint:
- *   - every request names itself (UA below, with a contact) so the owner can
- *     allowlist it, and a 429 is honoured: Retry-After, two retries, then the
- *     run stops and says UNVERIFIED (exit 2), never "current" and never a
- *     hammering loop;
+ * THE BUDGET: 6 REQUESTS IN ANY 61 SECONDS, ACROSS RUNS. comboforge.gg sits
+ * behind a Vercel rate limit of 7 requests per 60 s, and from 2026-11-02 this
+ * script was what tripped it: a full run is 9 requests (/api/games plus one
+ * roster per game id), and it sent them back to back, then 1 s apart, and was
+ * run once per repo in a row. The limiter answers 429 with a challenge, so the
+ * live check went dark and five fighters shipped on links nobody had looked
+ * at. Told to the owner by ComboForge on 2026-11-06.
+ *
+ * So every request waits for a slot in a sliding window: at most 6 in any
+ * 61 s, one under their limit with a second of margin, which keeps ANY 60 s
+ * window they count (sliding or fixed) at 6. The send times are kept in a
+ * small file in the OS temp dir, so a second run started straight after the
+ * first waits for the first one's window instead of starting a fresh budget.
+ * A full run therefore takes about a minute. Do not run two at once.
+ *
+ * A 429 STOPS THE RUN, with no retry. Under the budget a 429 is never ours to
+ * retry: the challenge is still on, or something else on this address spent
+ * the minute (a browser on comboforge.gg counts too). The run says UNVERIFIED
+ * (exit 2), never "current". And never get past the checkpoint:
+ *   - every request names itself (UA below, with a contact), so the owner can
+ *     see it and allowlist it;
  *   - `--from <file>` asserts the config against a HAND check instead: a person
  *     opened each page in a browser and wrote down what it showed, with the date
  *     and their name. No network at all. scripts/comboforge-verified.json is the
@@ -47,7 +60,8 @@
  * character whose name shares no spelling with theirs (Tekken's bare "Leo" vs
  * their "Leo Kliesen") lands in the null list and needs a hand entry.
  */
-import { readdirSync, readFileSync, existsSync } from 'node:fs';
+import { readdirSync, readFileSync, existsSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
 import { dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { createJiti } from 'jiti';
@@ -55,16 +69,21 @@ import { createJiti } from 'jiti';
 const ORIGIN = 'https://comboforge.gg';
 const ROOT = join(dirname(fileURLToPath(import.meta.url)), '..');
 
-/** Who is asking, and how to reach them. ComboForge allowlists by this string,
- *  so it stays STABLE: change the version only when the request pattern does. */
+/** Who is asking, and how to reach them. ComboForge may allowlist by this
+ *  exact string, so it stays STABLE. */
 const UA =
   'ReplayDatabase-ComboForgeVerifier/1.0 (+https://replaydatabase.com; ' +
   'https://github.com/joeycf/replay-engine/blob/main/scripts/verify-comboforge.mjs)';
-/** Retries after a 429, and the most we will wait for one Retry-After. */
-const RETRIES = 2;
-const MAX_WAIT_S = 60;
-/** A gap between ordinary requests, so a run never bursts. */
-const PAUSE_MS = 1000;
+/** Their limit is 7 per 60 s. Ours is one under it, over a window one second
+ *  longer, so no 60 s window of theirs can ever see more than BUDGET. */
+const BUDGET = 6;
+const WINDOW_MS = 61_000;
+/** Never two requests closer than this, inside the budget. */
+const MIN_GAP_MS = 2_000;
+/** The send log shared by every run on this machine. COMBOFORGE_STATE moves it
+ *  (the offline controls use that, so a mock never delays a real run). */
+const STATE =
+  process.env.COMBOFORGE_STATE || join(tmpdir(), 'replay-database-comboforge-requests.json');
 
 const args = process.argv.slice(2);
 const suggest = args.includes('--suggest');
@@ -117,32 +136,75 @@ function retryAfter(res) {
   return Number.isNaN(t) ? null : Math.max(0, Math.ceil((t - Date.now()) / 1000));
 }
 
-let requests = 0;
-async function api(path) {
-  for (let attempt = 0; ; attempt++) {
-    if (requests++ > 0) await sleep(PAUSE_MS);
-    const res = await fetch(`${ORIGIN}${path}`, {
-      headers: { 'user-agent': UA, accept: 'application/json' },
-    });
-    if (res.ok) return res.json();
-    const mitigated = res.headers.get('x-vercel-mitigated');
-    if (res.status !== 429 && !mitigated) throw new Error(`${path} → HTTP ${res.status}`);
-    // Honour the 429. A CHALLENGE (x-vercel-mitigated: challenge) wants a
-    // browser, and no amount of waiting turns a script into one, so it stops on
-    // the first answer: one request, not three. A plain rate limit waits for
-    // Retry-After (or 15 s, then 45 s) and tries twice more. Either way the run
-    // ends by saying UNVERIFIED, never by trying harder.
-    const asked = retryAfter(res);
-    const what = `HTTP ${res.status}${mitigated ? ` (x-vercel-mitigated: ${mitigated})` : ''}`;
-    if (mitigated || attempt >= RETRIES || (asked !== null && asked > MAX_WAIT_S)) {
-      throw new Refused(`${path} → ${what} after ${attempt + 1} attempt(s)`);
-    }
-    const wait = asked ?? 15 * 3 ** attempt; // 15 s, then 45 s
-    console.log(`  … ${path} → ${what}; waiting ${wait}s (Retry-After ${asked ?? 'absent'})`);
-    await sleep(wait * 1000);
+/** Send times (epoch ms) inside the current window, this run's and earlier
+ *  runs'. An unreadable file reads as empty: it can only make us slower. */
+function readSent() {
+  try {
+    const v = JSON.parse(readFileSync(STATE, 'utf8'));
+    return Array.isArray(v) ? v.filter((t) => Number.isFinite(t)) : [];
+  } catch {
+    return [];
   }
 }
 
+/** Wait for a slot, then record the send BEFORE it happens: a request that
+ *  fails still spent one of their seven. */
+async function takeSlot() {
+  for (;;) {
+    const now = Date.now();
+    const sent = readSent()
+      .filter((t) => now - t < WINDOW_MS)
+      .sort((a, b) => a - b);
+    const last = sent.at(-1);
+    const waitGap = last === undefined ? 0 : last + MIN_GAP_MS - now;
+    const waitBudget = sent.length >= BUDGET ? sent[sent.length - BUDGET] + WINDOW_MS - now : 0;
+    const wait = Math.max(waitGap, waitBudget);
+    if (wait <= 0) {
+      writeFileSync(STATE, JSON.stringify([...sent, now]));
+      return;
+    }
+    if (wait > MIN_GAP_MS) {
+      console.log(
+        `  … rate budget: ${sent.length} sent in the last 61 s, waiting ${Math.ceil(wait / 1000)}s`,
+      );
+    }
+    await sleep(wait);
+  }
+}
+
+const sentThisRun = [];
+async function api(path) {
+  await takeSlot();
+  sentThisRun.push(Date.now());
+  const res = await fetch(`${ORIGIN}${path}`, {
+    headers: { 'user-agent': UA, accept: 'application/json' },
+  });
+  if (res.ok) return res.json();
+  const mitigated = res.headers.get('x-vercel-mitigated');
+  if (res.status === 429 || mitigated) {
+    const asked = retryAfter(res);
+    throw new Refused(
+      `${path} → HTTP ${res.status}${mitigated ? ` (x-vercel-mitigated: ${mitigated})` : ''}` +
+        (asked !== null ? `, Retry-After ${asked}s` : ''),
+    );
+  }
+  throw new Error(`${path} → HTTP ${res.status}`);
+}
+
+/** How the run spent the budget, printed at the end of every live run. */
+function budgetLine() {
+  const t = sentThisRun;
+  if (!t.length) return '  0 requests sent';
+  let peak = 0;
+  for (let i = 0; i < t.length; i++) {
+    peak = Math.max(peak, t.filter((x) => x >= t[i] && x < t[i] + 60_000).length);
+  }
+  const span = Math.round((t.at(-1) - t[0]) / 1000);
+  return `  ${t.length} request(s) over ${span}s, at most ${peak} in any 60 s (their limit is 7)`;
+}
+
+/** One roster per game id, fetched at most once a run: the fixtures share sf6
+ *  with the SF6 repo, and every request is one of their seven. */
 async function roster(gameId) {
   if (!rosters.has(gameId)) rosters.set(gameId, await api(`/api/games/${gameId}/characters`));
   return rosters.get(gameId);
@@ -368,12 +430,14 @@ if (fromFile) {
 } else {
   try {
     await live();
+    console.log(budgetLine());
   } catch (err) {
     if (!(err instanceof Refused)) throw err;
     console.log(
       [
         '',
-        `⚠ UNVERIFIED: ${err.message}.`,
+        `⚠ UNVERIFIED: ${err.message}. Stopped there, no retry.`,
+        budgetLine(),
         `  ComboForge did not let this run read its rosters, so nothing above is a verdict.`,
         `  Sent as: ${UA}`,
         `  Record a browser check instead: --from scripts/comboforge-verified.json`,
